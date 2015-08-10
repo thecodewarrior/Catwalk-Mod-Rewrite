@@ -40,7 +40,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockCatwalk extends Block {
+public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	public boolean lights;
 	public boolean bottom;
 	
@@ -587,15 +587,40 @@ public class BlockCatwalk extends Block {
 	{
 	    return false;
 	}
+	
+	
 
-	@SideOnly(Side.CLIENT)
-	public boolean isBlockNormalCube()
-	{
-	    return false;
+	//==============================================================================
+	// ICagedLadderConnectable
+	//==============================================================================
+	
+	@Override
+	public boolean shouldConnectToSide(IBlockAccess w, int x, int y, int z,
+			ForgeDirection side) {
+		return getOpenState(w, x, y, z, side);
 	}
 
-	public boolean isNormalCube()
-	{
-	    return false;
+	@Override
+	public boolean shouldHaveBottom(IBlockAccess w, int x, int y, int z,
+			ForgeDirection side) {
+		if(bottom)
+			return true;
+		Block b = w.getBlock(x,y-1,z);
+		if( b instanceof ICagedLadderConnectable) {
+			if( ((ICagedLadderConnectable)b).doesSideHaveWall(w, x, y, z, side) )
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean doesSideHaveWall(IBlockAccess w, int x, int y, int z,
+			ForgeDirection side) {
+		return !getOpenState(w, x, y, z, side);
+	}
+	
+	@Override
+	public boolean isThin(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
+		return false;
 	}
 }

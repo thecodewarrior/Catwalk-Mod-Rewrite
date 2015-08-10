@@ -27,7 +27,6 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 	    GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 	    tessellator.startDrawingQuads();
 	    
-	    
 	    renderer.renderFromInside = true;
 	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
 	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));
@@ -44,38 +43,6 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 	    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, meta));
 	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, meta));
 	    
-	    /*tessellator.setBrightness(15728880);
-		
-	    boolean force = false;
-	    
-		renderer.renderFromInside = true;
-		
-		BlockCatwalk b = (BlockCatwalk) block;
-		
-		if( bottom || force)
-			renderer.renderFaceYNeg(b, 0, 0, 0, b.bottomLights);
-		if( (meta & 8) <= 0 || force)
-			renderer.renderFaceZNeg(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force)
-			renderer.renderFaceZPos(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force )
-			renderer.renderFaceXNeg(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force )
-			renderer.renderFaceXPos(b, 0, 0, 0, b.sideLights);
-		
-		renderer.renderFromInside = false;
-		
-		if( bottom || force)
-			renderer.renderFaceYNeg(b, 0, 0, 0, b.bottomLights);
-		if( (meta & 8) <= 0 || force)
-			renderer.renderFaceZNeg(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force)
-			renderer.renderFaceZPos(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force )
-			renderer.renderFaceXNeg(b, 0, 0, 0, b.sideLights);
-		if( (meta & 8) <= 0 || force )
-			renderer.renderFaceXPos(b, 0, 0, 0, b.sideLights);/**/
-		
 	    tessellator.draw();
 	    GL11.glTranslatef(0.5F, 0.5F, 0.5F);
 	    
@@ -142,18 +109,16 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 		}
 		renderer.unlockBlockBounds();
 		renderer.clearOverrideBlockTexture();
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean shouldRender3DInInventory(int modelId) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public int getRenderId() {
-		// TODO Auto-generated method stub
 		return CatwalkMod.catwalkRenderType;
 	}
 

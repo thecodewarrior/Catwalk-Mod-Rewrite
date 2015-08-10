@@ -26,6 +26,8 @@ public class CommonProxy {
 
 	public LinkedList<WeakReference<EntityLivingBase>> entities = new LinkedList<WeakReference<EntityLivingBase>>();
 
+	public int lastOp = -1;
+	
 	public void init() {
 		// do some server stuff
 		initClient();
@@ -34,6 +36,22 @@ public class CommonProxy {
 	public void initClient() {}
 	
 	public void postInit() {}
+	
+	public void performModification() {
+		int opNum = 5;
+		if(lastOp == -1) {
+			lastOp = opNum;
+		}
+		if(lastOp < opNum) {
+			System.out.println("Performing operation " + opNum);
+			// BEGIN CODE
+			if(CatwalkMod.proxy instanceof ClientProxy) {
+				((ClientProxy)CatwalkMod.proxy).maxSpeed = 0;
+			}
+			// END CODE
+			lastOp = opNum;
+		}
+	}
 	
 	public static boolean isHoldingUsableWrench(EntityPlayer player)
     {
@@ -72,7 +90,7 @@ public class CommonProxy {
 		attrInstance.applyModifier(
         		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
         				catwalkEP.multiplier, 2));
-		catwalkEP.timeout = 10;
+		catwalkEP.timeout = 15;
 	}
 	
 	@SubscribeEvent
@@ -82,17 +100,20 @@ public class CommonProxy {
 		
 		if(coord.y >= 0) {
 			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z);
+			ICustomLadderVelocity icl = (ICustomLadderVelocity)b;
 			EntityLivingBase e = event.entityLiving;
 			
 			if(e.isCollidedHorizontally) {
-				e.motionY = ((ICustomLadderVelocity)b).getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
+				e.motionY = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
 				catwalkEP.highSpeedLadder = true;
 			} else {
 				e.fallDistance = 0.0F;
-
-                if (e.motionY < -0.15D)
+				
+				double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
+				
+                if (e.motionY < -downSpeed)
                 {
-                    e.motionY = -0.15D;
+                    e.motionY = -downSpeed;
                 }
 
                 boolean shouldStopOnLadder = e.isSneaking() && e instanceof EntityPlayer;
@@ -125,7 +146,7 @@ public class CommonProxy {
                 {
                 	
                     block = world.getBlock(x2, y2, z2);
-                    if (block != null && block.isLadder(world, x2, y2, z2, entity) && block instanceof ICustomLadderVelocity)
+                    if (block != null && block instanceof ICustomLadderVelocity && ((ICustomLadderVelocity)block).isOnLadder(world, x2, y2, z2, entity))
                     {
                         return new BlockCoord(x2,y2,z2);
                     }
@@ -137,7 +158,9 @@ public class CommonProxy {
 
 	@SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
-    	if( event.phase == Phase.END) {
+    	performModification();
+		
+		if( event.phase == Phase.END) {
     		Iterator<WeakReference<EntityLivingBase>> iter = entities.iterator();
         	while(iter.hasNext()) {
         		WeakReference<EntityLivingBase> e = iter.next();

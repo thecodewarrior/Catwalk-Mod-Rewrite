@@ -23,7 +23,7 @@ public class ClientProxy extends CommonProxy {
     
     List<String> headers = new ArrayList<String>();
 	int headerWidth = 0;
-
+	double maxSpeed = 0;
     
     @Override
     public void initClient() {
@@ -50,6 +50,8 @@ public class ClientProxy extends CommonProxy {
     	
     	headers.add("m/t:");
     	headers.add("m/s:");
+    	headers.add("m/t max:");
+    	headers.add("m/s max:");
     	//headers.add("saturation:");
     	//headers.add("food:");
     }
@@ -75,13 +77,20 @@ public class ClientProxy extends CommonProxy {
     		double speed = Math.sqrt((dX*dX) + (dY*dY) + (dZ*dZ));
 //    		int bottom = Minecraft.getMinecraft().displayHeight;
 //    		int right  = Minecraft.getMinecraft().displayWidth;
+    		if(speed > maxSpeed)
+    			maxSpeed = speed;
     		
     		FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
 
     		List<String> data = new ArrayList<String>();
     		
-    		data.add(String.format("%2.5f", speed    ));
-    		data.add(String.format("%2.5f", speed*20 ));
+    		int precision = 5;
+    		
+    		data.add(String.format("%2." + precision + "f", speed    ));
+    		data.add(String.format("%2." + precision + "f", speed*20 ));
+    		
+    		data.add(String.format("%2." + precision + "f", maxSpeed    ));
+    		data.add(String.format("%2." + precision + "f", maxSpeed*20 ));
     		
     		//FoodStats fs = p.getFoodStats();
     		//data.add(String.format("%2.5f", fs.getSaturationLevel()));

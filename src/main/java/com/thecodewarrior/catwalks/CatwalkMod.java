@@ -1,5 +1,7 @@
 package com.thecodewarrior.catwalks;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
@@ -28,11 +30,13 @@ public class CatwalkMod
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
     
+    public static CatwalkOptions options = new CatwalkOptions();
+    
     public static Block catwalkLitBottom;
     public static Block catwalkUnlitBottom;
     public static Block catwalkLitNoBottom;
     public static Block catwalkUnlitNoBottom;
-    
+        
     public static Block ladderNorthLit;
     public static Block ladderNorthUnlit;
     public static Block ladderSouthLit;
@@ -59,6 +63,9 @@ public class CatwalkMod
     public void preInit(FMLPreInitializationEvent event) {
     	catwalkRenderType = RenderingRegistry.getNextAvailableRenderId();
     	ladderRenderType  = RenderingRegistry.getNextAvailableRenderId();
+    	
+    	options.init();
+    	options.load();
     	
     	FMLCommonHandler.instance().bus().register(proxy);  
     	MinecraftForge.EVENT_BUS.register(proxy);
