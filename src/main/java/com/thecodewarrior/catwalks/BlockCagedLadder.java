@@ -44,6 +44,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	
 	public ForgeDirection direction;
 	public boolean lights;
+	public boolean isBottomOpen;
 	
 	public IIcon bottom;
 	public IIcon bottom_with_lights;
@@ -71,7 +72,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	
 	// meta: bottom, front, left, right
 	
-	public BlockCagedLadder(ForgeDirection direction, boolean lights) {
+	public BlockCagedLadder(ForgeDirection direction, boolean lights, boolean bottom) {
 		super(Material.iron);
 		setHardness(1.0F);
 		setStepSound(Block.soundTypeMetal);
@@ -79,12 +80,13 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
     	setBlockBounds(px, 0, px, 1-px, 1, 1-px);
 		setBlockName("cagedladder");
 		setStepSound(soundTypeLadder);
-		if(direction == ForgeDirection.NORTH && !lights)
+		if(direction == ForgeDirection.NORTH && !lights && !bottom)
 			setCreativeTab(CreativeTabs.tabTransport);
 		setHarvestLevel("wrench", 0);
 		setHarvestLevel("pickaxe", 0);
 		this.lights = lights;
 		this.direction = direction;
+		this.isBottomOpen = bottom;
 		initHitBoxes();
 	}
 	
@@ -107,7 +109,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
     		d = ForgeDirection.WEST;  break;
     	}
 		updateNeighborSides(w,x,y,z,true);
-    	updateIdData(w, x, y, z, d, lights);
+    	updateIdData(w, x, y, z, d, lights, isBottomOpen);
 	}
 
 	public void onBlockDestroyedByPlayer(World w, int x, int y, int z, int meta) {
@@ -185,14 +187,14 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		if (hit != null) {
 			side = (RelativeSide) ( (ExtendedMOP) hit ).data;
 		}
-		
+				
 		ItemStack handStack = player.getCurrentEquippedItem();
 		if(handStack != null && handStack.getItem() instanceof IToolWrench) {
 			if(player.isSneaking()) {
 				if(this.lights) {
 					if(!world.isRemote) {
 						world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
-						updateIdData(world, x, y, z, direction, false);
+						updateIdData(world, x, y, z, direction, false, isBottomOpen);
 					}
 				}
 			} else {
@@ -201,7 +203,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		}
 		
 		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof ItemRopeLight && this.lights == false) {
-			updateIdData(world, x, y, z, direction, true);
+			updateIdData(world, x, y, z, direction, true, isBottomOpen);
 			if(!player.capabilities.isCreativeMode)
 				player.getCurrentEquippedItem().stackSize--;
 		}
@@ -278,6 +280,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		open.put(RelativeSide.FRONT, getOpenHighlightCuboid(open, RelativeSide.FRONT, direction) );
 		open.put(RelativeSide.LEFT, getOpenHighlightCuboid(open, RelativeSide.LEFT, direction) );
 		open.put(RelativeSide.RIGHT, getOpenHighlightCuboid(open, RelativeSide.RIGHT, direction) );
+		open.put(RelativeSide.LADDER, getOpenHighlightCuboid(open, RelativeSide.LADDER, direction) );
 		open.put(RelativeSide.BOTTOM, getOpenHighlightCuboid(open, RelativeSide.BOTTOM, direction) );
 		open.put(RelativeSide.TOP, getOpenHighlightCuboid(open, RelativeSide.TOP, direction) );
 	}
@@ -288,8 +291,8 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		double frontSub = sub/2;
 		
 		Cuboid6 cuboid = closed.get(side).copy();
-		if(side == RelativeSide.LADDER)
-			return cuboid;
+//		if(side == RelativeSide.LADDER)
+//			return cuboid;
 			
 		if(side == RelativeSide.TOP) {
 			cuboid.min.x += frontSub;
@@ -297,7 +300,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 
 			cuboid.max.x -= frontSub;
 			cuboid.max.z -= frontSub;
-		} else if(side != RelativeSide.FRONT) {
+		} else if(side != RelativeSide.FRONT && side != RelativeSide.LADDER) {
 			if(facing.offsetX < 0) {
 				cuboid.min.x += sub;
 			}
@@ -346,10 +349,10 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		}
 		
     	for (RelativeSide rs : RelativeSide.values()) {
-			if(rs == RelativeSide.LADDER) {
-				addToList(x, y, z, cuboids, rs, closed.get(rs));
-				continue;
-			}
+//			if(rs == RelativeSide.LADDER) {
+//				addToList(x, y, z, cuboids, rs, closed.get(rs));
+//				continue;
+//			}
 			if(rs == RelativeSide.TOP) {
 				continue;
 			}
@@ -469,7 +472,12 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	@SideOnly(Side.CLIENT)
 	public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int _side)
 	{
+		
 		ForgeDirection dir = ForgeDirection.getOrientation(_side);
+		if(dir == ForgeDirection.UP) {
+			return true;
+		}
+		
 		if(dir == ForgeDirection.DOWN) {
 			if(w.isSideSolid(x, y, z, ForgeDirection.DOWN, false))
 				return false;
@@ -556,6 +564,8 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	public boolean isOpen(RelativeSide side, int meta) {
 		switch(side) {
 		case BOTTOM:
+			return isBottomOpen;
+		case LADDER:
 			return getBit(meta, 3);
 		case FRONT:
 			return getBit(meta, 2);
@@ -576,6 +586,9 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		int meta = world.getBlockMetadata(x, y, z);
 		switch(side) {
 		case BOTTOM:
+			updateIdData(world, x, y, z, direction, lights, value);
+			break;
+		case LADDER:
 			meta = setBit(meta, 3, value);
 			break;
 		case FRONT:
@@ -591,33 +604,57 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		world.setBlock(x, y, z, this, meta, 3);
 	}
 
-	public void updateIdData(World world, int x, int y, int z, ForgeDirection facing, boolean lights) {
+	public void updateIdData(World world, int x, int y, int z, ForgeDirection facing, boolean lights, boolean bottom) {
 		int meta = world.getBlockMetadata(x,y,z);
 		Block b = this;
 		switch(facing) {
 		case NORTH:
 			if(lights)
-				b = CatwalkMod.ladderNorthLit;
+				if(bottom)
+					b = CatwalkMod.ladderNorthLit;
+				else
+					b = CatwalkMod.ladderNorthLitNoBottom;
 			else
-				b = CatwalkMod.ladderNorthUnlit;
+				if(bottom)
+					b = CatwalkMod.ladderNorthUnlit;
+				else
+					b = CatwalkMod.ladderNorthUnlitNoBottom;
 			break;
 		case SOUTH:
 			if(lights)
-				b = CatwalkMod.ladderSouthLit;
+				if(bottom)
+					b = CatwalkMod.ladderSouthLit;
+				else
+					b = CatwalkMod.ladderSouthLitNoBottom;
 			else
-				b = CatwalkMod.ladderSouthUnlit;
+				if(bottom)
+					b = CatwalkMod.ladderSouthUnlit;
+				else
+					b = CatwalkMod.ladderSouthUnlitNoBottom;
 			break;
 		case EAST:
 			if(lights)
-				b = CatwalkMod.ladderEastLit;
+				if(bottom)
+					b = CatwalkMod.ladderEastLit;
+				else
+					b = CatwalkMod.ladderEastLitNoBottom;
 			else
-				b = CatwalkMod.ladderEastUnlit;
+				if(bottom)
+					b = CatwalkMod.ladderEastUnlit;
+				else
+					b = CatwalkMod.ladderEastUnlitNoBottom;
 			break;
 		case WEST:
 			if(lights)
-				b = CatwalkMod.ladderWestLit;
+				if(bottom)
+					b = CatwalkMod.ladderWestLit;
+				else
+					b = CatwalkMod.ladderWestLitNoBottom;
 			else
-				b = CatwalkMod.ladderWestUnlit;
+				if(bottom)
+					b = CatwalkMod.ladderWestUnlit;
+				else
+					b = CatwalkMod.ladderWestUnlitNoBottom;
 			break;
 		default:
 		}

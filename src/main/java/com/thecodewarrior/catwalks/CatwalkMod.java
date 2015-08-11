@@ -46,6 +46,14 @@ public class CatwalkMod
     public static Block ladderEastLit;
     public static Block ladderEastUnlit;
     
+    public static Block ladderNorthLitNoBottom;
+    public static Block ladderNorthUnlitNoBottom;
+    public static Block ladderSouthLitNoBottom;
+    public static Block ladderSouthUnlitNoBottom;
+    public static Block ladderWestLitNoBottom;
+    public static Block ladderWestUnlitNoBottom;
+    public static Block ladderEastLitNoBottom;
+    public static Block ladderEastUnlitNoBottom;
     
     public static Item itemBlowtorch;
     public static Item itemRopeLight;
@@ -86,14 +94,14 @@ public class CatwalkMod
     	GameRegistry.registerBlock(catwalkLitNoBottom,   "catwalk_lit_nobottom"  );
     	GameRegistry.registerBlock(catwalkUnlitNoBottom, "catwalk_unlit_nobottom");
     	
-    	ladderNorthLit   = new BlockCagedLadder(ForgeDirection.NORTH, true);
-    	ladderNorthUnlit = new BlockCagedLadder(ForgeDirection.NORTH, false);
-    	ladderSouthLit   = new BlockCagedLadder(ForgeDirection.SOUTH, true);
-    	ladderSouthUnlit = new BlockCagedLadder(ForgeDirection.SOUTH, false);
-    	ladderWestLit   = new BlockCagedLadder(ForgeDirection.WEST, true);
-    	ladderWestUnlit = new BlockCagedLadder(ForgeDirection.WEST, false);
-    	ladderEastLit   = new BlockCagedLadder(ForgeDirection.EAST, true);
-    	ladderEastUnlit = new BlockCagedLadder(ForgeDirection.EAST, false);
+    	ladderNorthLit   = new BlockCagedLadder(ForgeDirection.NORTH, true,  false);
+    	ladderNorthUnlit = new BlockCagedLadder(ForgeDirection.NORTH, false, false);
+    	ladderSouthLit   = new BlockCagedLadder(ForgeDirection.SOUTH, true,  false);
+    	ladderSouthUnlit = new BlockCagedLadder(ForgeDirection.SOUTH, false, false);
+    	ladderWestLit    = new BlockCagedLadder(ForgeDirection.WEST,  true,  false);
+    	ladderWestUnlit  = new BlockCagedLadder(ForgeDirection.WEST,  false, false);
+    	ladderEastLit    = new BlockCagedLadder(ForgeDirection.EAST,  true,  false);
+    	ladderEastUnlit  = new BlockCagedLadder(ForgeDirection.EAST,  false, false);
     	
     	GameRegistry.registerBlock(ladderNorthLit,   "cagedLadder_north_lit"  );
     	GameRegistry.registerBlock(ladderNorthUnlit, "cagedLadder_north_unlit");
@@ -103,6 +111,24 @@ public class CatwalkMod
     	GameRegistry.registerBlock(ladderWestUnlit,  "cagedLadder_west_unlit" );
     	GameRegistry.registerBlock(ladderEastLit,    "cagedLadder_east_lit"   );
     	GameRegistry.registerBlock(ladderEastUnlit,  "cagedLadder_east_unlit" );
+    	
+    	ladderNorthLitNoBottom   = new BlockCagedLadder(ForgeDirection.NORTH, true,  true);
+    	ladderNorthUnlitNoBottom = new BlockCagedLadder(ForgeDirection.NORTH, false, true);
+    	ladderSouthLitNoBottom   = new BlockCagedLadder(ForgeDirection.SOUTH, true,  true);
+    	ladderSouthUnlitNoBottom = new BlockCagedLadder(ForgeDirection.SOUTH, false, true);
+    	ladderWestLitNoBottom    = new BlockCagedLadder(ForgeDirection.WEST,  true,  true);
+    	ladderWestUnlitNoBottom  = new BlockCagedLadder(ForgeDirection.WEST,  false, true);
+    	ladderEastLitNoBottom    = new BlockCagedLadder(ForgeDirection.EAST,  true,  true);
+    	ladderEastUnlitNoBottom  = new BlockCagedLadder(ForgeDirection.EAST,  false, true);
+    	
+    	GameRegistry.registerBlock(ladderNorthLitNoBottom,   "cagedLadder_north_lit_nobottom"  );
+    	GameRegistry.registerBlock(ladderNorthUnlitNoBottom, "cagedLadder_north_unlit_nobottom");
+    	GameRegistry.registerBlock(ladderSouthLitNoBottom,   "cagedLadder_south_lit_nobottom"  );
+    	GameRegistry.registerBlock(ladderSouthUnlitNoBottom, "cagedLadder_south_unlit_nobottom");
+    	GameRegistry.registerBlock(ladderWestLitNoBottom,    "cagedLadder_west_lit_nobottom"   );
+    	GameRegistry.registerBlock(ladderWestUnlitNoBottom,  "cagedLadder_west_unlit_nobottom" );
+    	GameRegistry.registerBlock(ladderEastLitNoBottom,    "cagedLadder_east_lit_nobottom"   );
+    	GameRegistry.registerBlock(ladderEastUnlitNoBottom,  "cagedLadder_east_unlit_nobottom" );
     	
     	itemBlowtorch = new ItemBlowtorch();
     	itemRopeLight = new ItemRopeLight();

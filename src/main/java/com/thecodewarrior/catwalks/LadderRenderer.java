@@ -113,6 +113,10 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		
 		renderer.unlockBlockBounds();
 		
+		Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(world, x, y - 1, z));
+		Tessellator.instance.setColorOpaque_F(0.5F, 0.5F, 0.5F);
+//		renderer.renderFaceXPos(block, x, y, z, block.transparent); // to set up lighting even when no faces are enabled
+		
 		ForgeDirection[] cardinal = {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST};
 		for (int i = 0; i < cardinal.length; i++) {
 			ForgeDirection side = cardinal[i];
