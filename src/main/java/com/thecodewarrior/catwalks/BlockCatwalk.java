@@ -6,6 +6,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
+import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
+import com.thecodewarrior.codechicken.lib.vec.Vector3;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -29,12 +36,6 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import buildcraft.api.tools.IToolWrench;
-import codechicken.lib.raytracer.ExtendedMOP;
-import codechicken.lib.raytracer.IndexedCuboid6;
-import codechicken.lib.raytracer.RayTracer;
-import codechicken.lib.vec.BlockCoord;
-import codechicken.lib.vec.Cuboid6;
-import codechicken.lib.vec.Vector3;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -63,7 +64,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 		setHardness(1.0F);
 		setStepSound(Block.soundTypeMetal);
 		setBlockName("catwalk");
-		if(lights && !bottom)
+		if(!lights && !bottom)
 			setCreativeTab(CreativeTabs.tabTransport);
 //		setHarvestLevel("wrench", 0);
 //		setHarvestLevel("pickaxe", 0);
@@ -201,7 +202,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
         
         float px = 1/16F;
     	int meta = world.getBlockMetadata(x, y, z);
-//    	System.out.println("META: " + (meta & 8));
     	boolean ovr = false;
     	double d = 0;
     	float smallHeight = 0.25f;
@@ -248,7 +248,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
         	
         	}
         }
-        //        System.out.println(mop.data);
         return mop;
     }
     
@@ -582,7 +581,18 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	{
 	    return 0;
 	}
-
+	
+	@SideOnly(Side.CLIENT)
+	public boolean isBlockNormalCube()
+	{
+	    return false;
+	}
+	
+	public boolean isNormalCube()
+	{
+	    return false;
+	}
+	
 	public boolean isOpaqueCube()
 	{
 	    return false;

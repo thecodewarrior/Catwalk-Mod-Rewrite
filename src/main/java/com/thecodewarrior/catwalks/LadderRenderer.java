@@ -9,9 +9,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
-import codechicken.lib.vec.BlockCoord;
-
 import com.thecodewarrior.catwalks.BlockCagedLadder.RelativeSide;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
@@ -34,7 +33,7 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 	    tessellator.startDrawingQuads();
 	    
 	    renderer.renderFromInside = true;
-	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
+//	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
 	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));
 	    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, meta));
 	    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, meta));
@@ -42,7 +41,7 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, meta));
 	    
 	    renderer.renderFromInside = false;
-	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
+//	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
 	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));
 	    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, meta));
 	    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, meta));
@@ -225,8 +224,9 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		
 		if(world.isSideSolid(x, y-1, z, ForgeDirection.UP, true))
 			bottom = false;
-		if(block.isOpen(ForgeDirection.DOWN, meta))
+		if(!((ICagedLadderConnectable)block).shouldHaveBottom(world, x, y, z, side)) {
 			bottom = false;
+		}
 		
 		if(side == ForgeDirection.NORTH && bottom) {
 			drawBothSides(tess,

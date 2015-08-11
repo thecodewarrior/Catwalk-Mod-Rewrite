@@ -6,7 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import buildcraft.api.tools.IToolWrench;
+import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
+import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
+import com.thecodewarrior.codechicken.lib.vec.Vector3;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -18,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.Vec3;
@@ -26,12 +33,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.common.util.ForgeDirection;
-import codechicken.lib.raytracer.ExtendedMOP;
-import codechicken.lib.raytracer.IndexedCuboid6;
-import codechicken.lib.raytracer.RayTracer;
-import codechicken.lib.vec.BlockCoord;
-import codechicken.lib.vec.Cuboid6;
-import codechicken.lib.vec.Vector3;
+import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -92,7 +94,20 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	
     @Override
 	public void onBlockPlacedBy(World w, int x, int y, int z, EntityLivingBase e, ItemStack s) {
+    	int l = MathHelper.floor_double((double)((e.rotationYaw * 4F) / 360F) + 0.5D) & 3;
+    	ForgeDirection d = ForgeDirection.NORTH;
+    	switch(l) {
+    	case 0:
+    		d = ForgeDirection.SOUTH; break;
+    	case 1:
+    		d = ForgeDirection.EAST;  break;
+    	case 2:
+    		d = ForgeDirection.NORTH; break;
+    	case 3:
+    		d = ForgeDirection.WEST;  break;
+    	}
 		updateNeighborSides(w,x,y,z,true);
+    	updateIdData(w, x, y, z, d, lights);
 	}
 
 	public void onBlockDestroyedByPlayer(World w, int x, int y, int z, int meta) {
@@ -106,17 +121,13 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	public void updateNeighborSides(World world, int x, int y, int z, boolean self) {
 		Block b = world.getBlock(x, y+1, z);
 		if(b instanceof BlockCagedLadder) {
-//			this.updateOpenData(world, x, y+1, z, RelativeSide.BOTTOM, false);
-//			System.out.println("---");
 			( (BlockCagedLadder)b ).updateBottom(world, x, y+1, z);
-//			System.out.println("---");
 		}
 		if(self)
 			this.updateBottom(world, x, y, z);
 	}
 	
 	public void updateBottom(World world, int x, int y, int z) {
-//		System.out.println("UPD");
 		if(world.getBlock(x, y-1, z) instanceof BlockCagedLadder) {
 			updateOpenData(world, x, y, z, RelativeSide.BOTTOM, true);
 		} else {
@@ -174,7 +185,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		if (hit != null) {
 			side = (RelativeSide) ( (ExtendedMOP) hit ).data;
 		}
-//		System.out.println(side);
 		
 		ItemStack handStack = player.getCurrentEquippedItem();
 		if(handStack != null && handStack.getItem() instanceof IToolWrench) {
@@ -186,9 +196,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 					}
 				}
 			} else {
-//				System.out.println("META:  " + world.getBlockMetadata(x,y,z));
 				updateOpenData(world, x, y, z, side, !isOpen(side, world.getBlockMetadata(x, y, z)));
-//				System.out.println("META2: " + world.getBlockMetadata(x,y,z));
 			}
 		}
 		
@@ -358,7 +366,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
         		mop.sideHit = ForgeDirection.getOrientation(mop.sideHit).getOpposite().ordinal();
         	}
         }
-        //        System.out.println(mop.data);
         return mop;
     }
     
@@ -448,7 +455,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		case RIGHT:
 			return side_lights;
 		case BOTTOM:
-			return transparent;//bottom_lights;
+			return bottom_lights;
 		}
 		
 	    return transparent;
@@ -456,9 +463,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 
 	@Override
 	public boolean isSideSolid(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
-		if(side == ForgeDirection.UP)
-			return false;
-		return !isOpen(RelativeSide.FDtoRS(side, direction), w.getBlockMetadata(x,y,z));
+		return false;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -531,7 +536,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity) {
 		
-//		System.out.println("COLLIDE!");
 	}
 	
 	//==============================================================================
@@ -643,7 +647,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	@SideOnly(Side.CLIENT)
 	public boolean isBlockNormalCube()
 	{
-	    return super.isBlockNormalCube();
+	    return false;
 	}
 
 	public boolean isNormalCube()
@@ -834,7 +838,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 			return true;
 		Block b = w.getBlock(x,y-1,z);
 		if( b instanceof ICagedLadderConnectable) {
-			System.out.println(side);
 			if( ((ICagedLadderConnectable)b).doesSideHaveWall(w, x, y-1, z, side) ) {
 				return true;
 			}

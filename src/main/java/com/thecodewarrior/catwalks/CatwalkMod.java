@@ -25,7 +25,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.0.0";
+    public static final String MODVER = "0.1.0";
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
