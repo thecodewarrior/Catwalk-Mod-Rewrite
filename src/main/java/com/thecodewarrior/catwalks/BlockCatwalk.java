@@ -273,6 +273,15 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 		CatwalkMod.proxy.speedupPlayer(world, entity, mul);
 	}
 
+	public boolean shouldHaveBox(World world, int x, int y, int z, ForgeDirection side) {
+		return  !(world.getBlock(x+side.offsetX, y+side.offsetY, z+side.offsetZ) instanceof BlockCatwalk) &&
+				!world.isSideSolid(x+side.offsetX, y+side.offsetY, z+side.offsetZ, side.getOpposite(), false);
+	}
+	
+	public boolean getBit(int val, int pos) {
+		return ( val & (1 << pos) ) > 0;
+	}
+	
 	@Override
     public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB blockBounds, List list, Entity collidingEntity) {
     	
@@ -290,11 +299,12 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     			this.getBlockBoundsMinX(), this.getBlockBoundsMinY(), this.getBlockBoundsMinZ(),
     			this.getBlockBoundsMaxX(), this.getBlockBoundsMaxY(), this.getBlockBoundsMaxZ()
     		);
-    	if(bottom) {
+    	if(bottom && shouldHaveBox(world, x, y, z, ForgeDirection.DOWN)) {
     		this.setBlockBounds(0, 0, 0, 1, px, 1);
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
-    	if((meta & 8) == 0 || ovr) {
+    	
+    	if(( !getBit(meta, 3) && shouldHaveBox(world, x, y, z, ForgeDirection.NORTH) ) || ovr) {
     		if(getStepConnect(world,x,y,z,ForgeDirection.NORTH)) {
     			this.setBlockBounds(0, 0, 0, 1, 1, px);
     		} else {
@@ -302,7 +312,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     		}
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
-    	if((meta & 4) == 0 || ovr) {
+    	if(( !getBit(meta, 2) && shouldHaveBox(world, x, y, z, ForgeDirection.SOUTH) ) || ovr) {
     		if(getStepConnect(world,x,y,z,ForgeDirection.SOUTH)) {
     			this.setBlockBounds(0, 0, 1-px, 1, 1, 1);
     		} else {
@@ -310,7 +320,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     		}
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
-    	if((meta & 2) == 0 || ovr) {
+    	if(( !getBit(meta, 1) && shouldHaveBox(world, x, y, z, ForgeDirection.WEST) ) || ovr) {
     		if(getStepConnect(world,x,y,z,ForgeDirection.WEST)) {
     			this.setBlockBounds(0, 0, 0, px, 1, 1);
     		} else {
@@ -318,7 +328,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     		}
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
-    	if((meta & 1) == 0 || ovr) {
+    	if(( !getBit(meta, 0) && shouldHaveBox(world, x, y, z, ForgeDirection.EAST) ) || ovr) {
     		if(getStepConnect(world,x,y,z,ForgeDirection.EAST)) {
     			this.setBlockBounds(1-px, 0, 0, 1, 1, 1);
     		} else {

@@ -516,7 +516,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
     		addToList(world, x, y, z, blockBounds, list, out, 0, out, in, 1, 1-out);
     	}
     	
-    	if(!isOpen(RelativeSide.FDtoRS(ForgeDirection.DOWN, direction), meta)) {
+    	if(!isOpen(RelativeSide.FDtoRS(ForgeDirection.DOWN, direction), meta) && !world.isSideSolid(x, y-1, z, ForgeDirection.UP, false)) {
     		addToList(world, x, y, z, blockBounds, list, out, 0, out, 1-out, px, 1-out);
     	}
     }

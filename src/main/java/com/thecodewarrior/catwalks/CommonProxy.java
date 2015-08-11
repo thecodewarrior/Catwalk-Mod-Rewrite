@@ -3,8 +3,7 @@ package com.thecodewarrior.catwalks;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -13,12 +12,17 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import buildcraft.api.tools.IToolWrench;
+
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
@@ -70,6 +74,7 @@ public class CommonProxy {
 	}
 
 	public void speedupPlayer(World world, Entity entity, double multiplier) {
+		if(true) return;
 		if(!( entity instanceof EntityLivingBase ))
     		return;
     	EntityLivingBase e = (EntityLivingBase) entity;
@@ -131,8 +136,21 @@ public class CommonProxy {
 		}
 	}
 	
-	public BlockCoord getLadderCoord(EntityLivingBase entity) {
+	public BlockCoord getLadderCoord(final EntityLivingBase entity) {
 		
+		return findCollidingBlock(entity, new Matcher<BlockCoord>() {
+
+			@Override
+			public boolean match(BlockCoord bc) {
+				Block b = entity.worldObj.getBlock(bc.x, bc.y, bc.z);
+				return  b != null &&
+						b instanceof ICustomLadderVelocity &&
+						( (ICustomLadderVelocity)b).isOnLadder(entity.worldObj, bc.x, bc.y, bc.z, entity);
+			}
+		});
+	}
+	
+	public BlockCoord findCollidingBlock(EntityLivingBase entity, Matcher<BlockCoord> mat) {
 		World world = entity.worldObj;
         Block block;
 		AxisAlignedBB bb = entity.boundingBox;
@@ -146,49 +164,94 @@ public class CommonProxy {
                 for (int z2 = mZ; z2 < bb.maxZ; z2++)
                 {
                 	
-                    block = world.getBlock(x2, y2, z2);
-                    if (block != null && block instanceof ICustomLadderVelocity && ((ICustomLadderVelocity)block).isOnLadder(world, x2, y2, z2, entity))
+                	BlockCoord bc = new BlockCoord(x2, y2, z2);
+                    if (mat.match(bc))
                     {
-                        return new BlockCoord(x2,y2,z2);
+                        return bc;
                     }
                 }
             }
         }
         return new BlockCoord(0,-1,0);
 	}
+	
+	public static abstract class Matcher<T> {
+		public abstract boolean match(T obj);
+	}
 
 	@SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
     	performModification();
 		
-		if( event.phase == Phase.END) {
-    		Iterator<WeakReference<EntityLivingBase>> iter = entities.iterator();
-        	while(iter.hasNext()) {
-        		WeakReference<EntityLivingBase> e = iter.next();
-        		if(e.get() == null) {
-        			iter.remove();
-        			continue;
-        		}
-        		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)e.get().getExtendedProperties("catwalkmod.catwalkdata");
-        		catwalkEP.timeout--;
-        		
-        		if(catwalkEP.timeout < 0) {
-        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-            		attrInstance.removeModifier(CatwalkMod.speedModifier);
-        			if(e.get() instanceof EntityPlayer)
-        				System.out.println(String.format("Removing player %s from list", ((EntityPlayer) e.get()).getDisplayName()));
-            		catwalkEP.isInList = false;
-        			iter.remove();
-        			continue;
-        		}
-        		/* if(catwalkEP.refreshTimeout) {
-        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-            		attrInstance.removeModifier(CatwalkMod.speedModifier);
-        			attrInstance.applyModifier(
-        	        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
-        	        				catwalkEP.multiplier, CatwalkMod.speedModifier.getOperation()));
-        		} */
+    	if( event.phase == Phase.END) { 
+    		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+    		for (final EntityPlayerMP player : players) {
+				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord>() {
+					@Override
+					public boolean match(BlockCoord bc) { 
+						Block b = player.worldObj.getBlock(bc.x, bc.y, bc.z);
+						return  b != null &&
+								b instanceof BlockCatwalk;
+					}
+				});
+				
+				
+				
+				IAttributeInstance attrInstance = player.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
+				AttributeModifier m = attrInstance.getModifier(CatwalkMod.speedModifier.getID());
+				
+				if(coord.y == -1) {
+					if(m != null) {
+						attrInstance.removeModifier(CatwalkMod.speedModifier);
+					}
+					continue;
+				}
+				
+				double multiplier = 0.2D;
+				
+				if(m == null || m.getAmount() != multiplier ) {
+					attrInstance.removeModifier(CatwalkMod.speedModifier);
+					attrInstance.applyModifier(
+			        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
+			        				multiplier, 2));
+				}
+						
+						
+				
 			}
+    		
     	}
+    	
+    	if(true) return;
+    	
+//		if( event.phase == Phase.END) {
+//    		Iterator<WeakReference<EntityLivingBase>> iter = entities.iterator();
+//        	while(iter.hasNext()) {
+//        		WeakReference<EntityLivingBase> e = iter.next();
+//        		if(e.get() == null) {
+//        			iter.remove();
+//        			continue;
+//        		}
+//        		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)e.get().getExtendedProperties("catwalkmod.catwalkdata");
+//        		catwalkEP.timeout--;
+//        		
+//        		if(catwalkEP.timeout < 0) {
+//        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
+//            		attrInstance.removeModifier(CatwalkMod.speedModifier);
+//        			if(e.get() instanceof EntityPlayer)
+//        				System.out.println(String.format("Removing player %s from list", ((EntityPlayer) e.get()).getDisplayName()));
+//            		catwalkEP.isInList = false;
+//        			iter.remove();
+//        			continue;
+//        		}
+//        		/* if(catwalkEP.refreshTimeout) {
+//        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
+//            		attrInstance.removeModifier(CatwalkMod.speedModifier);
+//        			attrInstance.applyModifier(
+//        	        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
+//        	        				catwalkEP.multiplier, CatwalkMod.speedModifier.getOperation()));
+//        		} */
+//			}
+//    	}
 	}
 }
