@@ -141,14 +141,27 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		int adjX = x + side.offsetX;
 		int adjY = y + side.offsetY;
 		int adjZ = z + side.offsetZ;
+		ForgeDirection diagDir1 = (side == ForgeDirection.NORTH || side == ForgeDirection.SOUTH) ? ForgeDirection.EAST : ForgeDirection.NORTH;
+		ForgeDirection diagDir2 = diagDir1.getOpposite();
 		
 		Block adjacentBlock = world.getBlock(adjX,adjY,adjZ);
-		if(!( adjacentBlock instanceof ICagedLadderConnectable ))
+		Block diagBlock1 = world.getBlock(adjX+diagDir1.offsetX, adjY+diagDir1.offsetY, adjZ+diagDir1.offsetZ);
+		Block diagBlock2 = world.getBlock(adjX+diagDir2.offsetX, adjY+diagDir2.offsetY, adjZ+diagDir2.offsetZ);
+		
+		if(!( adjacentBlock instanceof ICagedLadderConnectable || diagBlock1 instanceof ICagedLadderConnectable || diagBlock2 instanceof ICagedLadderConnectable ))
 			return;
-		ICagedLadderConnectable iclc = (ICagedLadderConnectable)adjacentBlock;
-		if(!( iclc.shouldConnectToSide(world, adjX, adjY, adjZ, side.getOpposite()) ))
-			return;
-		boolean isThin = iclc.isThin(world, adjX, adjY, adjZ, side.getOpposite());
+		
+		boolean isThin = false;
+		boolean bottom = false;
+
+		if(adjacentBlock instanceof ICagedLadderConnectable) {
+			ICagedLadderConnectable iclc = (ICagedLadderConnectable)adjacentBlock;
+			if(!( iclc.shouldConnectToSide(world, adjX, adjY, adjZ, side.getOpposite()) ))
+				return;
+			isThin = iclc.isThin(world, adjX, adjY, adjZ, side.getOpposite());
+			bottom = iclc.shouldHaveBottom(world, adjX, adjY, adjZ, side.getOpposite());
+		}
+		
 				
 		Tessellator tess = Tessellator.instance;
 		
@@ -224,7 +237,6 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 					P, 0, P, u1, V
 					);
 		
-		boolean bottom = iclc.shouldHaveBottom(world, adjX, adjY, adjZ, side.getOpposite());
 		
 		if(world.isSideSolid(x, y-1, z, ForgeDirection.UP, true))
 			bottom = false;
@@ -335,17 +347,23 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 			return false;
 		
 		Block tmp = w.getBlock(x+a.offsetX, y+a.offsetY, z+a.offsetZ);
+		boolean hasWallToConnect = false;
 		if(tmp instanceof ICagedLadderConnectable) {
-			boolean hasWallToConnect = ((ICagedLadderConnectable)tmp).doesSideHaveWall(w, x+a.offsetX, y+a.offsetY, z+a.offsetZ, b);
-			
-			if(!hasWallToConnect) {
-				tmp = w.getBlock(x+a.offsetX+b.offsetX, y+a.offsetY+b.offsetY, z+a.offsetZ+b.offsetZ);
-				if(tmp instanceof ICagedLadderConnectable) {
-					hasWallToConnect = ((ICagedLadderConnectable)tmp).doesSideHaveWall(w, x+a.offsetX+b.offsetX, y+a.offsetY+b.offsetY, z+a.offsetZ+b.offsetZ, a.getOpposite());
-				}
+			 hasWallToConnect = ((ICagedLadderConnectable)tmp).doesSideHaveWall(w, x+a.offsetX, y+a.offsetY, z+a.offsetZ, b);
+		}
+		
+		if(!hasWallToConnect) {
+			tmp = w.getBlock(x+a.offsetX+b.offsetX, y+a.offsetY+b.offsetY, z+a.offsetZ+b.offsetZ);
+
+			if(tmp instanceof ICagedLadderConnectable) {
+				 hasWallToConnect = (
+						  ((ICagedLadderConnectable)tmp).doesSideHaveWall(w, x+a.offsetX+b.offsetX, y+a.offsetY+b.offsetY, z+a.offsetZ+b.offsetZ, a.getOpposite()) &&
+						 !((ICagedLadderConnectable)tmp).doesSideHaveWall(w, x+a.offsetX+b.offsetX, y+a.offsetY+b.offsetY, z+a.offsetZ+b.offsetZ, b.getOpposite())
+						 );
 			}
-			if(!hasWallToConnect)
-				return false;
+		}
+		if(!hasWallToConnect) {
+			return false;
 		}
 		
 		return true;
