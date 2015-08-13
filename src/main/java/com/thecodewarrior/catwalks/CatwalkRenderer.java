@@ -51,61 +51,68 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
-			Block block, int modelId, RenderBlocks renderer) {
+			Block _block, int modelId, RenderBlocks renderer) {
 		
-		boolean lights = false;
-		boolean bottom = true;
-		if(block instanceof BlockCatwalk) {
-			lights = ( (BlockCatwalk)block).lights;
-			bottom = ( (BlockCatwalk)block).bottom;
-		}
 		
-//		renderer.renderFromInside = true;
-//		renderer.renderStandardBlock(block, x, y, z);
-//		RenderBlocks renderer = new RenderBlocks(world);
-//		renderer.setRenderFromInside(true);
-//		renderer.setRenderBounds(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+		int meta = world.getBlockMetadata(x, y, z);
+		BlockCatwalk block = (BlockCatwalk)_block;
+		boolean lights = block.lights;
+		boolean bottom = block.bottom;
 		renderer.overrideBlockBounds(0, 0, 0, 1, 1, 1);
+		
+		renderer.flipTexture = true;
 		renderer.renderFromInside = true;
 		renderer.renderStandardBlock(block, x, y, z);
+		
+		renderer.flipTexture = false;
 		renderer.renderFromInside = false;
 		renderer.renderStandardBlock(block, x, y, z);
+		
 		boolean force = false;
-		if(lights) {
-			BlockCatwalk b = ((BlockCatwalk) block);
-			
+		if(lights) {			
 			boolean oldAO = renderer.enableAO;
-			renderer.enableAO = false;
+			renderer.enableAO = false; // don't go re-calculating the light on me
 			
-			Tessellator.instance.setBrightness(15728880);
 			
+			/* 
+			 * MinecraftForge.net forums to the rescue!
+			 * "If you are curious about why I chose 15728880...
+			 * 
+			 * 15728880 = 15 << 20 | 15 << 4
+			 * The first 15 is lighting of environment, and the second 15 is lighting of itself.
+			 * So, I guess that 15728880 is potentially the brightest lighting in game..."
+			 */
+			Tessellator.instance.setBrightness(15728880); // GIMME BRIGHT!
+			
+			renderer.flipTexture = true;
 			renderer.renderFromInside = true;
 			
-			if( b.shouldSideBeRendered(world, x, y-1, z, 0) || force)
-				renderer.renderFaceYNeg(b, x, y, z, b.bottomLights);
-			if( b.shouldSideBeRendered(world, x, y, z-1, 2) || force)
-				renderer.renderFaceZNeg(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x, y, z+1, 3) || force)
-				renderer.renderFaceZPos(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x-1, y, z, 4) || force )
-				renderer.renderFaceXNeg(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x+1, y, z, 5) || force )
-				renderer.renderFaceXPos(b, x, y, z, b.sideLights);
+			if( block.shouldSideBeRendered(world, x, y-1, z, 0) || force)
+				renderer.renderFaceYNeg(block, x, y, z, block.getLightIcon(0, meta));
+			if( block.shouldSideBeRendered(world, x, y, z-1, 2) || force)
+				renderer.renderFaceZNeg(block, x, y, z, block.getLightIcon(2, meta));
+			if( block.shouldSideBeRendered(world, x, y, z+1, 3) || force)
+				renderer.renderFaceZPos(block, x, y, z, block.getLightIcon(3, meta));
+			if( block.shouldSideBeRendered(world, x-1, y, z, 4) || force )
+				renderer.renderFaceXNeg(block, x, y, z, block.getLightIcon(4, meta));
+			if( block.shouldSideBeRendered(world, x+1, y, z, 5) || force )
+				renderer.renderFaceXPos(block, x, y, z, block.getLightIcon(5, meta));
 			
+			renderer.flipTexture = false;
 			renderer.renderFromInside = false;
 			
-			if( b.shouldSideBeRendered(world, x, y-1, z, 0) || force)
-				renderer.renderFaceYNeg(b, x, y, z, b.bottomLights);
-			if( b.shouldSideBeRendered(world, x, y, z-1, 2) || force)
-				renderer.renderFaceZNeg(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x, y, z+1, 3) || force)
-				renderer.renderFaceZPos(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x-1, y, z, 4) || force )
-				renderer.renderFaceXNeg(b, x, y, z, b.sideLights);
-			if( b.shouldSideBeRendered(world, x+1, y, z, 5) || force )
-				renderer.renderFaceXPos(b, x, y, z, b.sideLights);
+			if( block.shouldSideBeRendered(world, x, y-1, z, 0) || force)
+				renderer.renderFaceYNeg(block, x, y, z, block.getLightIcon(0, meta));
+			if( block.shouldSideBeRendered(world, x, y, z-1, 2) || force)
+				renderer.renderFaceZNeg(block, x, y, z, block.getLightIcon(2, meta));
+			if( block.shouldSideBeRendered(world, x, y, z+1, 3) || force)
+				renderer.renderFaceZPos(block, x, y, z, block.getLightIcon(3, meta));
+			if( block.shouldSideBeRendered(world, x-1, y, z, 4) || force )
+				renderer.renderFaceXNeg(block, x, y, z, block.getLightIcon(4, meta));
+			if( block.shouldSideBeRendered(world, x+1, y, z, 5) || force )
+				renderer.renderFaceXPos(block, x, y, z, block.getLightIcon(5, meta));
 			
-			renderer.enableAO = oldAO;
+			renderer.enableAO = oldAO; // whatever you were doing before, continue.
 		}
 		renderer.unlockBlockBounds();
 		renderer.clearOverrideBlockTexture();

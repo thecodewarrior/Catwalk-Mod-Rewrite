@@ -25,7 +25,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.2";
+    public static final String MODVER = "0.1.3";
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
@@ -36,27 +36,29 @@ public class CatwalkMod
     public static Block catwalkUnlitBottom;
     public static Block catwalkLitNoBottom;
     public static Block catwalkUnlitNoBottom;
-        
-    public static Block ladderNorthLit;
-    public static Block ladderNorthUnlit;
-    public static Block ladderSouthLit;
-    public static Block ladderSouthUnlit;
-    public static Block ladderWestLit;
-    public static Block ladderWestUnlit;
-    public static Block ladderEastLit;
-    public static Block ladderEastUnlit;
     
-    public static Block ladderNorthLitNoBottom;
-    public static Block ladderNorthUnlitNoBottom;
-    public static Block ladderSouthLitNoBottom;
-    public static Block ladderSouthUnlitNoBottom;
-    public static Block ladderWestLitNoBottom;
-    public static Block ladderWestUnlitNoBottom;
-    public static Block ladderEastLitNoBottom;
-    public static Block ladderEastUnlitNoBottom;
+    public static Block defaultCatwalk;
+    /**
+     * Usage: <pre> catwalks.get(lights).get(isBottomOpen).get(tape); </pre>
+     */
+    public static Map<Boolean,         // lights
+    				  Map<Boolean,     // bottom
+    				      Map<Boolean, // tape
+    				          Block>>> catwalks;
+    
+    public static Block defaultLadder;
+    /**
+     * Usage: <pre> ladders.get(facing).get(lights).get(isBottomOpen).get(tape); </pre>
+     */
+    public static Map<ForgeDirection,      // facing
+    				  Map<Boolean,         // light
+    				      Map<Boolean,     // bottom
+    				          Map<Boolean, // tape
+    				          	  Block>>>> ladders;
     
     public static Item itemBlowtorch;
     public static Item itemRopeLight;
+    public static Item itemCautionTape;
     
     public static int speedEffectLevel = 2;
     public static AttributeModifier speedModifier;
@@ -69,6 +71,8 @@ public class CatwalkMod
     
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+    	boolean[] trueFalse = {true, false};
+    	
     	catwalkRenderType = RenderingRegistry.getNextAvailableRenderId();
     	ladderRenderType  = RenderingRegistry.getNextAvailableRenderId();
     	
@@ -83,58 +87,77 @@ public class CatwalkMod
     			0.20000000298023224D,
     			2);
     	speedModifier.setSaved(false);
+//    	
+//    	catwalkLitBottom     = new BlockCatwalk(true , true );
+//    	catwalkUnlitBottom   = new BlockCatwalk(false, true );
+//    	catwalkLitNoBottom   = new BlockCatwalk(true , false);
+//    	catwalkUnlitNoBottom = new BlockCatwalk(false, false);
     	
-    	catwalkLitBottom     = new BlockCatwalk(true , true );
-    	catwalkUnlitBottom   = new BlockCatwalk(false, true );
-    	catwalkLitNoBottom   = new BlockCatwalk(true , false);
-    	catwalkUnlitNoBottom = new BlockCatwalk(false, false);
+//    	GameRegistry.registerBlock(catwalkLitBottom,     "catwalk_lit_bottom"    );
+//    	GameRegistry.registerBlock(catwalkUnlitBottom,   "catwalk_unlit_bottom"  );
+//    	GameRegistry.registerBlock(catwalkLitNoBottom,   "catwalk_lit_nobottom"  );
+//    	GameRegistry.registerBlock(catwalkUnlitNoBottom, "catwalk_unlit_nobottom");
     	
-    	GameRegistry.registerBlock(catwalkLitBottom,     "catwalk_lit_bottom"    );
-    	GameRegistry.registerBlock(catwalkUnlitBottom,   "catwalk_unlit_bottom"  );
-    	GameRegistry.registerBlock(catwalkLitNoBottom,   "catwalk_lit_nobottom"  );
-    	GameRegistry.registerBlock(catwalkUnlitNoBottom, "catwalk_unlit_nobottom");
+    	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
+    	for(boolean lights : trueFalse) {
+    		Map<Boolean, Map<Boolean, Block>> lightMap = new HashMap<Boolean, Map<Boolean,Block>>();
+    		catwalks.put(lights, lightMap);
+    		for(boolean bottom : trueFalse) {
+    			Map<Boolean, Block> bottomMap = new HashMap<Boolean,Block>();
+        		lightMap.put(bottom, bottomMap);
+    			for(boolean tape : trueFalse) {
+    				BlockCatwalk b = new BlockCatwalk(lights, bottom, tape);
+    				bottomMap.put(tape, b);
+    				String id = "catwalk";
+    				id += lights ? "_lit" : "_unlit";
+    				if(!bottom) id += "_nobottom";
+    				if(tape) id += "_tape";
+    				GameRegistry.registerBlock(b, id);
+    			}
+    		}
+    	}
+    	defaultCatwalk = catwalks.get(false).get(false).get(false);
     	
-    	ladderNorthLit   = new BlockCagedLadder(ForgeDirection.NORTH, true,  false);
-    	ladderNorthUnlit = new BlockCagedLadder(ForgeDirection.NORTH, false, false);
-    	ladderSouthLit   = new BlockCagedLadder(ForgeDirection.SOUTH, true,  false);
-    	ladderSouthUnlit = new BlockCagedLadder(ForgeDirection.SOUTH, false, false);
-    	ladderWestLit    = new BlockCagedLadder(ForgeDirection.WEST,  true,  false);
-    	ladderWestUnlit  = new BlockCagedLadder(ForgeDirection.WEST,  false, false);
-    	ladderEastLit    = new BlockCagedLadder(ForgeDirection.EAST,  true,  false);
-    	ladderEastUnlit  = new BlockCagedLadder(ForgeDirection.EAST,  false, false);
+    	ForgeDirection[] directions = {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST};
+    	ladders = new HashMap<ForgeDirection, Map<Boolean,Map<Boolean,Map<Boolean,Block>>>>();
+    	for (ForgeDirection dir : directions) {
+			Map<Boolean, Map<Boolean, Map<Boolean, Block>>> dirMap = new HashMap<Boolean, Map<Boolean,Map<Boolean,Block>>>();
+			ladders.put(dir, dirMap);
+			
+			for (boolean lights : trueFalse) {
+				Map<Boolean, Map<Boolean, Block>> lightMap = new HashMap<Boolean, Map<Boolean,Block>>();
+				dirMap.put(lights, lightMap);
+				
+				for (boolean bottomOpen : trueFalse) {
+					Map<Boolean, Block> bottomMap = new HashMap<Boolean, Block>();
+					lightMap.put(bottomOpen, bottomMap);
+					
+					for (boolean tape : trueFalse) {
+						BlockCagedLadder b = new BlockCagedLadder(dir, lights, bottomOpen, tape);
+						bottomMap.put(tape, b);
+						String id = "cagedLadder";
+						if(dir == ForgeDirection.NORTH) id += "_north";
+						if(dir == ForgeDirection.SOUTH) id += "_south";
+						if(dir == ForgeDirection.WEST)  id += "_west";
+						if(dir == ForgeDirection.EAST)  id += "_east";
+						if(lights) id += "_lit"; else id += "_unlit";
+						if(bottomOpen) id += "_nobottom";
+						if(tape) id += "_tape";
+//						System.out.println("Registered block: " + id);
+				    	GameRegistry.registerBlock(b, id);
+					}
+				}
+			}
+		}
+    	defaultLadder = ladders.get(ForgeDirection.NORTH).get(false).get(false).get(false);
     	
-    	GameRegistry.registerBlock(ladderNorthLit,   "cagedLadder_north_lit"  );
-    	GameRegistry.registerBlock(ladderNorthUnlit, "cagedLadder_north_unlit");
-    	GameRegistry.registerBlock(ladderSouthLit,   "cagedLadder_south_lit"  );
-    	GameRegistry.registerBlock(ladderSouthUnlit, "cagedLadder_south_unlit");
-    	GameRegistry.registerBlock(ladderWestLit,    "cagedLadder_west_lit"   );
-    	GameRegistry.registerBlock(ladderWestUnlit,  "cagedLadder_west_unlit" );
-    	GameRegistry.registerBlock(ladderEastLit,    "cagedLadder_east_lit"   );
-    	GameRegistry.registerBlock(ladderEastUnlit,  "cagedLadder_east_unlit" );
+    	itemBlowtorch   = new ItemBlowtorch();
+    	itemRopeLight   = new ItemRopeLight();
+    	itemCautionTape = new ItemCautionTape();
     	
-    	ladderNorthLitNoBottom   = new BlockCagedLadder(ForgeDirection.NORTH, true,  true);
-    	ladderNorthUnlitNoBottom = new BlockCagedLadder(ForgeDirection.NORTH, false, true);
-    	ladderSouthLitNoBottom   = new BlockCagedLadder(ForgeDirection.SOUTH, true,  true);
-    	ladderSouthUnlitNoBottom = new BlockCagedLadder(ForgeDirection.SOUTH, false, true);
-    	ladderWestLitNoBottom    = new BlockCagedLadder(ForgeDirection.WEST,  true,  true);
-    	ladderWestUnlitNoBottom  = new BlockCagedLadder(ForgeDirection.WEST,  false, true);
-    	ladderEastLitNoBottom    = new BlockCagedLadder(ForgeDirection.EAST,  true,  true);
-    	ladderEastUnlitNoBottom  = new BlockCagedLadder(ForgeDirection.EAST,  false, true);
-    	
-    	GameRegistry.registerBlock(ladderNorthLitNoBottom,   "cagedLadder_north_lit_nobottom"  );
-    	GameRegistry.registerBlock(ladderNorthUnlitNoBottom, "cagedLadder_north_unlit_nobottom");
-    	GameRegistry.registerBlock(ladderSouthLitNoBottom,   "cagedLadder_south_lit_nobottom"  );
-    	GameRegistry.registerBlock(ladderSouthUnlitNoBottom, "cagedLadder_south_unlit_nobottom");
-    	GameRegistry.registerBlock(ladderWestLitNoBottom,    "cagedLadder_west_lit_nobottom"   );
-    	GameRegistry.registerBlock(ladderWestUnlitNoBottom,  "cagedLadder_west_unlit_nobottom" );
-    	GameRegistry.registerBlock(ladderEastLitNoBottom,    "cagedLadder_east_lit_nobottom"   );
-    	GameRegistry.registerBlock(ladderEastUnlitNoBottom,  "cagedLadder_east_unlit_nobottom" );
-    	
-    	itemBlowtorch = new ItemBlowtorch();
-    	itemRopeLight = new ItemRopeLight();
-    	
-    	GameRegistry.registerItem(itemBlowtorch, "blowtorch");
-    	GameRegistry.registerItem(itemRopeLight, "ropeLight");
+    	GameRegistry.registerItem(itemBlowtorch,   "blowtorch"  );
+    	GameRegistry.registerItem(itemRopeLight,   "ropeLight"  );
+    	GameRegistry.registerItem(itemCautionTape, "cautionTape");
 //    	GameRegistry.registerBlock(cagedLadderLit, 	 "cagedladder_lit"  );
 //    	GameRegistry.registerBlock(cagedLadderUnlit, "cagedladder_unlit");
     	proxy.init();

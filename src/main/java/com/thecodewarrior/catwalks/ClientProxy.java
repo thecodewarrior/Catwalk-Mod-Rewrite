@@ -14,7 +14,8 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 
 public class ClientProxy extends CommonProxy {
-    
+    	public boolean isBottomOpen = false;
+	
     public ISimpleBlockRenderingHandler catwalkRenderer;
     
     public ISimpleBlockRenderingHandler ladderRenderer;
@@ -27,6 +28,8 @@ public class ClientProxy extends CommonProxy {
     
     @Override
     public void initClient() {
+    	
+    	isClient = true;
     	
     	catwalkRenderer = new CatwalkRenderer();
     	RenderingRegistry.registerBlockHandler(CatwalkMod.catwalkRenderType, catwalkRenderer);
@@ -52,6 +55,7 @@ public class ClientProxy extends CommonProxy {
     	headers.add("m/s:");
     	headers.add("m/t max:");
     	headers.add("m/s max:");
+//    	headers.add("isBottomOpen:");
     	//headers.add("saturation:");
     	//headers.add("food:");
     }
@@ -93,6 +97,8 @@ public class ClientProxy extends CommonProxy {
     		
     		data.add(String.format("%2." + precision + "f", maxSpeed    ));
     		data.add(String.format("%2." + precision + "f", maxSpeed*20 ));
+    		
+//    		data.add(isBottomOpen ? "________" : "********");
     		
     		//FoodStats fs = p.getFoodStats();
     		//data.add(String.format("%2.5f", fs.getSaturationLevel()));

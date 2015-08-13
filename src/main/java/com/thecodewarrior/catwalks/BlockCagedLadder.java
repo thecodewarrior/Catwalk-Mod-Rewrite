@@ -1,26 +1,22 @@
 package com.thecodewarrior.catwalks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
-import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
-import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
-import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
-import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
-import com.thecodewarrior.codechicken.lib.vec.Vector3;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.IconFlipped;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
@@ -34,7 +30,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.common.util.ForgeDirection;
 import buildcraft.api.tools.IToolWrench;
+
+import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
+import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
+import com.thecodewarrior.codechicken.lib.vec.Vector3;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -45,25 +50,62 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	public ForgeDirection direction;
 	public boolean lights;
 	public boolean isBottomOpen;
+	public boolean tape;
 	
-	public IIcon bottom;
-	public IIcon bottom_with_lights;
-	public IIcon bottom_lights;
+	public Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
-	public IIcon ladder;
-	public IIcon ladder_with_lights;
-	public IIcon ladder_lights;
-	
-	public IIcon front;
-	public IIcon front_with_lights;
-	public IIcon front_lights;
-	
-	public IIcon side;
-	public IIcon side_with_lights;
-	public IIcon side_lights;
+	public enum TextureSide {
+		LADDER("ladder"),
+		SIDE("side"),
+		FRONT("front"),
+		BOTTOM("bottom");
+		
+		public String filename;
+		private TextureSide(String filename) {
+			this.filename = filename;
+		}
+		
+		public static TextureSide fromRS(RelativeSide side) {
+			switch(side) {
+			case FRONT:
+				return FRONT;
+			case LEFT:
+			case RIGHT:
+				return SIDE;
+			case LADDER:
+				return LADDER;
+			case BOTTOM:
+				return BOTTOM;
+			default:
+				return BOTTOM;
+			}
+		}
+		
+	}
+	public enum TextureType {
+		LIGHTS("plain/lights"),
+		T_LIGHTS("tape/lights"),
+		W_LIGHTS("plain/w_lights"),
+		WO_LIGHTS("plain/no_lights"),
+		T_W_LIGHTS("tape/w_lights"),
+		T_WO_LIGHTS("tape/no_lights");
+		
+		public String filename;
+		private TextureType(String filename) {
+			this.filename = filename;
+		}
+		public static TextureType fromLightsAndTape(boolean lights, boolean tape) {
+			if(!lights && !tape) return WO_LIGHTS;
+			if( lights && !tape) return W_LIGHTS;
+			if(!lights &&  tape) return T_WO_LIGHTS;
+			if( lights &&  tape) return T_W_LIGHTS;
+
+			return WO_LIGHTS;
+		}
+	}
 	
 	public IIcon landing;
-	public IIcon landing_side;
+	public IIcon landing_tape;
 	
 	public IIcon transparent;
 	
@@ -72,7 +114,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	
 	// meta: bottom, front, left, right
 	
-	public BlockCagedLadder(ForgeDirection direction, boolean lights, boolean bottom) {
+	public BlockCagedLadder(ForgeDirection direction, boolean lights, boolean bottom, boolean tape) {
 		super(Material.iron);
 		setHardness(1.0F);
 		setStepSound(Block.soundTypeMetal);
@@ -87,6 +129,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		this.lights = lights;
 		this.direction = direction;
 		this.isBottomOpen = bottom;
+		this.tape = tape;
 		initHitBoxes();
 	}
 	
@@ -108,8 +151,8 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
     	case 3:
     		d = ForgeDirection.WEST;  break;
     	}
+    	updateIdData(w, x, y, z, d, lights, isBottomOpen, tape);
 		updateNeighborSides(w,x,y,z,true);
-    	updateIdData(w, x, y, z, d, lights, isBottomOpen);
 	}
 
 	public void onBlockDestroyedByPlayer(World w, int x, int y, int z, int meta) {
@@ -130,10 +173,11 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	}
 	
 	public void updateBottom(World world, int x, int y, int z) {
+		ForgeDirection direction = ((BlockCagedLadder)world.getBlock(x,y,z)).direction;
 		if(world.getBlock(x, y-1, z) instanceof BlockCagedLadder) {
-			updateOpenData(world, x, y, z, RelativeSide.BOTTOM, true);
+			updateIdData(world, x, y, z, direction, lights, true, tape);
 		} else {
-			updateOpenData(world, x, y, z, RelativeSide.BOTTOM, false);
+			updateIdData(world, x, y, z, direction, lights, false, tape);
 		}
 	}
 
@@ -191,21 +235,46 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		ItemStack handStack = player.getCurrentEquippedItem();
 		if(handStack != null && handStack.getItem() instanceof IToolWrench) {
 			if(player.isSneaking()) {
-				if(this.lights) {
-					if(!world.isRemote) {
-						world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
-						updateIdData(world, x, y, z, direction, false, isBottomOpen);
-					}
-				}
+				
 			} else {
-				updateOpenData(world, x, y, z, side, !isOpen(side, world.getBlockMetadata(x, y, z)));
+//				if(side == RelativeSide.BOTTOM) {
+//					updateIdData(world, x, y, z, direction, lights, !isBottomOpen, tape);
+//				} else {
+					updateOpenData(world, x, y, z, side, !isOpen(side, world.getBlockMetadata(x, y, z)));
+//				}
 			}
 		}
 		
-		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof ItemRopeLight && this.lights == false) {
-			updateIdData(world, x, y, z, direction, true, isBottomOpen);
-			if(!player.capabilities.isCreativeMode)
+		if(player.getCurrentEquippedItem() != null) {
+			Item item = player.getCurrentEquippedItem().getItem();
+			boolean use = false;
+			
+			if(item instanceof ItemRopeLight && this.lights == false) {
+				updateIdData(world, x, y, z, direction, true, isBottomOpen, tape);
+				use = true;
+			}
+			
+			if(item instanceof ItemCautionTape && this.tape == false) {
+				updateIdData(world, x, y, z, direction, lights, isBottomOpen, true);
+				use = true;
+			}
+			
+			if(use && !player.capabilities.isCreativeMode)
 				player.getCurrentEquippedItem().stackSize--;
+		}
+		
+		if(player.getCurrentEquippedItem() == null && player.isSneaking()) {
+			if(this.lights) {
+				if(!world.isRemote) {
+					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+					updateIdData(world, x, y, z, direction, false, isBottomOpen, tape);
+				}
+			} else if(this.tape) {
+				if(!world.isRemote) {
+					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+					updateIdData(world, x, y, z, direction, lights, isBottomOpen, false);
+				}
+			}
 		}
 		
 		return false;
@@ -395,73 +464,56 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	public void registerBlockIcons(IIconRegister reg) {
 	    transparent   		= reg.registerIcon("catwalks:transparent");
 	    
-	    bottom 				= reg.registerIcon("catwalks:ladder/bottom");
-	    bottom_with_lights	= reg.registerIcon("catwalks:ladder/bottom_with_lights");
-	    bottom_lights		= reg.registerIcon("catwalks:ladder/bottom_lights");
+	    textures = new HashMap<BlockCagedLadder.TextureSide, Map<TextureType,IIcon>>();
+	    for (TextureSide side : TextureSide.values()) {
+	    	Map<TextureType, IIcon> sideMap = new HashMap<BlockCagedLadder.TextureType, IIcon>();
+	    	textures.put(side, sideMap);
+	    	for (TextureType type : TextureType.values()) {
+				IIcon icon = reg.registerIcon("catwalks:ladder/" + side.filename + "/" + type.filename);
+				
+				sideMap.put(type, icon);
+			}
+		}
 	    
-	    ladder 				= reg.registerIcon("catwalks:ladder/ladder");
-		ladder_with_lights 	= reg.registerIcon("catwalks:ladder/ladder_with_lights");
-		ladder_lights 		= reg.registerIcon("catwalks:ladder/ladder_lights");
-		
-		front 				= reg.registerIcon("catwalks:ladder/front");
-		front_with_lights 	= reg.registerIcon("catwalks:ladder/front_with_lights");
-		front_lights 		= reg.registerIcon("catwalks:ladder/front_lights");
-		
-		side 				= reg.registerIcon("catwalks:ladder/side");
-		side_with_lights 	= reg.registerIcon("catwalks:ladder/side_with_lights");
-		side_lights 		= reg.registerIcon("catwalks:ladder/side_lights");
-		
-		landing 			= reg.registerIcon("catwalks:ladder/landing");
-		landing_side		= reg.registerIcon("catwalks:ladder/landing_side");
+		landing 	 = reg.registerIcon("catwalks:ladder/landing");
+		landing_tape = reg.registerIcon("catwalks:ladder/landing_tape");
 	}
 	
 	@Override
 	public IIcon getIcon(int _side, int meta) {
-		RelativeSide dir = RelativeSide.FDtoRS( ForgeDirection.getOrientation(_side), direction );
+		ForgeDirection side = ForgeDirection.getOrientation(_side);
+		RelativeSide dir = RelativeSide.FDtoRS( side, direction );
 		
-		switch(dir) {
-		case LADDER:
-			if(lights)
-				return ladder_with_lights;
-			else
-				return ladder;
-		case FRONT:
-			if(lights)
-				return front_with_lights;
-			else
-				return front;
-		case LEFT:
-		case RIGHT:
-			if(lights)
-				return side_with_lights;
-			else
-				return side;
-		case BOTTOM:
-			if(lights)
-				return bottom_with_lights;
-			else
-				return bottom;
+		if(dir == RelativeSide.TOP) {
+		    return transparent;
 		}
 		
-	    return transparent;
+		TextureSide tSide = TextureSide.fromRS(dir);
+		TextureType type = TextureType.fromLightsAndTape(lights, tape);
+		
+		IIcon ic = textures.get(tSide).get(type);
+		if(dir == RelativeSide.RIGHT) {
+			return new IconFlipped(ic, true, false);
+		}
+
+		return ic;
 	}
 	
 	public IIcon getLightIcon(int _side, int meta) {
 		RelativeSide dir = RelativeSide.FDtoRS( ForgeDirection.getOrientation(_side) , direction);
 		
-		switch(dir) {
-		case LADDER:
-			return ladder_lights;
-		case FRONT:
-			return front_lights;
-		case LEFT:
-		case RIGHT:
-			return side_lights;
-		case BOTTOM:
-			return bottom_lights;
+		if(dir == RelativeSide.TOP) {
+		    return transparent;
 		}
 		
-	    return transparent;
+		TextureSide tSide = TextureSide.fromRS(dir);
+		
+		IIcon ic = textures.get(tSide).get(tape ? TextureType.T_LIGHTS : TextureType.LIGHTS);
+		if(dir == RelativeSide.RIGHT) {
+			return new IconFlipped(ic, true, false);
+		}
+
+		return ic;
 	}
 
 	@Override
@@ -474,10 +526,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	{
 		
 		ForgeDirection dir = ForgeDirection.getOrientation(_side);
-		if(dir == ForgeDirection.UP) {
-			return true;
-		}
-		
 		if(dir == ForgeDirection.DOWN) {
 			if(w.isSideSolid(x, y, z, ForgeDirection.DOWN, false))
 				return false;
@@ -503,7 +551,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	
 		float px = 1/16F;
 		
-		float out = px;///2;
+		float out = px;
 		float in = out+px;
     	
 		int meta = world.getBlockMetadata(x, y, z);
@@ -547,6 +595,37 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	}
 	
 	//==============================================================================
+	// Drop methods
+	//==============================================================================
+	
+	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune)
+	{
+	    ArrayList<ItemStack> ret = new ArrayList<ItemStack>();
+	
+	    ret.add(new ItemStack(
+	    		Item.getItemFromBlock(CatwalkMod.defaultLadder),
+	    		1));
+	    if(this.lights) {
+	    	ret.add(new ItemStack(
+	    			CatwalkMod.itemRopeLight,
+	    			1
+	    		));
+	    }
+	    if(this.tape) {
+	    	ret.add(new ItemStack(
+	    			CatwalkMod.itemCautionTape,
+	    			1
+	    		));
+	    }
+	    return ret;
+	}
+
+	public boolean canHarvestBlock(EntityPlayer player, int meta)
+    {
+        return true;
+    }
+	
+	//==============================================================================
 	// Data manipulation methods
 	//==============================================================================
 	
@@ -586,8 +665,8 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		int meta = world.getBlockMetadata(x, y, z);
 		switch(side) {
 		case BOTTOM:
-			updateIdData(world, x, y, z, direction, lights, value);
-			break;
+			updateIdData(world, x, y, z, direction, lights, value, tape);
+			return;
 		case LADDER:
 			meta = setBit(meta, 3, value);
 			break;
@@ -604,62 +683,22 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		world.setBlock(x, y, z, this, meta, 3);
 	}
 
-	public void updateIdData(World world, int x, int y, int z, ForgeDirection facing, boolean lights, boolean bottom) {
+
+	public void updateIdData(World world, int x, int y, int z, ForgeDirection facing, boolean lights, boolean bottom, boolean tape) {
 		int meta = world.getBlockMetadata(x,y,z);
-		Block b = this;
-		switch(facing) {
-		case NORTH:
-			if(lights)
-				if(bottom)
-					b = CatwalkMod.ladderNorthLit;
-				else
-					b = CatwalkMod.ladderNorthLitNoBottom;
-			else
-				if(bottom)
-					b = CatwalkMod.ladderNorthUnlit;
-				else
-					b = CatwalkMod.ladderNorthUnlitNoBottom;
-			break;
-		case SOUTH:
-			if(lights)
-				if(bottom)
-					b = CatwalkMod.ladderSouthLit;
-				else
-					b = CatwalkMod.ladderSouthLitNoBottom;
-			else
-				if(bottom)
-					b = CatwalkMod.ladderSouthUnlit;
-				else
-					b = CatwalkMod.ladderSouthUnlitNoBottom;
-			break;
-		case EAST:
-			if(lights)
-				if(bottom)
-					b = CatwalkMod.ladderEastLit;
-				else
-					b = CatwalkMod.ladderEastLitNoBottom;
-			else
-				if(bottom)
-					b = CatwalkMod.ladderEastUnlit;
-				else
-					b = CatwalkMod.ladderEastUnlitNoBottom;
-			break;
-		case WEST:
-			if(lights)
-				if(bottom)
-					b = CatwalkMod.ladderWestLit;
-				else
-					b = CatwalkMod.ladderWestLitNoBottom;
-			else
-				if(bottom)
-					b = CatwalkMod.ladderWestUnlit;
-				else
-					b = CatwalkMod.ladderWestUnlitNoBottom;
-			break;
-		default:
+//		BlockCagedLadder b = this;
+		if(facing == ForgeDirection.UP || facing == ForgeDirection.DOWN || facing == ForgeDirection.UNKNOWN) {
+			facing = ForgeDirection.NORTH;
 		}
+//		if(facing != ForgeDirection.UP && facing != ForgeDirection.DOWN) {
+//			Map<ForgeDirection, Map<Boolean, Map<Boolean, Map<Boolean, Block>>>> map = CatwalkMod.ladders;
+//			b = (BlockCagedLadder)map.get(facing).get(lights).get(bottom).get(tape);
+//		}
 		
-		world.setBlock(x, y, z, b, meta, 3);
+		world.setBlock(x, y, z, CatwalkMod.ladders.get(facing).get(lights).get(bottom).get(tape), world.getBlockMetadata(x, y, z), 3);
+
+//		world.setBlock(x, y, z, b, meta, 3);
+		
 	}
 	
 	//==============================================================================

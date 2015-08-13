@@ -29,6 +29,8 @@ import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 
 public class CommonProxy {
 
+	public boolean isClient = false;
+	
 	public LinkedList<WeakReference<EntityLivingBase>> entities = new LinkedList<WeakReference<EntityLivingBase>>();
 
 	public int lastOp = -1;
@@ -72,66 +74,44 @@ public class CommonProxy {
 		}
 		return catwalkEP;
 	}
-
-	public void speedupPlayer(World world, Entity entity, double multiplier) {
-		if(true) return;
-		if(!( entity instanceof EntityLivingBase ))
-    		return;
-    	EntityLivingBase e = (EntityLivingBase) entity;
-		CatwalkEntityProperties catwalkEP = getOrCreateEP(e); // (CatwalkEntityProperties)e.getExtendedProperties("catwalkmod.catwalkdata");
-		
-//		if(catwalkEP == null) {
-//			catwalkEP = new CatwalkEntityProperties();
-//			entity.registerExtendedProperties("catwalkmod.catwalkdata", catwalkEP);
-//		}
-		
-		catwalkEP.multiplier = multiplier;
-		if(!catwalkEP.isInList) {
-	        entities.add(new WeakReference<EntityLivingBase>(e));
-	        
-			catwalkEP.isInList = true;
-		}
-		IAttributeInstance attrInstance = e.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-		attrInstance.removeModifier(CatwalkMod.speedModifier);
-		attrInstance.applyModifier(
-        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
-        				catwalkEP.multiplier, 2));
-		catwalkEP.timeout = 15;
-	}
 	
 	@SubscribeEvent
 	public void onLivingUpdate(LivingUpdateEvent event) {
-		BlockCoord coord = getLadderCoord(event.entityLiving);
-		CatwalkEntityProperties catwalkEP = getOrCreateEP(event.entity);
+		// copying minecraft's ladder code, just with customizable velocity
 		
-		if(coord.y >= 0) {
-			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z);
+		
+		BlockCoord coord = getLadderCoord(event.entityLiving); // find any caged ladders
+		
+		CatwalkEntityProperties catwalkEP = getOrCreateEP(event.entity); // get entity properties object "for future uses"
+		if(coord.y >= 0) { // if the block was found (y=-1 if not found)
+
+			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z); // get the custom ladder block
 			ICustomLadderVelocity icl = (ICustomLadderVelocity)b;
 			EntityLivingBase e = event.entityLiving;
 			
-			if(e.isCollidedHorizontally) {
-				e.motionY = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
-				catwalkEP.highSpeedLadder = true;
+			if(e.isCollidedHorizontally) { // entity is smashed up against something
+				e.motionY = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // set the entity's upward velocity to the custom value
+				catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 whatevers when they stop
 			} else {
-				e.fallDistance = 0.0F;
+				e.fallDistance = 0.0F; // reset fall distance to prevent fall damage
 				
-				double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
+				double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // get custom fall velocity
 				
-                if (e.motionY < -downSpeed)
+                if (e.motionY < -downSpeed) // if the entity is falling faster than custom fall velocity
                 {
-                    e.motionY = -downSpeed;
+                    e.motionY = -downSpeed; // set entity's velocity to the custom fall velocity
                 }
 
                 boolean shouldStopOnLadder = e.isSneaking() && e instanceof EntityPlayer;
 
-                if (shouldStopOnLadder && e.motionY < 0.0D) {
-                    e.motionY = 0.0D;
+                if (shouldStopOnLadder && e.motionY < 0.0D) { // should stop and entity is moving down
+                    e.motionY = 0.0D; // don't you DARE move down
                 }
 			}
 		}
 		
 		if(catwalkEP.highSpeedLadder && !event.entityLiving.isCollidedHorizontally) {
-			event.entity.motionY = 0.2D;
+			event.entity.motionY = 0.2D; // slow down entity once they stop climbing to prevent them flying upwards
 			catwalkEP.highSpeedLadder = false;
 		}
 	}
@@ -150,6 +130,12 @@ public class CommonProxy {
 		});
 	}
 	
+	/**
+	 * Shamelessly stolen from {net.minecraftforge.common.ForgeHooks.isLivingOnLadder}
+	 * @param entity
+	 * @param mat
+	 * @return
+	 */
 	public BlockCoord findCollidingBlock(EntityLivingBase entity, Matcher<BlockCoord> mat) {
 		World world = entity.worldObj;
         Block block;
@@ -181,11 +167,13 @@ public class CommonProxy {
 
 	@SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
-    	performModification();
+    	performModification(); // for quickly running code in a dev environment
 		
-    	if( event.phase == Phase.END) { 
+    	if( event.phase == Phase.END) {
     		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
-    		for (final EntityPlayerMP player : players) {
+    		
+    		for (final EntityPlayerMP player : players) { // for each player
+    			// find any catwalks
 				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord>() {
 					@Override
 					public boolean match(BlockCoord bc) { 
@@ -200,58 +188,23 @@ public class CommonProxy {
 				IAttributeInstance attrInstance = player.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
 				AttributeModifier m = attrInstance.getModifier(CatwalkMod.speedModifier.getID());
 				
-				if(coord.y == -1) {
-					if(m != null) {
-						attrInstance.removeModifier(CatwalkMod.speedModifier);
+				if(coord.y == -1) { // if no catwalks found
+					if(m != null) { // and speed modifier is still applied
+						attrInstance.removeModifier(CatwalkMod.speedModifier); // remove it
 					}
 					continue;
 				}
 				
-				double multiplier = 0.2D;
+				double multiplier = 0.2D; // roughly the same as a Swiftness I potion
 				
-				if(m == null || m.getAmount() != multiplier ) {
-					attrInstance.removeModifier(CatwalkMod.speedModifier);
+				if(m == null || m.getAmount() != multiplier ) { // if modifier isn't applied or the amount has changed
+					attrInstance.removeModifier(CatwalkMod.speedModifier); // remove the modifier
 					attrInstance.applyModifier(
 			        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
-			        				multiplier, 2));
+			        				multiplier, 2)); // re-apply it
 				}
-						
-						
-				
-			}
+			} // end for
     		
     	}
-    	
-    	if(true) return;
-    	
-//		if( event.phase == Phase.END) {
-//    		Iterator<WeakReference<EntityLivingBase>> iter = entities.iterator();
-//        	while(iter.hasNext()) {
-//        		WeakReference<EntityLivingBase> e = iter.next();
-//        		if(e.get() == null) {
-//        			iter.remove();
-//        			continue;
-//        		}
-//        		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)e.get().getExtendedProperties("catwalkmod.catwalkdata");
-//        		catwalkEP.timeout--;
-//        		
-//        		if(catwalkEP.timeout < 0) {
-//        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-//            		attrInstance.removeModifier(CatwalkMod.speedModifier);
-//        			if(e.get() instanceof EntityPlayer)
-//        				System.out.println(String.format("Removing player %s from list", ((EntityPlayer) e.get()).getDisplayName()));
-//            		catwalkEP.isInList = false;
-//        			iter.remove();
-//        			continue;
-//        		}
-//        		/* if(catwalkEP.refreshTimeout) {
-//        			IAttributeInstance attrInstance = e.get().getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-//            		attrInstance.removeModifier(CatwalkMod.speedModifier);
-//        			attrInstance.applyModifier(
-//        	        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
-//        	        				catwalkEP.multiplier, CatwalkMod.speedModifier.getOperation()));
-//        		} */
-//			}
-//    	}
 	}
 }

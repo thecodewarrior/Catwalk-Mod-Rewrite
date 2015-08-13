@@ -2,10 +2,15 @@ package com.thecodewarrior.catwalks;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.thecodewarrior.catwalks.BlockCagedLadder.RelativeSide;
+import com.thecodewarrior.catwalks.BlockCagedLadder.TextureSide;
+import com.thecodewarrior.catwalks.BlockCagedLadder.TextureType;
 import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
 import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
@@ -15,6 +20,7 @@ import com.thecodewarrior.codechicken.lib.vec.Vector3;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.IconFlipped;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -38,38 +44,89 @@ import net.minecraftforge.event.ForgeEventFactory;
 import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	public boolean lights;
 	public boolean bottom;
+	public boolean tape;
 	
 	private RayTracer rayTracer = new RayTracer();
 	
 	
 	public IIcon transparent;
 
-	public IIcon sideTexture;
-	public IIcon bottomTexture;
-	
-	public IIcon bottomTextureWithLights;
-	public IIcon sideTextureWithLights;
-	
-	public IIcon bottomLights;
-	public IIcon sideLights;
+//	public IIcon sideTexture;
+//	public IIcon bottomTexture;
+//	
+//	public IIcon bottomTextureWithLights;
+//	public IIcon sideTextureWithLights;
+//	
+//	public IIcon bottomLights;
+//	public IIcon sideLights;
 		
-	public BlockCatwalk(boolean lights, boolean bottom) {
+public Map<TextureSide, Map<TextureType, IIcon>> textures;
+	
+	public enum TextureSide {
+		BOTTOM("bottom"),
+		SIDE("side");
+		
+		public String filename;
+		private TextureSide(String filename) {
+			this.filename = filename;
+		}
+		
+		public static TextureSide fromFD(ForgeDirection side) {
+			switch(side) {
+			case DOWN:
+				return BOTTOM;
+			case NORTH:
+			case SOUTH:
+			case EAST:
+			case WEST:
+				return SIDE;
+			default:
+				return BOTTOM;
+			}
+		}
+		
+	}
+	public enum TextureType {
+		LIGHTS("plain/lights"),
+		T_LIGHTS("tape/lights"),
+		
+		W_LIGHTS("plain/w_lights"),
+		WO_LIGHTS("plain/no_lights"),
+		
+		T_W_LIGHTS("tape/w_lights"),
+		T_WO_LIGHTS("tape/no_lights");
+		
+		public String filename;
+		private TextureType(String filename) {
+			this.filename = filename;
+		}
+		public static TextureType fromLightsAndTape(boolean lights, boolean tape) {
+			if(!lights && !tape) return WO_LIGHTS;
+			if( lights && !tape) return W_LIGHTS;
+			if(!lights &&  tape) return T_WO_LIGHTS;
+			if( lights &&  tape) return T_W_LIGHTS;
+
+			return WO_LIGHTS;
+		}
+	}
+	
+	public BlockCatwalk(boolean lights, boolean bottom, boolean tape) {
 		super(Material.iron);
 		setHardness(1.0F);
 		setStepSound(Block.soundTypeMetal);
 		setBlockName("catwalk");
-		if(!lights && !bottom)
+		if(!lights && !bottom && !tape)
 			setCreativeTab(CreativeTabs.tabTransport);
-//		setHarvestLevel("wrench", 0);
-//		setHarvestLevel("pickaxe", 0);
 		this.lights = lights;
 		this.bottom = bottom;
+		this.tape   = tape;
 	}
 	
 	//==============================================================================
@@ -125,27 +182,42 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 		}
 		
 		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench) {
-			if(player.isSneaking()) {
-				if(this.lights) {
-					if(!world.isRemote) {
-						world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
-						updateData(world, x, y, z, ForgeDirection.UP, false, false);
-					}
-				}
-			} else {
-				if(side != ForgeDirection.UP) {
-					updateData(world,x,y,z, side, !getOpenState(world,x,y,z, side), this.lights);
-				}
+			if(side != ForgeDirection.UP) {
+				updateData(world,x,y,z, side, !getOpenState(world,x,y,z, side), this.lights, this.tape);
 			}
 		}
 		
-		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof ItemRopeLight && this.lights == false) {
-			updateData(world, x, y, z, ForgeDirection.UP, false, true);
-			if(!player.capabilities.isCreativeMode)
+		if(player.getCurrentEquippedItem() != null) {
+			Item item = player.getCurrentEquippedItem().getItem();
+			boolean use = false;
+			
+			if(item instanceof ItemRopeLight && this.lights == false) {
+				updateData(world, x, y, z, ForgeDirection.UP, false, true, this.tape);
+				use = true;
+			}
+			
+			if(item instanceof ItemCautionTape && this.tape == false) {
+				updateData(world, x, y, z, ForgeDirection.UP, false, this.lights, true);
+				use = true;
+			}
+			
+			if(use && !player.capabilities.isCreativeMode)
 				player.getCurrentEquippedItem().stackSize--;
 		}
-//		
-//		if()
+		
+		if(player.getCurrentEquippedItem() == null && player.isSneaking()) {
+			if(this.lights) {
+				if(!world.isRemote) {
+					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+					updateData(world, x, y, z, ForgeDirection.UP, false, false, this.tape);
+				}
+			} else if(this.tape) {
+				if(!world.isRemote) {
+					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+					updateData(world, x, y, z, ForgeDirection.UP, false, this.lights, false);
+				}
+			}
+		}
 		
 		return false;
 	}
@@ -261,25 +333,10 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     //==============================================================================
 	// Collision methods
 	//==============================================================================
-		
-	@Override
-	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity) {
-		if (FMLCommonHandler.instance().getEffectiveSide() != Side.CLIENT)
-			return;
-		double mul = 1.315;
-		if(entity instanceof EntityPlayer && ( (EntityPlayer)entity).isSneaking() ) {
-			mul = 2.860578;
-		}
-		CatwalkMod.proxy.speedupPlayer(world, entity, mul);
-	}
 
 	public boolean shouldHaveBox(World world, int x, int y, int z, ForgeDirection side) {
 		return  !(world.getBlock(x+side.offsetX, y+side.offsetY, z+side.offsetZ) instanceof BlockCatwalk) &&
 				!world.isSideSolid(x+side.offsetX, y+side.offsetY, z+side.offsetZ, side.getOpposite(), false);
-	}
-	
-	public boolean getBit(int val, int pos) {
-		return ( val & (1 << pos) ) > 0;
 	}
 	
 	@Override
@@ -369,38 +426,42 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	public void registerBlockIcons(IIconRegister reg) {
 		transparent   			= reg.registerIcon("catwalks:transparent");
 		
-		sideTexture   			= reg.registerIcon("catwalks:side");
-		bottomTexture 			= reg.registerIcon("catwalks:bottom");
+		textures = new HashMap<TextureSide, Map<TextureType,IIcon>>();
+	    for (TextureSide side : TextureSide.values()) {
+	    	Map<TextureType, IIcon> sideMap = new HashMap<TextureType, IIcon>();
+	    	textures.put(side, sideMap);
+	    	for (TextureType type : TextureType.values()) {
+				IIcon icon = reg.registerIcon("catwalks:catwalk/" + side.filename + "/" + type.filename);
+				
+				sideMap.put(type, icon);
+			}
+		}
 		
-	    sideTextureWithLights   = reg.registerIcon("catwalks:side_with_lights");
-	    bottomTextureWithLights = reg.registerIcon("catwalks:bottom_with_lights");
-	    
-	    sideLights   			= reg.registerIcon("catwalks:side_lights");
-	    bottomLights 			= reg.registerIcon("catwalks:bottom_lights");
 	}
-
+	
 	@Override
 	public IIcon getIcon(int _side, int meta) {
-		ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[_side];
-		/**/
-	    if(dir == ForgeDirection.DOWN) {
-			if(bottom) {
-				return lights ? bottomTextureWithLights : bottomTexture;
-			}
-	    }
-	    if(dir == ForgeDirection.NORTH && (meta & 8) < 1) {
-	    	return lights ? sideTextureWithLights : sideTexture;
-	    }
-	    if(dir == ForgeDirection.SOUTH && (meta & 4) < 1) {
-	    	return lights ? sideTextureWithLights : sideTexture;
-	    }
-	    if(dir == ForgeDirection.WEST && (meta & 2) < 1) {
-	    	return lights ? sideTextureWithLights : sideTexture;
-	    }
-	    if(dir == ForgeDirection.EAST && (meta & 1) < 1) {
-	    	return lights ? sideTextureWithLights : sideTexture;
-	    }
-	    return transparent; /**/
+		ForgeDirection side = ForgeDirection.getOrientation(_side);
+		
+		if(side == ForgeDirection.UP) {
+		    return transparent;
+		}
+		
+		TextureSide tSide = TextureSide.fromFD(side);
+		TextureType type = TextureType.fromLightsAndTape(lights, tape);
+		
+		return textures.get(tSide).get(type);
+	}
+	
+	public IIcon getLightIcon(int _side, int meta) {
+		ForgeDirection side = ForgeDirection.getOrientation(_side);
+		
+		if(side == ForgeDirection.UP) {
+		    return transparent;
+		}
+		TextureSide tSide = TextureSide.fromFD(side);
+		
+		return textures.get(tSide).get(tape ? TextureType.T_LIGHTS : TextureType.LIGHTS);
 	}
 	
 	@Override
@@ -461,6 +522,17 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	// Data update methods
 	//==============================================================================
 	
+	public int setBit(int val, int pos, boolean value) {
+		if(value)
+			return val |  (1 << pos);
+		else
+			return val & ~(1 << pos);
+	}
+
+	public boolean getBit(int val, int pos) {
+		return ( val & (1 << pos) ) > 0;
+	}
+	
 	public void updateNeighborSides(World w, int x, int y, int z, boolean updateSelf) {
     	for (int i = 0; i < ForgeDirection.VALID_DIRECTIONS.length; i++) {
 			ForgeDirection dir = ForgeDirection.VALID_DIRECTIONS[i];
@@ -482,69 +554,25 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     }
     
     public void updateOpenStatus(World w, int x, int y, int z, ForgeDirection side) {
-		updateData(w,x,y,z,side, shouldBeOpen(w,x,y,z,side), this.lights);
+		updateData(w,x,y,z,side, shouldBeOpen(w,x,y,z,side), this.lights, this.tape);
 	}
 
-	public void updateData(World w, int x, int y, int z, ForgeDirection side, boolean state, boolean lights) {
+	public void updateData(World w, int x, int y, int z, ForgeDirection side, boolean state, boolean lights, boolean tape) {
 		int meta = w.getBlockMetadata(x, y, z);
-		if(side == ForgeDirection.NORTH) {
-			if(state) {
-				meta = meta | 8;  // 0b1000
-			} else {
-				meta = meta & 7; // 0b0111
-			}
-		}
-		if(side == ForgeDirection.SOUTH) {
-			if(state) {
-				meta = meta | 4;  // 0b0100
-			} else {
-				meta = meta & 11; // 0b1011
-			}
-		}
-		if(side == ForgeDirection.WEST) {
-			if(state) {
-				meta = meta | 2;  // 0b0010
-			} else {
-				meta = meta & 13; // 0b1101
-			}
-		}
-		if(side == ForgeDirection.EAST) {
-			if(state) {
-				meta = meta | 1;  // 0b0001
-			} else {
-				meta = meta & 14; // 0b1110
-			}
-		}
-		Block block = this;
-		if(side == ForgeDirection.DOWN) {
-			if(state) {
-				if(lights) {
-					block = CatwalkMod.catwalkLitNoBottom;
-				} else {
-					block = CatwalkMod.catwalkUnlitNoBottom;
-				}
-			} else {
-				if(lights) {
-					block = CatwalkMod.catwalkLitBottom;
-				} else {
-					block = CatwalkMod.catwalkUnlitBottom;
-				}
-			}
-		} else {
-			if(!bottom) {
-				if(lights) {
-					block = CatwalkMod.catwalkLitNoBottom;
-				} else {
-					block = CatwalkMod.catwalkUnlitNoBottom;
-				}
-			} else {
-				if(lights) {
-					block = CatwalkMod.catwalkLitBottom;
-				} else {
-					block = CatwalkMod.catwalkUnlitBottom;
-				}
-			}
-		}
+		if(side == ForgeDirection.NORTH)
+			meta = setBit(meta, 3, state);
+		if(side == ForgeDirection.SOUTH)
+			meta = setBit(meta, 2, state);
+		if(side == ForgeDirection.WEST)
+			meta = setBit(meta, 1, state);
+		if(side == ForgeDirection.EAST)
+			meta = setBit(meta, 0, state);
+		
+		boolean bottom = this.bottom;
+		if(side == ForgeDirection.DOWN)
+			bottom = !state; // don't know—or have the energy to figure out—why this needs to be inverted. It just works.
+		
+		Block block = CatwalkMod.catwalks.get(lights).get(bottom).get(tape);
 		w.setBlock(x, y, z, block, meta, 3);
 	}
 
