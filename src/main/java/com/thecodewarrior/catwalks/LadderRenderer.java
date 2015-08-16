@@ -1,6 +1,7 @@
 package com.thecodewarrior.catwalks;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
@@ -148,7 +149,6 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 			}
 			
 		}
-
 		return true; // we ended up drawing something, so this 16x16x16 chunk needs to be drawn
 	}
 	

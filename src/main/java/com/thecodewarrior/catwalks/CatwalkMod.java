@@ -68,6 +68,7 @@ public class CatwalkMod
     
     public static int catwalkRenderType;
     public static int ladderRenderType;
+	public static int lightLevel = 12;
     
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {

@@ -515,6 +515,11 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 
 		return ic;
 	}
+	
+	public int getLightValue()
+	{
+	    return this.lights ? CatwalkMod.lightLevel : 0;
+	}
 
 	@Override
 	public boolean isSideSolid(IBlockAccess w, int x, int y, int z, ForgeDirection side) {

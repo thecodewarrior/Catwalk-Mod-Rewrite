@@ -57,17 +57,8 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	
 	
 	public IIcon transparent;
-
-//	public IIcon sideTexture;
-//	public IIcon bottomTexture;
-//	
-//	public IIcon bottomTextureWithLights;
-//	public IIcon sideTextureWithLights;
-//	
-//	public IIcon bottomLights;
-//	public IIcon sideLights;
 		
-public Map<TextureSide, Map<TextureType, IIcon>> textures;
+	public Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
 	public enum TextureSide {
 		BOTTOM("bottom"),
@@ -466,6 +457,8 @@ public Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
 	@Override
 	public boolean isSideSolid(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
+		if(side == ForgeDirection.UP)
+			return false;
 		return !getOpenState(w,x,y,z,side);//getOpenState(w, x-side.offsetX, y-side.offsetY, z-side.offsetZ, side.getOpposite());
 	}
 
@@ -515,7 +508,7 @@ public Map<TextureSide, Map<TextureType, IIcon>> textures;
 	 */
 	public int getLightValue()
 	{
-	    return this.lights ? 15 : 0;
+	    return this.lights ? CatwalkMod.lightLevel : 0;
 	}
 
 	//==============================================================================
