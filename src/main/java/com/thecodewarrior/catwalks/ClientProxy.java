@@ -55,9 +55,9 @@ public class ClientProxy extends CommonProxy {
     	headers.add("m/s:");
     	headers.add("m/t max:");
     	headers.add("m/s max:");
-//    	headers.add("isBottomOpen:");
-    	//headers.add("saturation:");
-    	//headers.add("food:");
+    	for(int i = 0; i < 5; i++) {
+    		headers.add("_" + i + ":");
+    	}
     }
     
     @Override
@@ -91,20 +91,14 @@ public class ClientProxy extends CommonProxy {
     		List<String> data = new ArrayList<String>();
     		
     		int precision = 5;
+    		String f = "%2." + precision + "f";
     		
-    		data.add(String.format("%2." + precision + "f", speed    ));
-    		data.add(String.format("%2." + precision + "f", speed*20 ));
+    		data.add(String.format(f, speed    ));
+    		data.add(String.format(f, speed*20 ));
     		
-    		data.add(String.format("%2." + precision + "f", maxSpeed    ));
-    		data.add(String.format("%2." + precision + "f", maxSpeed*20 ));
-    		
-//    		data.add(isBottomOpen ? "________" : "********");
-    		
-    		//FoodStats fs = p.getFoodStats();
-    		//data.add(String.format("%2.5f", fs.getSaturationLevel()));
-    		//data.add(String.format("%d", fs.getFoodLevel()));
-    		//data.add(String.format("%2.5f", fs.addExhaustion(p_75113_1_);))
-    		
+    		data.add(String.format(f, maxSpeed    ));
+    		data.add(String.format(f, maxSpeed*20 ));
+    		    		
     		int lineNum = 0;
     		
     		for(String head : headers) {

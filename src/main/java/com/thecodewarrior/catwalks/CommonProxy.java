@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -81,21 +82,21 @@ public class CommonProxy {
 		
 		
 		BlockCoord coord = getLadderCoord(event.entityLiving); // find any caged ladders
-		
+		EntityLivingBase e = event.entityLiving;
+
 		CatwalkEntityProperties catwalkEP = getOrCreateEP(event.entity); // get entity properties object "for future uses"
 		if(coord.y >= 0) { // if the block was found (y=-1 if not found)
 
 			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z); // get the custom ladder block
 			ICustomLadderVelocity icl = (ICustomLadderVelocity)b;
-			EntityLivingBase e = event.entityLiving;
-			
+			double   upSpeed = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
+			double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // get custom fall velocity
+
 			if(e.isCollidedHorizontally) { // entity is smashed up against something
-				e.motionY = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // set the entity's upward velocity to the custom value
+				e.motionY = upSpeed; // set the entity's upward velocity to the custom value
 				catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 whatevers when they stop
 			} else {
 				e.fallDistance = 0.0F; // reset fall distance to prevent fall damage
-				
-				double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // get custom fall velocity
 				
                 if (e.motionY < -downSpeed) // if the entity is falling faster than custom fall velocity
                 {
@@ -105,27 +106,58 @@ public class CommonProxy {
                 boolean shouldStopOnLadder = e.isSneaking() && e instanceof EntityPlayer;
 
                 if (shouldStopOnLadder && e.motionY < 0.0D) { // should stop and entity is moving down
-                    e.motionY = 0.0D; // don't you DARE move down
+    				e.motionY = 0.0D; // don't you DARE move down
                 }
 			}
+			
+			double dX = e.posX - catwalkEP.lastStepX;
+			double dY = e.posY - catwalkEP.lastStepY;
+			double dZ = e.posZ - catwalkEP.lastStepZ;
+			
+			double distanceClimbed = Math.abs(dY);//MathHelper.sqrt_double( (dX * dX ) + (dY * dY) + (dZ * dZ));
+			double distanceRequired = upSpeed * 10;
+			
+			if(catwalkEP.isSlidingDownLadder && dY >= 0) {
+				distanceRequired = 0;
+			}
+			catwalkEP.isSlidingDownLadder = (dY < 0);
+			
+			if(distanceClimbed > distanceRequired) {
+				catwalkEP.lastStepX = e.posX;
+				catwalkEP.lastStepY = e.posY;
+				catwalkEP.lastStepZ = e.posZ;
+				boolean shouldPlay = dY < 0 ?
+						icl.shouldPlayStepSound(e.worldObj, coord.x, coord.y, coord.z, e, true) :
+						icl.shouldPlayStepSound(e.worldObj, coord.x, coord.y, coord.z, e, false);
+						
+						
+		        if(shouldPlay) {
+		        	Block.SoundType soundtype = e.worldObj.getBlock(coord.x, coord.y, coord.z).stepSound;
+					e.playSound(soundtype.getStepResourcePath(), soundtype.getVolume() * 0.15F, soundtype.getPitch());
+		        }
+			}
+			
 		}
 		
+		
 		if(catwalkEP.highSpeedLadder && !event.entityLiving.isCollidedHorizontally) {
-			event.entity.motionY = 0.2D; // slow down entity once they stop climbing to prevent them flying upwards
+			if(event.entity.motionY > 0.2D)
+				event.entity.motionY = 0.2D; // slow down entity once they stop climbing to prevent them flying upwards
+
 			catwalkEP.highSpeedLadder = false;
 		}
 	}
 	
-	public BlockCoord getLadderCoord(final EntityLivingBase entity) {
+	public BlockCoord getLadderCoord(EntityLivingBase entity) {
 		
-		return findCollidingBlock(entity, new Matcher<BlockCoord>() {
+		return findCollidingBlock(entity, new Matcher<BlockCoord, EntityLivingBase>(entity) {
 
 			@Override
 			public boolean match(BlockCoord bc) {
-				Block b = entity.worldObj.getBlock(bc.x, bc.y, bc.z);
+				Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
 				return  b != null &&
 						b instanceof ICustomLadderVelocity &&
-						( (ICustomLadderVelocity)b).isOnLadder(entity.worldObj, bc.x, bc.y, bc.z, entity);
+						( (ICustomLadderVelocity)b).isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
 			}
 		});
 	}
@@ -136,7 +168,7 @@ public class CommonProxy {
 	 * @param mat
 	 * @return
 	 */
-	public BlockCoord findCollidingBlock(EntityLivingBase entity, Matcher<BlockCoord> mat) {
+	public BlockCoord findCollidingBlock(EntityLivingBase entity, Matcher<BlockCoord, ?> mat) {
 		World world = entity.worldObj;
         Block block;
 		AxisAlignedBB bb = entity.boundingBox;
@@ -161,7 +193,13 @@ public class CommonProxy {
         return new BlockCoord(0,-1,0);
 	}
 	
-	public static abstract class Matcher<T> {
+	public static abstract class Matcher<T, A> {
+		public A arg;
+		
+		public Matcher(A arg) {
+			this.arg = arg;
+		}
+		
 		public abstract boolean match(T obj);
 	}
 
@@ -174,10 +212,10 @@ public class CommonProxy {
     		
     		for (final EntityPlayerMP player : players) { // for each player
     			// find any catwalks
-				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord>() {
+				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord, EntityPlayerMP>(player) {
 					@Override
 					public boolean match(BlockCoord bc) { 
-						Block b = player.worldObj.getBlock(bc.x, bc.y, bc.z);
+						Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
 						return  b != null &&
 								b instanceof BlockCatwalk;
 					}

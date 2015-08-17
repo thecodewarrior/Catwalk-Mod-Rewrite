@@ -18,6 +18,8 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 @Mod(modid=CatwalkMod.MODID, name=CatwalkMod.MODNAME, version=CatwalkMod.MODVER)
@@ -25,17 +27,15 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.3";
+    public static final String MODVER = "0.1.4";
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
     
     public static CatwalkOptions options = new CatwalkOptions();
-    
-    public static Block catwalkLitBottom;
-    public static Block catwalkUnlitBottom;
-    public static Block catwalkLitNoBottom;
-    public static Block catwalkUnlitNoBottom;
+        
+    public static Block.SoundType catwalkSounds;
+    public static Block.SoundType ladderSounds;
     
     public static Block defaultCatwalk;
     /**
@@ -77,6 +77,29 @@ public class CatwalkMod
     	catwalkRenderType = RenderingRegistry.getNextAvailableRenderId();
     	ladderRenderType  = RenderingRegistry.getNextAvailableRenderId();
     	
+    	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
+    		public String getBreakSound()
+            {
+                return "catwalks:dig." + this.soundName;
+            }
+
+            public String getStepResourcePath()
+            {
+                return "catwalks:step." + this.soundName;
+            }
+    	};
+    	ladderSounds  = new Block.SoundType("ladder",  1.0F, 1.0F) {
+    		public String getBreakSound()
+            {
+                return "catwalks:dig." + this.soundName;
+            }
+
+            public String getStepResourcePath()
+            {
+                return "catwalks:step." + this.soundName;
+            }
+    	};
+    	
     	options.init();
     	options.load();
     	
@@ -88,16 +111,6 @@ public class CatwalkMod
     			0.20000000298023224D,
     			2);
     	speedModifier.setSaved(false);
-//    	
-//    	catwalkLitBottom     = new BlockCatwalk(true , true );
-//    	catwalkUnlitBottom   = new BlockCatwalk(false, true );
-//    	catwalkLitNoBottom   = new BlockCatwalk(true , false);
-//    	catwalkUnlitNoBottom = new BlockCatwalk(false, false);
-    	
-//    	GameRegistry.registerBlock(catwalkLitBottom,     "catwalk_lit_bottom"    );
-//    	GameRegistry.registerBlock(catwalkUnlitBottom,   "catwalk_unlit_bottom"  );
-//    	GameRegistry.registerBlock(catwalkLitNoBottom,   "catwalk_lit_nobottom"  );
-//    	GameRegistry.registerBlock(catwalkUnlitNoBottom, "catwalk_unlit_nobottom");
     	
     	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
     	for(boolean lights : trueFalse) {
@@ -159,8 +172,7 @@ public class CatwalkMod
     	GameRegistry.registerItem(itemBlowtorch,   "blowtorch"  );
     	GameRegistry.registerItem(itemRopeLight,   "ropeLight"  );
     	GameRegistry.registerItem(itemCautionTape, "cautionTape");
-//    	GameRegistry.registerBlock(cagedLadderLit, 	 "cagedladder_lit"  );
-//    	GameRegistry.registerBlock(cagedLadderUnlit, "cagedladder_unlit");
+    	
     	proxy.init();
     }
     

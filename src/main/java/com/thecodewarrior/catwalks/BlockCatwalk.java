@@ -48,7 +48,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockCatwalk extends Block implements ICagedLadderConnectable {
+public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICustomLadderVelocity {
 	public boolean lights;
 	public boolean bottom;
 	public boolean tape;
@@ -111,7 +111,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	public BlockCatwalk(boolean lights, boolean bottom, boolean tape) {
 		super(Material.iron);
 		setHardness(1.0F);
-		setStepSound(Block.soundTypeMetal);
+		setStepSound(CatwalkMod.catwalkSounds);
 		setBlockName("catwalk");
 		if(!lights && !bottom && !tape)
 			setCreativeTab(CreativeTabs.tabTransport);
@@ -239,7 +239,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	    ArrayList<ItemStack> ret = new ArrayList<ItemStack>();
 	
 	    ret.add(new ItemStack(
-	    		Item.getItemFromBlock(CatwalkMod.catwalkUnlitBottom),
+	    		Item.getItemFromBlock(CatwalkMod.defaultCatwalk),
 	    		1));
 	    if(this.lights) {
 	    	ret.add(new ItemStack(
@@ -272,7 +272,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     		d = 0.125;
     		//cuboids.add(new IndexedCuboid6(Hitboxes.BOTTOM, new Cuboid6(x+ px, y+ 0, z+ px, x+ 1-px, y+ px, z+ 1-px)));
     	} else {
-    		d = 0.25;
+    		d = 0.4;
     	}
     	cuboids.add(new IndexedCuboid6(ForgeDirection.DOWN, new Cuboid6(x+ d, y+ 0, z+ d, x+ 1-d, y+ px, z+ 1-d)));
     	float ym = 1;
@@ -348,7 +348,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
     			this.getBlockBoundsMaxX(), this.getBlockBoundsMaxY(), this.getBlockBoundsMaxZ()
     		);
     	if(bottom && shouldHaveBox(world, x, y, z, ForgeDirection.DOWN)) {
-    		this.setBlockBounds(0, 0, 0, 1, px, 1);
+    		this.setBlockBounds(0, 0, 0, 1, 0.2F, 1);
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
     	
@@ -663,5 +663,33 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable {
 	@Override
 	public boolean isThin(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
 		return false;
+	}
+	
+	//==============================================================================
+	// ICustomLadderVelocity
+	//==============================================================================
+
+	@Override
+	public double getLadderVelocity(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return 0.1;
+	}
+
+	@Override
+	public double getLadderFallVelocity(IBlockAccess world, int x, int y,
+			int z, EntityLivingBase entity) {
+		return Integer.MAX_VALUE;
+	}
+	
+	@Override
+	public boolean isOnLadder(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return world.getBlock(x, y+1, z) instanceof BlockCatwalk;
+	}
+
+	@Override
+	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity, boolean isMovingDown) {
+		return !isMovingDown;
 	}
 }

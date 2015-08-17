@@ -8,4 +8,5 @@ public interface ICustomLadderVelocity {
 	public double getLadderFallVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity);
 
 	public boolean isOnLadder(IBlockAccess world, int x, int y, int z, EntityLivingBase entity);
+	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z, EntityLivingBase entity, boolean isMovingDown);
 }

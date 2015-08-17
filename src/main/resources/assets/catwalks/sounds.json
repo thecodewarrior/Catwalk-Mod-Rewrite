@@ -1,0 +1,18 @@
+{
+    "step.catwalk":
+    {
+        "category": "block",
+        "sounds":
+        [
+            "catwalk/step1"
+        ]
+    },
+    "dig.catwalk":
+    {
+        "category": "block",
+        "sounds":
+        [
+            "catwalk/hit1"
+        ]
+    }
+}

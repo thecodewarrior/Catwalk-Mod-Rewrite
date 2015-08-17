@@ -300,7 +300,12 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	public double getLadderFallVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
 		return 0.25D;
 	}
-	
+
+	@Override
+	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity, boolean isMovingDown) {
+		return true;
+	}
 
 	//==============================================================================
 	// Block highlight raytrace methods
