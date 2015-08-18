@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.FoodStats;
+import net.minecraft.util.Vec3;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -67,11 +68,15 @@ public class ClientProxy extends CommonProxy {
 		}
     }
     
+	public EntityPlayer getPlayerLooking(Vec3 start, Vec3 end) {
+		return Minecraft.getMinecraft().thePlayer;
+	}
+    
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
     	if(!CatwalkMod.options.dev)
     		return;
-    	if(event.phase == Phase.END) {
+    	if(event.phase == Phase.END && !Minecraft.getMinecraft().gameSettings.showDebugInfo) {
     		EntityPlayer p = Minecraft.getMinecraft().thePlayer;
     		if(p == null) {
     			return;

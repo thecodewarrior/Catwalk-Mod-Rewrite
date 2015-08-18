@@ -8,27 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.thecodewarrior.catwalks.BlockCagedLadder.RelativeSide;
-import com.thecodewarrior.catwalks.BlockCagedLadder.TextureSide;
-import com.thecodewarrior.catwalks.BlockCagedLadder.TextureType;
-import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
-import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
-import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
-import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
-import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
-import com.thecodewarrior.codechicken.lib.vec.Vector3;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.IconFlipped;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
@@ -38,13 +30,17 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.event.ForgeEventFactory;
 import buildcraft.api.tools.IToolWrench;
-import cpw.mods.fml.common.FMLCommonHandler;
+
+import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
+import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
+import com.thecodewarrior.codechicken.lib.vec.Vector3;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -259,9 +255,17 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	// Block highlight raytrace methods
 	//==============================================================================
 	
-	@Override
-    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 start, Vec3 end) {
+    @Override
+	public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 start, Vec3 end) {
+		return collisionRayTrace(world, x, y, z, CatwalkMod.proxy.getPlayerLooking(start, end), start, end);
+    }
+
+    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, EntityPlayer player, Vec3 start, Vec3 end) {
         List<IndexedCuboid6> cuboids = new LinkedList<IndexedCuboid6>();
+        
+        boolean hasWrench = true;
+        if(player != null)
+        	hasWrench = player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench;
         
         float px = 1/16F;
     	int meta = world.getBlockMetadata(x, y, z);
@@ -272,38 +276,48 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
     		d = 0.125;
     		//cuboids.add(new IndexedCuboid6(Hitboxes.BOTTOM, new Cuboid6(x+ px, y+ 0, z+ px, x+ 1-px, y+ px, z+ 1-px)));
     	} else {
-    		d = 0.4;
+    		d = 0.25;
     	}
-    	cuboids.add(new IndexedCuboid6(ForgeDirection.DOWN, new Cuboid6(x+ d, y+ 0, z+ d, x+ 1-d, y+ px, z+ 1-d)));
+    	
+    	if(bottom || hasWrench)
+    		cuboids.add(new IndexedCuboid6(ForgeDirection.DOWN, new Cuboid6(x+ d, y+ 0, z+ d, x+ 1-d, y+ px, z+ 1-d)));
     	float ym = 1;
     	
-    	if((meta & 8) == 0 || ovr) { ym = 1; } else { ym = smallHeight; }
-    	cuboids.add(new IndexedCuboid6(ForgeDirection.NORTH, new Cuboid6(
-				x+ 0, 	y+ 0, 	z+ 0,
-				x+ 1, 	y+ ym, 	z+ px
-			)));
+    	if(!getBit(meta, 3) || ovr) { ym = 1; } else { ym = smallHeight; }
+    	
+    	if(!getBit(meta, 3) || hasWrench)
+	    	cuboids.add(new IndexedCuboid6(ForgeDirection.NORTH, new Cuboid6(
+					x+ 0, 	y+ 0, 	z+ 0,
+					x+ 1, 	y+ ym, 	z+ px
+				)));
     	
     	
-    	if((meta & 4) == 0 || ovr) { ym = 1; } else { ym = smallHeight; }
-    	cuboids.add(new IndexedCuboid6(ForgeDirection.SOUTH, new Cuboid6(
-				x+ 0, 	y+ 0, 	z+ 1-px,
-				x+ 1, 	y+ ym, 	z+ 1
-			)));
+    	if(!getBit(meta, 2) || ovr) { ym = 1; } else { ym = smallHeight; }
+    	
+    	if(!getBit(meta, 2) || hasWrench)
+    		cuboids.add(new IndexedCuboid6(ForgeDirection.SOUTH, new Cuboid6(
+					x+ 0, 	y+ 0, 	z+ 1-px,
+					x+ 1, 	y+ ym, 	z+ 1
+				)));
     	
     	
-    	if((meta & 2) == 0 || ovr) { ym = 1; } else { ym = smallHeight; }
-    	cuboids.add(new IndexedCuboid6(ForgeDirection.WEST, new Cuboid6(
-				x+ 0, 	y+ 0, 	z+ 0,
-				x+ px, 	y+ ym, 	z+ 1
-			)));
+    	if(!getBit(meta, 1) || ovr) { ym = 1; } else { ym = smallHeight; }
+    	
+    	if(!getBit(meta, 1) || hasWrench)
+    		cuboids.add(new IndexedCuboid6(ForgeDirection.WEST, new Cuboid6(
+					x+ 0, 	y+ 0, 	z+ 0,
+					x+ px, 	y+ ym, 	z+ 1
+				)));
     	
     	
-    	if((meta & 1) == 0 || ovr) { ym = 1; } else { ym = smallHeight; }
-    	cuboids.add(new IndexedCuboid6(ForgeDirection.EAST, new Cuboid6(
-				x+ 1-px, y+ 0, 	z+ 0,
-				x+ 1, 	 y+ ym, 	z+ 1
-			)));
-    	//new BlockCoord(x, y, z), this
+    	if(!getBit(meta, 0) || ovr) { ym = 1; } else { ym = smallHeight; }
+    	
+    	if(!getBit(meta, 0) || hasWrench)
+    		cuboids.add(new IndexedCuboid6(ForgeDirection.EAST, new Cuboid6(
+					x+ 1-px, y+ 0, 	z+ 0,
+					x+ 1, 	 y+ ym, 	z+ 1
+				)));
+    	
         ExtendedMOP mop = (ExtendedMOP) rayTracer.rayTraceCuboids(new Vector3(start), new Vector3(end), cuboids, new BlockCoord(x, y, z), this);
         if(mop != null) {
         	if(mop.sideHit == ((ForgeDirection)mop.data).getOpposite().ordinal()) {

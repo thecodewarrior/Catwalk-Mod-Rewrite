@@ -402,10 +402,18 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	}
 
 	@Override
-    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 start, Vec3 end) {
+	public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 start, Vec3 end) {
+		return collisionRayTrace(world, x, y, z, CatwalkMod.proxy.getPlayerLooking(start, end), start, end);
+    }
+
+    public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, EntityPlayer player, Vec3 start, Vec3 end) {
         List<IndexedCuboid6> cuboids = new LinkedList<IndexedCuboid6>();
         
-    	float ym = 1;
+        boolean hasWrench = true;
+        if(player != null)
+        	hasWrench = player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench;
+    	
+        float ym = 1;
     	
     	float px = 1/16F;
 		float px2 = 2*px;
@@ -423,15 +431,12 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		}
 		
     	for (RelativeSide rs : RelativeSide.values()) {
-//			if(rs == RelativeSide.LADDER) {
-//				addToList(x, y, z, cuboids, rs, closed.get(rs));
-//				continue;
-//			}
 			if(rs == RelativeSide.TOP) {
 				continue;
 			}
 			if(isOpen(rs, meta)) {
-				addToList(x, y, z, cuboids, rs, open.get(rs));
+				if(hasWrench)
+					addToList(x, y, z, cuboids, rs, open.get(rs));
 			} else {
 				addToList(x, y, z, cuboids, rs, closed.get(rs));
 			}

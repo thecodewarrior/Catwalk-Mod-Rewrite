@@ -1,12 +1,10 @@
 package com.thecodewarrior.catwalks;
 
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -18,10 +16,12 @@ import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import buildcraft.api.tools.IToolWrench;
 
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -44,6 +44,29 @@ public class CommonProxy {
 	public void initClient() {}
 	
 	public void postInit() {}
+	
+	public EntityPlayer getPlayerLooking(Vec3 start, Vec3 end) {
+		EntityPlayer player = null;
+		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		
+		for (final EntityPlayerMP p : players) { // for each player
+			Vec3 lookStart = RayTracer.getStartVec(p);
+			Vec3 lookEnd   = RayTracer.getEndVec(p);
+			double lookDistance = RayTracer.getBlockReachDistance(p);
+			
+			double dStart  = lookStart.distanceTo(start);
+			double dEnd    = lookEnd  .distanceTo(start);
+			
+			double dStart_ = lookStart.distanceTo(end);
+			double dEnd_   = lookEnd  .distanceTo(end);
+			
+			
+			if(dStart + dEnd == lookDistance && dStart_ + dEnd_ == lookDistance) {
+				player = p; break;
+			}
+		}
+		return player;
+	}
 	
 	public void performModification() {
 		int opNum = 5;
@@ -210,7 +233,7 @@ public class CommonProxy {
     	if( event.phase == Phase.END) {
     		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
     		
-    		for (final EntityPlayerMP player : players) { // for each player
+    		for (EntityPlayerMP player : players) { // for each player
     			// find any catwalks
 				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord, EntityPlayerMP>(player) {
 					@Override
