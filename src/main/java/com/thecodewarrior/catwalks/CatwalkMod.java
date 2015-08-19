@@ -37,6 +37,8 @@ public class CatwalkMod
     public static Block.SoundType catwalkSounds;
     public static Block.SoundType ladderSounds;
     
+    public static Block sturdyTrack;
+    
     public static Block defaultCatwalk;
     /**
      * Usage: <pre> catwalks.get(lights).get(isBottomOpen).get(tape); </pre>
@@ -111,6 +113,10 @@ public class CatwalkMod
     			0.20000000298023224D,
     			2);
     	speedModifier.setSaved(false);
+    	
+    	
+    	sturdyTrack = new BlockSturdyTrack(false);
+    	GameRegistry.registerBlock(sturdyTrack, "sturdy_track");
     	
     	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
     	for(boolean lights : trueFalse) {
