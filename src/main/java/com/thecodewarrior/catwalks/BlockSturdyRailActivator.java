@@ -27,7 +27,7 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 		
 	public BlockSturdyRailActivator() {
 	  this.setCreativeTab(CreativeTabs.tabTransport);
-		this.setBlockName("sturdy_rail");
+		this.setBlockName("sturdy_activator_rail");
 		this.setHardness(0.7F);
 	}
 
@@ -76,7 +76,8 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	
 	public void onMinecartPass(World world, EntityMinecart cart, int x, int y, int z) {
 		int meta = world.getBlockMetadata(x, y, z);
-        cart.onActivatorRailPass(x, y, z, (meta & 8) != 0);
+		boolean active = world.isBlockIndirectlyGettingPowered(x, y, z);//(meta & 8) != 0;
+        cart.onActivatorRailPass(x, y, z, active);
     }
 	
 	public boolean isPowered() {

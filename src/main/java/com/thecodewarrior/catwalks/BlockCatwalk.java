@@ -10,17 +10,15 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
@@ -167,22 +165,23 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		if (hit != null) {
 			side = (ForgeDirection) ( (ExtendedMOP) hit ).data;
 		}
-		
-		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench) {
-			if(side != ForgeDirection.UP) {
-				updateData(world,x,y,z, side, !getOpenState(world,x,y,z, side), this.lights, this.tape);
-			}
-		}
-		
 		if(player.getCurrentEquippedItem() != null) {
 			Item item = player.getCurrentEquippedItem().getItem();
 			boolean use = false;
 			
+			if(side == ForgeDirection.DOWN && world.getBlock(x, y-1, z) instanceof BlockSupportColumn &&
+					item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockSupportColumn) {
+				world.getBlock(x, y-1, z).onBlockActivated(world, x, y-1, z, player, ForgeDirection.UP.ordinal(), hitX, 1F, hitZ);
+			} else
+			if(item instanceof IToolWrench) {
+				if(side != ForgeDirection.UP) {
+					updateData(world,x,y,z, side, !getOpenState(world,x,y,z, side), this.lights, this.tape);
+				}
+			} else
 			if(item instanceof ItemRopeLight && this.lights == false) {
 				updateData(world, x, y, z, ForgeDirection.UP, false, true, this.tape);
 				use = true;
-			}
-			
+			} else
 			if(item instanceof ItemCautionTape && this.tape == false) {
 				updateData(world, x, y, z, ForgeDirection.UP, false, this.lights, true);
 				use = true;
@@ -473,6 +472,8 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	public boolean isSideSolid(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
 		if(side == ForgeDirection.UP)
 			return false;
+		if(side == ForgeDirection.DOWN)
+			return bottom;
 		return !getOpenState(w,x,y,z,side);//getOpenState(w, x-side.offsetX, y-side.offsetY, z-side.offsetZ, side.getOpposite());
 	}
 

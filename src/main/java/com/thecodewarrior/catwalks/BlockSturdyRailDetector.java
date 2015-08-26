@@ -29,7 +29,7 @@ public class BlockSturdyRailDetector extends BlockRailDetector implements ISturd
 		
 	public BlockSturdyRailDetector() {
 		this.setCreativeTab(CreativeTabs.tabTransport);
-		this.setBlockName("sturdy_rail_detector");
+		this.setBlockName("sturdy_detector_rail");
 		this.setHardness(0.7F);
 	}
 

@@ -7,6 +7,7 @@ import java.util.UUID;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.Item;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -27,7 +28,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.7";
+    public static final String MODVER = "0.1.8";
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
@@ -41,6 +42,8 @@ public class CatwalkMod
     public static Block sturdyPoweredTrack;
     public static Block sturdyDetectorTrack;
     public static Block sturdyActivatorTrack;
+    
+    public static Block supportColumn;
     
     public static Block defaultCatwalk;
     /**
@@ -73,14 +76,17 @@ public class CatwalkMod
     
     public static int catwalkRenderType;
     public static int ladderRenderType;
+    public static int inAndOutRenderType;
+    
 	public static int lightLevel = 12;
     
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
     	boolean[] trueFalse = {true, false};
     	
-    	catwalkRenderType = RenderingRegistry.getNextAvailableRenderId();
-    	ladderRenderType  = RenderingRegistry.getNextAvailableRenderId();
+    	catwalkRenderType   = RenderingRegistry.getNextAvailableRenderId();
+    	ladderRenderType    = RenderingRegistry.getNextAvailableRenderId();
+    	inAndOutRenderType  = RenderingRegistry.getNextAvailableRenderId();
     	
     	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
     		public String getBreakSound()
@@ -118,17 +124,21 @@ public class CatwalkMod
     	speedModifier.setSaved(false);
     	
     	
-    	sturdyTrack = new BlockSturdyTrack();
-    	GameRegistry.registerBlock(sturdyTrack, "sturdy_track");
+    	sturdyTrack = new BlockSturdyRail();
+    	GameRegistry.registerBlock(sturdyTrack, "sturdy_rail");
     	
-    	sturdyPoweredTrack = new BlockSturdyBoosterTrack();
-    	GameRegistry.registerBlock(sturdyPoweredTrack, "sturdy_powered_track");
+    	sturdyPoweredTrack = new BlockSturdyRailBooster();
+    	GameRegistry.registerBlock(sturdyPoweredTrack, "sturdy_rail_powered");
     	
     	sturdyDetectorTrack = new BlockSturdyRailDetector();
     	GameRegistry.registerBlock(sturdyDetectorTrack, "sturdy_rail_detector");
     	
     	sturdyActivatorTrack = new BlockSturdyRailActivator();
     	GameRegistry.registerBlock(sturdyActivatorTrack, "sturdy_rail_activator");
+    	
+    	
+    	supportColumn = new BlockSupportColumn();
+    	GameRegistry.registerBlock(supportColumn, "support_column");
     	
     	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
     	for(boolean lights : trueFalse) {

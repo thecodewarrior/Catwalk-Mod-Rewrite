@@ -23,10 +23,11 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 		}
 		
 		renderer.overrideBlockBounds(0, 0, 0, 1, 1, 1);
-		 Tessellator tessellator = Tessellator.instance;
+		Tessellator tessellator = Tessellator.instance;
 	    GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 	    tessellator.startDrawingQuads();
 	    
+	    renderer.flipTexture = true;
 	    renderer.renderFromInside = true;
 	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
 	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));
@@ -35,6 +36,7 @@ public class CatwalkRenderer implements ISimpleBlockRenderingHandler {
 	    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, meta));
 	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, meta));
 	    
+	    renderer.flipTexture = false;
 	    renderer.renderFromInside = false;
 	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
 	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));

@@ -21,6 +21,8 @@ public class ClientProxy extends CommonProxy {
     
     public ISimpleBlockRenderingHandler ladderRenderer;
 
+    public ISimpleBlockRenderingHandler inAndOutRenderer;
+    
     boolean debug = true;
     
     List<String> headers = new ArrayList<String>();
@@ -37,21 +39,10 @@ public class ClientProxy extends CommonProxy {
     	
     	ladderRenderer = new LadderRenderer();
     	RenderingRegistry.registerBlockHandler(CatwalkMod.ladderRenderType, ladderRenderer);
+    	
+    	inAndOutRenderer = new InAndOutRenderer(CatwalkMod.inAndOutRenderType);
+    	RenderingRegistry.registerBlockHandler(CatwalkMod.inAndOutRenderType, inAndOutRenderer);
 
-//    	id = CatwalkMod.catwalkLitNoBottom.getRenderType();
-//    	catwalkRenderer_Lit_No_Bottom = new CatwalkRenderer(true, false, id);
-//    	RenderingRegistry.registerBlockHandler(id, catwalkRenderer_Lit_No_Bottom);
-//    	
-//    	id = CatwalkMod.catwalkUnlitBottom.getRenderType();
-//    	catwalkRenderer_Unlit_Bottom = new CatwalkRenderer(false, true, id);
-//    	RenderingRegistry.registerBlockHandler(id, catwalkRenderer_Unlit_Bottom);
-//    	
-//    	id = CatwalkMod.catwalkUnlitNoBottom.getRenderType();
-//    	catwalkRenderer_Unlit_No_Bottom = new CatwalkRenderer(false, false, id);
-//    	RenderingRegistry.registerBlockHandler(id, catwalkRenderer_Unlit_No_Bottom);
-    	
-//    	id = CatwalkMod.ladderNorthLit.
-    	
     	headers.add("m/t:");
     	headers.add("m/s:");
     	headers.add("m/t max:");
