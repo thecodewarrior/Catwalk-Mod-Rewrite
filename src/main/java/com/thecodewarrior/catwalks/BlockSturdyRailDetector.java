@@ -3,8 +3,8 @@ package com.thecodewarrior.catwalks;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRail;
 import net.minecraft.block.BlockRailBase;
+import net.minecraft.block.BlockRailDetector;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -15,24 +15,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSturdyTrack extends BlockRail implements ISturdyTrackExtendable {
+public class BlockSturdyRailDetector extends BlockRailDetector implements ISturdyTrackExtendable {
 
 //	private int renderType = 9;
 	public IIcon straight;
 	public IIcon curved;
 		
-	public BlockSturdyTrack() {
-	  this.setCreativeTab(CreativeTabs.tabTransport);
-		this.setBlockName("sturdy_rail");
+	public BlockSturdyRailDetector() {
+		this.setCreativeTab(CreativeTabs.tabTransport);
+		this.setBlockName("sturdy_rail_detector");
 		this.setHardness(0.7F);
 	}
 
@@ -65,10 +62,10 @@ public class BlockSturdyTrack extends BlockRail implements ISturdyTrackExtendabl
 		}
 		return false;
 	}
-	
-	public boolean isFlexibleRail(IBlockAccess world, int y, int x, int z) {
-	  return !field_150053_a;
-	}
+//	
+//	public boolean isFlexibleRail(IBlockAccess world, int y, int x, int z) {
+//	  return false;
+//	}
 
 	public boolean canPlaceBlockAt(World world, int x, int y, int z) {
         return world.getBlock(x, y, z).isReplaceable(world, x, y, z) && !( world.getBlock(x, y-1, z) instanceof BlockRailBase);
@@ -90,8 +87,8 @@ public class BlockSturdyTrack extends BlockRail implements ISturdyTrackExtendabl
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg)
     {
-        this.straight  = reg.registerIcon("catwalks:sturdy_rail");
-        this.curved    = reg.registerIcon("catwalks:sturdy_rail_turned");
+        this.straight  = reg.registerIcon("catwalks:sturdy_rail_detector");
+        this.curved    = reg.registerIcon("catwalks:sturdy_rail_detector_powered");
     }
 	
     /**

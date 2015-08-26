@@ -5,13 +5,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRailBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
@@ -19,6 +22,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.minecart.MinecartUpdateEvent;
 import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
@@ -268,4 +272,74 @@ public class CommonProxy {
     		
     	}
 	}
+/*
+	public void minecartUpdate(MinecartUpdateEvent event) {
+		System.out.println("call!");
+EntityMinecart minecart = event.minecart;
+		int x = (int)event.x;
+		int y = (int)event.y;
+		int z = (int)event.z;
+		
+		if (BlockRailBase.func_150049_b_(minecart.worldObj, x, y - 1, z))
+        {
+            --y;
+        }
+		
+		Block blockOn = minecart.worldObj.getBlock(x, y, z);
+		int meta      = minecart.worldObj.getBlockMetadata(x,y,z);
+		Vec3 vec3 = minecart.func_70489_a(minecart.posX, minecart.posY, minecart.posZ);
+
+		if(!( blockOn instanceof BlockRailBase ))
+			return;
+		
+		boolean isPoweredAndHasPower = false;
+        boolean flag1 = false;
+        
+        BlockRailBase brb = (BlockRailBase)blockOn;
+
+        if (blockOn != Blocks.golden_rail && brb.isPowered())
+        {
+        	System.out.println("AAAA");
+            isPoweredAndHasPower = (minecart.worldObj.getBlockMetadata(x, y, z) & 8) != 0;
+        }
+        
+        int basicRailData = ((BlockRailBase)blockOn).getBasicRailMetadata(minecart.worldObj, minecart, x, y, z);
+        
+        if (isPoweredAndHasPower && minecart.shouldDoRailFunctions())
+        {
+            double d15 = Math.sqrt(minecart.motionX * minecart.motionX + minecart.motionZ * minecart.motionZ);
+
+            if (d15 > 0.01D)
+            {
+                double d16 = 0.06D;
+                minecart.motionX += minecart.motionX / d15 * d16;
+                minecart.motionZ += minecart.motionZ / d15 * d16;
+            }
+            else if (basicRailData == 1)
+            {
+                if (minecart.worldObj.getBlock(x - 1, y, z).isNormalCube())
+                {
+                    minecart.motionX = 0.02D;
+                }
+                else if (minecart.worldObj.getBlock(x + 1, y, z).isNormalCube())
+                {
+                    minecart.motionX = -0.02D;
+                }
+            }
+            else if (basicRailData == 0)
+            {
+                if (minecart.worldObj.getBlock(x, y, z - 1).isNormalCube())
+                {
+                    minecart.motionZ = 0.02D;
+                }
+                else if (minecart.worldObj.getBlock(x, y, z + 1).isNormalCube())
+                {
+                    minecart.motionZ = -0.02D;
+                }
+            }
+        }
+
+        
+	}
+*/
 }

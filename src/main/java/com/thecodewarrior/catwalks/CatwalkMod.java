@@ -27,7 +27,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.6";
+    public static final String MODVER = "0.1.7";
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
@@ -38,6 +38,9 @@ public class CatwalkMod
     public static Block.SoundType ladderSounds;
     
     public static Block sturdyTrack;
+    public static Block sturdyPoweredTrack;
+    public static Block sturdyDetectorTrack;
+    public static Block sturdyActivatorTrack;
     
     public static Block defaultCatwalk;
     /**
@@ -115,8 +118,17 @@ public class CatwalkMod
     	speedModifier.setSaved(false);
     	
     	
-    	sturdyTrack = new BlockSturdyTrack(false);
+    	sturdyTrack = new BlockSturdyTrack();
     	GameRegistry.registerBlock(sturdyTrack, "sturdy_track");
+    	
+    	sturdyPoweredTrack = new BlockSturdyBoosterTrack();
+    	GameRegistry.registerBlock(sturdyPoweredTrack, "sturdy_powered_track");
+    	
+    	sturdyDetectorTrack = new BlockSturdyRailDetector();
+    	GameRegistry.registerBlock(sturdyDetectorTrack, "sturdy_rail_detector");
+    	
+    	sturdyActivatorTrack = new BlockSturdyRailActivator();
+    	GameRegistry.registerBlock(sturdyActivatorTrack, "sturdy_rail_activator");
     	
     	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
     	for(boolean lights : trueFalse) {
