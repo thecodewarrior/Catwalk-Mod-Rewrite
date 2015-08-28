@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,7 +28,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
 import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
@@ -39,11 +37,10 @@ import com.thecodewarrior.codechicken.lib.vec.Cuboid6;
 import com.thecodewarrior.codechicken.lib.vec.Vector3;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockCagedLadder extends Block implements ICustomLadderVelocity, ICagedLadderConnectable {
+public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadderConnectable {
 
 	RayTracer rayTracer = new RayTracer();
 	
@@ -191,10 +188,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		
 		if(player.getHeldItem() != null ) {
 			boolean shouldBeSoft = false;
-			if(player.getHeldItem().getItem() instanceof IToolWrench)
-				shouldBeSoft = true;
-			Set<String> toolClasses = player.getHeldItem().getItem().getToolClasses(player.getHeldItem());
-			if(toolClasses.contains("wrench"))
+			if(CatwalkUtil.isHoldingWrench(player))
 				shouldBeSoft = true;
 			
 			if(shouldBeSoft)
@@ -213,14 +207,18 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 			side = (RelativeSide) ( (ExtendedMOP) hit ).data;
 		}
 		
-//		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench) {
-//			if(player.isSneaking()) {
-//
+		if(CatwalkUtil.isHoldingWrench(player)) {
+			if(player.isSneaking()) {
+
 //				this.dropBlockAsItem(world, x, y, z, 0, 0);
-//				world.setBlockToAir(x,y,z);
-//				this.updateNeighborSides(world, x, y, z, false);
-//			}
-//		}
+				List<ItemStack> drops = this.getDrops(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+				world.setBlockToAir(x, y, z);
+				for(ItemStack s : drops) {
+					CatwalkUtil.giveItemToPlayer(player, s);
+				}
+				this.updateNeighborSides(world, x, y, z, false);
+			}
+		}
 	}
 
 	@Override
@@ -233,20 +231,14 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		}
 				
 		ItemStack handStack = player.getCurrentEquippedItem();
-		if(handStack != null && handStack.getItem() instanceof IToolWrench) {
-			if(player.isSneaking()) {
-				
-			} else {
-//				if(side == RelativeSide.BOTTOM) {
-//					updateIdData(world, x, y, z, direction, lights, !isBottomOpen, tape);
-//				} else {
-					updateOpenData(world, x, y, z, side, !isOpen(side, world.getBlockMetadata(x, y, z)));
-//				}
-			}
+
+		if(CatwalkUtil.isHoldingWrench(player) && !player.isSneaking()) {
+			updateOpenData(world, x, y, z, side, !isOpen(side, world.getBlockMetadata(x, y, z)));
 		}
 		
-		if(player.getCurrentEquippedItem() != null) {
-			Item item = player.getCurrentEquippedItem().getItem();
+		
+		if(handStack != null) {
+			Item item = handStack.getItem();
 			boolean use = false;
 			
 			if(item instanceof ItemRopeLight && this.lights == false) {
@@ -260,18 +252,20 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 			}
 			
 			if(use && !player.capabilities.isCreativeMode)
-				player.getCurrentEquippedItem().stackSize--;
+				handStack.stackSize--;
 		}
 		
-		if(player.getCurrentEquippedItem() == null && player.isSneaking()) {
-			if(this.lights) {
+		if(player.isSneaking()) {
+			if(this.lights && (handStack == null || handStack.getItem() == CatwalkMod.itemRopeLight)) {
 				if(!world.isRemote) {
-					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+//					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+					CatwalkUtil.giveItemToPlayer(player, new ItemStack(CatwalkMod.itemRopeLight, 1));
 					updateIdData(world, x, y, z, direction, false, isBottomOpen, tape);
 				}
-			} else if(this.tape) {
+			} else if(this.tape && (handStack == null || handStack.getItem() == CatwalkMod.itemCautionTape)) {
 				if(!world.isRemote) {
-					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+//					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+					CatwalkUtil.giveItemToPlayer(player, new ItemStack(CatwalkMod.itemCautionTape, 1));
 					updateIdData(world, x, y, z, direction, lights, isBottomOpen, false);
 				}
 			}
@@ -280,33 +274,6 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 		return false;
 	}
 	
-	//==============================================================================
-	// Ladder methods
-	//==============================================================================
-	
-	@Override
-    public boolean isOnLadder(IBlockAccess world, int x, int y, int z, EntityLivingBase entity)
-    {
-		float px = 1/16F;
-		float px2 = 2*px;
-		float d = px*3;
-        return CatwalkMod.options.fullBlockLadder || entity.boundingBox.intersectsWith(AxisAlignedBB.getBoundingBox(x+d, y, z+d, x+1-d, y+1, z+1-d));
-    }
-	
-	public double getLadderVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
-		return entity.isSneaking() ? 0.15D : 0.25D;
-	}
-	
-	public double getLadderFallVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
-		return 0.25D;
-	}
-
-	@Override
-	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
-			EntityLivingBase entity, boolean isMovingDown) {
-		return true;
-	}
-
 	//==============================================================================
 	// Block highlight raytrace methods
 	//==============================================================================
@@ -411,7 +378,7 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
         
         boolean hasWrench = true;
         if(player != null)
-        	hasWrench = player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench;
+        	hasWrench = CatwalkUtil.isHoldingWrench(player);
     	
         float ym = 1;
     	
@@ -945,5 +912,50 @@ public class BlockCagedLadder extends Block implements ICustomLadderVelocity, IC
 	@Override
 	public boolean isThin(IBlockAccess w, int x, int y, int z, ForgeDirection side) {
 		return true;
+	}
+	
+	//==============================================================================
+	// Ladder methods
+	//==============================================================================
+	
+	@Override
+    public boolean isOnLadder(IBlockAccess world, int x, int y, int z, EntityLivingBase entity)
+    {
+		float px = 1/16F;
+		float px2 = 2*px;
+		float d = px*3;
+        return CatwalkMod.options.fullBlockLadder || entity.boundingBox.intersectsWith(AxisAlignedBB.getBoundingBox(x+d, y, z+d, x+1-d, y+1, z+1-d));
+    }
+	
+	public double getLadderVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
+		return entity.isSneaking() ? 0.15D : 0.25D;
+	}
+	
+	public double getLadderFallVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
+		return 0.25D;
+	}
+
+	@Override
+	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity, boolean isMovingDown) {
+		return true;
+	}
+
+	@Override
+	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() && CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public double getClimbDownVelocity(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return 0.03;
 	}
 }

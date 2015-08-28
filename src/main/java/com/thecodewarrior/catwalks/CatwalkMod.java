@@ -7,9 +7,13 @@ import java.util.UUID;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.Item;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -19,8 +23,6 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 @Mod(modid=CatwalkMod.MODID, name=CatwalkMod.MODNAME, version=CatwalkMod.MODVER)
@@ -28,7 +30,18 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.8";
+    public static final String MODVER = "0.1.9";
+    
+	public static final String loggerName = "Catwalks";
+	public static Logger l;
+	
+	public static Logger logger(String... name) {
+		if(name.length > 0) {
+			return LogManager.getLogger(loggerName + "][" + StringUtils.join(name, "]["));
+		} else {
+			return LogManager.getLogger(loggerName);
+		}
+	}
     
     @Instance(value = CatwalkMod.MODID)
     public static CatwalkMod instance;
@@ -82,6 +95,9 @@ public class CatwalkMod
     
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+    	l = logger();
+    	CatwalkUtil.init();
+
     	boolean[] trueFalse = {true, false};
     	
     	catwalkRenderType   = RenderingRegistry.getNextAvailableRenderId();

@@ -1,28 +1,32 @@
 package com.thecodewarrior.catwalks;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 
-import buildcraft.api.tools.IToolWrench;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSupportColumn extends Block implements ICustomLadderVelocity {
+public class BlockSupportColumn extends Block implements ICustomLadder {
 
+	RayTracer raytracer = new RayTracer();
+	
 	IIcon side;
 	IIcon top;
 	
@@ -34,6 +38,33 @@ public class BlockSupportColumn extends Block implements ICustomLadderVelocity {
 		setBlockBounds(   d, 0,   d,
 						1-d, 1, 1-d);
 		setHardness(1.0F);
+	}
+
+	@Override
+	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
+		int ijk = -1;
+		MovingObjectPosition mop = raytracer.reTrace(world, player);
+		if(mop == null)
+			return;
+		ForgeDirection side = ForgeDirection.getOrientation(mop.sideHit);
+		ItemStack stack = player.getCurrentEquippedItem();
+		if(stack != null) {
+			Item item = stack.getItem();
+			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking() && ( side == ForgeDirection.UP || side == ForgeDirection.DOWN)) {
+				for(int i = 128*-side.offsetY; Math.abs(i) >= 0; i += side.offsetY) {
+					Block b = world.getBlock(x, y+i, z);
+					if(b instanceof BlockSupportColumn){
+						//world.setBlock(x, y+i, z, ( (ItemBlock)item ).field_150939_a);
+						List<ItemStack> drops = b.getDrops(world, x, y+i, z, world.getBlockMetadata(x, y+i, z), 0);
+						world.setBlockToAir(x, y+i, z);
+						for(ItemStack s : drops) {
+							CatwalkUtil.giveItemToPlayer(player, s);
+						}
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -66,7 +97,7 @@ public class BlockSupportColumn extends Block implements ICustomLadderVelocity {
 					}
 				}
 				if(!use) {
-			        double d = 0.2; // random values will be beteen -d and +d
+			        double d = 0.2; // random values will be between -d and +d
 					for(int i = 0; i < 10; i++) {
 						world.spawnParticle("smoke", x+0.5 + ( (Math.random()-0.5)* 2*d ), y+1+ (Math.random()*d), z+0.5+( (Math.random()-0.5)* 2*d ), 0.0D, 0.0D, 0.0D);
 					}
@@ -156,10 +187,7 @@ public class BlockSupportColumn extends Block implements ICustomLadderVelocity {
 		
 		if(player.getHeldItem() != null ) {
 			boolean shouldBeSoft = false;
-			if(player.getHeldItem().getItem() instanceof IToolWrench)
-				shouldBeSoft = true;
-			Set<String> toolClasses = player.getHeldItem().getItem().getToolClasses(player.getHeldItem());
-			if(toolClasses.contains("wrench"))
+			if(CatwalkUtil.isHoldingWrench(player))
 				shouldBeSoft = true;
 			
 			if(shouldBeSoft)
@@ -210,6 +238,24 @@ public class BlockSupportColumn extends Block implements ICustomLadderVelocity {
 	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity, boolean isMovingDown) {
 		return !isMovingDown;
+	}
+
+	@Override
+	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() && CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public double getClimbDownVelocity(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return 0.03;
 	}
 
 }

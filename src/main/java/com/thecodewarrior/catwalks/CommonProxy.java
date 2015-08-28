@@ -5,24 +5,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRailBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityMinecart;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import net.minecraftforge.event.entity.minecart.MinecartUpdateEvent;
 import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
@@ -37,8 +35,6 @@ public class CommonProxy {
 	public boolean isClient = false;
 	
 	public LinkedList<WeakReference<EntityLivingBase>> entities = new LinkedList<WeakReference<EntityLivingBase>>();
-
-	public int lastOp = -1;
 	
 	public void init() {
 		// do some server stuff
@@ -71,29 +67,7 @@ public class CommonProxy {
 		}
 		return player;
 	}
-	
-	public void performModification() {
-		int opNum = 5;
-		if(lastOp == -1) {
-			lastOp = opNum;
-		}
-		if(lastOp < opNum) {
-			System.out.println("Performing operation " + opNum);
-			// BEGIN CODE
-			if(CatwalkMod.proxy instanceof ClientProxy) {
-				((ClientProxy)CatwalkMod.proxy).maxSpeed = 0;
-			}
-			// END CODE
-			lastOp = opNum;
-		}
-	}
-	
-	public static boolean isHoldingUsableWrench(EntityPlayer player)
-    {
-      Item equipped = player.inventory.getCurrentItem() != null ? player.inventory.getCurrentItem().getItem() : null;
-      return equipped instanceof IToolWrench;
-    }
-	
+
 	public CatwalkEntityProperties getOrCreateEP(Entity entity) {
 		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)entity.getExtendedProperties("catwalkmod.catwalkdata");
 		if(catwalkEP == null) {
@@ -115,7 +89,7 @@ public class CommonProxy {
 		if(coord.y >= 0) { // if the block was found (y=-1 if not found)
 
 			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z); // get the custom ladder block
-			ICustomLadderVelocity icl = (ICustomLadderVelocity)b;
+			ICustomLadder icl = (ICustomLadder)b;
 			double   upSpeed = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
 			double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // get custom fall velocity
 
@@ -130,11 +104,19 @@ public class CommonProxy {
                     e.motionY = -downSpeed; // set entity's velocity to the custom fall velocity
                 }
 
-                boolean shouldStopOnLadder = e.isSneaking() && e instanceof EntityPlayer;
-
-                if (shouldStopOnLadder && e.motionY < 0.0D) { // should stop and entity is moving down
+                boolean shouldStopOnLadder = icl.shouldStopFall(e.worldObj, coord.x, coord.y, coord.z, e);
+                boolean shouldClimbDown = icl.shouldClimbDown(e.worldObj, coord.x, coord.y, coord.z, e);
+                double climbDownSpeed = icl.getClimbDownVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
+                
+                if (shouldStopOnLadder && !shouldClimbDown && e.motionY < 0.0D) { // should stop and entity is moving down
     				e.motionY = 0.0D; // don't you DARE move down
                 }
+                
+                if(shouldClimbDown && e.motionY <= 0) {
+                	e.motionY = -climbDownSpeed;
+                }
+                
+                
 			}
 			
 			double dX = e.posX - catwalkEP.lastStepX;
@@ -183,8 +165,8 @@ public class CommonProxy {
 			public boolean match(BlockCoord bc) {
 				Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
 				return  b != null &&
-						b instanceof ICustomLadderVelocity &&
-						( (ICustomLadderVelocity)b).isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
+						b instanceof ICustomLadder &&
+						( (ICustomLadder)b).isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
 			}
 		});
 	}
@@ -231,9 +213,7 @@ public class CommonProxy {
 	}
 
 	@SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {
-    	performModification(); // for quickly running code in a dev environment
-		
+    public void onServerTick(TickEvent.ServerTickEvent event) {		
     	if( event.phase == Phase.END) {
     		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
     		
@@ -272,74 +252,4 @@ public class CommonProxy {
     		
     	}
 	}
-/*
-	public void minecartUpdate(MinecartUpdateEvent event) {
-		System.out.println("call!");
-EntityMinecart minecart = event.minecart;
-		int x = (int)event.x;
-		int y = (int)event.y;
-		int z = (int)event.z;
-		
-		if (BlockRailBase.func_150049_b_(minecart.worldObj, x, y - 1, z))
-        {
-            --y;
-        }
-		
-		Block blockOn = minecart.worldObj.getBlock(x, y, z);
-		int meta      = minecart.worldObj.getBlockMetadata(x,y,z);
-		Vec3 vec3 = minecart.func_70489_a(minecart.posX, minecart.posY, minecart.posZ);
-
-		if(!( blockOn instanceof BlockRailBase ))
-			return;
-		
-		boolean isPoweredAndHasPower = false;
-        boolean flag1 = false;
-        
-        BlockRailBase brb = (BlockRailBase)blockOn;
-
-        if (blockOn != Blocks.golden_rail && brb.isPowered())
-        {
-        	System.out.println("AAAA");
-            isPoweredAndHasPower = (minecart.worldObj.getBlockMetadata(x, y, z) & 8) != 0;
-        }
-        
-        int basicRailData = ((BlockRailBase)blockOn).getBasicRailMetadata(minecart.worldObj, minecart, x, y, z);
-        
-        if (isPoweredAndHasPower && minecart.shouldDoRailFunctions())
-        {
-            double d15 = Math.sqrt(minecart.motionX * minecart.motionX + minecart.motionZ * minecart.motionZ);
-
-            if (d15 > 0.01D)
-            {
-                double d16 = 0.06D;
-                minecart.motionX += minecart.motionX / d15 * d16;
-                minecart.motionZ += minecart.motionZ / d15 * d16;
-            }
-            else if (basicRailData == 1)
-            {
-                if (minecart.worldObj.getBlock(x - 1, y, z).isNormalCube())
-                {
-                    minecart.motionX = 0.02D;
-                }
-                else if (minecart.worldObj.getBlock(x + 1, y, z).isNormalCube())
-                {
-                    minecart.motionX = -0.02D;
-                }
-            }
-            else if (basicRailData == 0)
-            {
-                if (minecart.worldObj.getBlock(x, y, z - 1).isNormalCube())
-                {
-                    minecart.motionZ = 0.02D;
-                }
-                else if (minecart.worldObj.getBlock(x, y, z + 1).isNormalCube())
-                {
-                    minecart.motionZ = -0.02D;
-                }
-            }
-        }
-
-        
-	}
-*/
 }

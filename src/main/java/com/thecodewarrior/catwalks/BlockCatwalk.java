@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -14,7 +13,6 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -29,7 +27,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
 import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
@@ -42,7 +39,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICustomLadderVelocity {
+public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICustomLadder {
 	public boolean lights;
 	public boolean bottom;
 	public boolean tape;
@@ -124,10 +121,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		
 		if(player.getHeldItem() != null ) {
 			boolean shouldBeSoft = false;
-			if(player.getHeldItem().getItem() instanceof IToolWrench)
-				shouldBeSoft = true;
-			Set<String> toolClasses = player.getHeldItem().getItem().getToolClasses(player.getHeldItem());
-			if(toolClasses.contains("wrench"))
+			if(CatwalkUtil.isHoldingWrench(player))
 				shouldBeSoft = true;
 			
 			if(shouldBeSoft)
@@ -146,11 +140,14 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 			side = (ForgeDirection) ( (ExtendedMOP) hit ).data;
 		}
 		
-		if(player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench) {
+		if(CatwalkUtil.isHoldingWrench(player)) {
 			if(player.isSneaking()) {
 
-				this.dropBlockAsItem(world, x, y, z, 0, 0);
-				world.setBlockToAir(x,y,z);
+				List<ItemStack> drops = this.getDrops(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+				world.setBlockToAir(x, y, z);
+				for(ItemStack s : drops) {
+					CatwalkUtil.giveItemToPlayer(player, s);
+				}
 				this.updateNeighborSides(world, x, y, z, false);
 			}
 		}
@@ -171,9 +168,9 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 			
 			if(side == ForgeDirection.DOWN && world.getBlock(x, y-1, z) instanceof BlockSupportColumn &&
 					item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockSupportColumn) {
-				world.getBlock(x, y-1, z).onBlockActivated(world, x, y-1, z, player, ForgeDirection.UP.ordinal(), hitX, 1F, hitZ);
+				return world.getBlock(x, y-1, z).onBlockActivated(world, x, y-1, z, player, ForgeDirection.UP.ordinal(), hitX, 1F, hitZ);
 			} else
-			if(item instanceof IToolWrench) {
+			if(CatwalkUtil.isHoldingWrench(player)) {
 				if(side != ForgeDirection.UP) {
 					updateData(world,x,y,z, side, !getOpenState(world,x,y,z, side), this.lights, this.tape);
 				}
@@ -194,12 +191,14 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		if(player.getCurrentEquippedItem() == null && player.isSneaking()) {
 			if(this.lights) {
 				if(!world.isRemote) {
-					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+					//world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemRopeLight, 1)));
+					CatwalkUtil.giveItemToPlayer(player, new ItemStack(CatwalkMod.itemRopeLight, 1));
 					updateData(world, x, y, z, ForgeDirection.UP, false, false, this.tape);
 				}
 			} else if(this.tape) {
 				if(!world.isRemote) {
-					world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+					//world.spawnEntityInWorld(new EntityItem(world, x+0.5, y+0.5, z+0.5, new ItemStack(CatwalkMod.itemCautionTape, 1)));
+					CatwalkUtil.giveItemToPlayer(player, new ItemStack(CatwalkMod.itemCautionTape, 1));
 					updateData(world, x, y, z, ForgeDirection.UP, false, this.lights, false);
 				}
 			}
@@ -264,7 +263,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
         
         boolean hasWrench = true;
         if(player != null)
-        	hasWrench = player.getCurrentEquippedItem() != null && player.getCurrentEquippedItem().getItem() instanceof IToolWrench;
+        	hasWrench = CatwalkUtil.isHoldingWrench(player);
         
         float px = 1/16F;
     	int meta = world.getBlockMetadata(x, y, z);
@@ -706,5 +705,23 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	public boolean shouldPlayStepSound(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity, boolean isMovingDown) {
 		return !isMovingDown;
+	}
+
+	@Override
+	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return entity.isSneaking() && CatwalkUtil.isHoldingWrench(entity, false);
+	}
+
+	@Override
+	public double getClimbDownVelocity(IBlockAccess world, int x, int y, int z,
+			EntityLivingBase entity) {
+		return 0.03;
 	}
 }
