@@ -119,7 +119,7 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
     	setBlockBounds(px, 0, px, 1-px, 1, 1-px);
 		setBlockName("cagedladder");
 		setStepSound(soundTypeLadder);
-		if(direction == ForgeDirection.NORTH && !lights && !bottom)
+		if(direction == ForgeDirection.NORTH && !lights && !bottom && !tape)
 			setCreativeTab(CreativeTabs.tabTransport);
 		setHarvestLevel("wrench", 0);
 		setHarvestLevel("pickaxe", 0);
@@ -200,17 +200,9 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-		MovingObjectPosition hit = RayTracer.retraceBlock(world, player, x, y, z);
-		
-		RelativeSide side = RelativeSide.TOP;
-		if (hit != null) {
-			side = (RelativeSide) ( (ExtendedMOP) hit ).data;
-		}
-		
 		if(CatwalkUtil.isHoldingWrench(player)) {
 			if(player.isSneaking()) {
 
-//				this.dropBlockAsItem(world, x, y, z, 0, 0);
 				List<ItemStack> drops = this.getDrops(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
 				world.setBlockToAir(x, y, z);
 				for(ItemStack s : drops) {

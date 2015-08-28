@@ -133,13 +133,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-		MovingObjectPosition hit = RayTracer.retraceBlock(world, player, x, y, z);
-		
-		ForgeDirection side = ForgeDirection.UP;
-		if (hit != null) {
-			side = (ForgeDirection) ( (ExtendedMOP) hit ).data;
-		}
-		
 		if(CatwalkUtil.isHoldingWrench(player)) {
 			if(player.isSneaking()) {
 
@@ -153,7 +146,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		}
 	}
 
-	
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {
 		MovingObjectPosition hit = RayTracer.retraceBlock(world, player, x, y, z);
@@ -698,7 +690,8 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	@Override
 	public boolean isOnLadder(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return world.getBlock(x, y+1, z) instanceof BlockCatwalk;
+		return  world.getBlock(x, y+1, z) instanceof BlockCatwalk ||
+				world.getBlock(x, y-1, z) instanceof BlockCatwalk;
 	}
 
 	@Override

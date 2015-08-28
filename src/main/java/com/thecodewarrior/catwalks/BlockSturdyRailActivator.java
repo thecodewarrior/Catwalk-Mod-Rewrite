@@ -35,6 +35,20 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	  return false;
 	}
 
+	@Override
+	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
+		if(CatwalkUtil.isHoldingWrench(player)) {
+			if(player.isSneaking()) {
+
+				List<ItemStack> drops = this.getDrops(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+				world.setBlockToAir(x, y, z);
+				for(ItemStack s : drops) {
+					CatwalkUtil.giveItemToPlayer(player, s);
+				}
+			}
+		}
+	}
+	
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {
 		int l = MathHelper.floor_double((double)((player.rotationYaw * 4F) / 360F) + 0.5D) & 3;
 		ForgeDirection d = ForgeDirection.NORTH;

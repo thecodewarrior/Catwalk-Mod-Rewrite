@@ -49,6 +49,8 @@ public class CatwalkUtil {
 	}
 	
 	public static void giveItemToPlayer(EntityPlayer player, ItemStack _stack) {
+		if(player.capabilities.isCreativeMode)
+			return;
 		ItemStack stack = _stack.copy();
 		if(player.inventory.addItemStackToInventory(stack)) {
 			player.inventoryContainer.detectAndSendChanges();

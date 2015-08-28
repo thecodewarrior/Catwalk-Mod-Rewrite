@@ -42,26 +42,13 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
-		int ijk = -1;
-		MovingObjectPosition mop = raytracer.reTrace(world, player);
-		if(mop == null)
-			return;
-		ForgeDirection side = ForgeDirection.getOrientation(mop.sideHit);
-		ItemStack stack = player.getCurrentEquippedItem();
-		if(stack != null) {
-			Item item = stack.getItem();
-			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking() && ( side == ForgeDirection.UP || side == ForgeDirection.DOWN)) {
-				for(int i = 128*-side.offsetY; Math.abs(i) >= 0; i += side.offsetY) {
-					Block b = world.getBlock(x, y+i, z);
-					if(b instanceof BlockSupportColumn){
-						//world.setBlock(x, y+i, z, ( (ItemBlock)item ).field_150939_a);
-						List<ItemStack> drops = b.getDrops(world, x, y+i, z, world.getBlockMetadata(x, y+i, z), 0);
-						world.setBlockToAir(x, y+i, z);
-						for(ItemStack s : drops) {
-							CatwalkUtil.giveItemToPlayer(player, s);
-						}
-						break;
-					}
+		if(CatwalkUtil.isHoldingWrench(player)) {
+			if(player.isSneaking()) {
+
+				List<ItemStack> drops = this.getDrops(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+				world.setBlockToAir(x, y, z);
+				for(ItemStack s : drops) {
+					CatwalkUtil.giveItemToPlayer(player, s);
 				}
 			}
 		}
@@ -105,6 +92,20 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 				if(use && !player.capabilities.isCreativeMode)
 					player.getCurrentEquippedItem().stackSize--;
 				return true;
+			} else
+			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking() && ( side == ForgeDirection.UP || side == ForgeDirection.DOWN)) {
+				for(int i = 128*-side.offsetY; Math.abs(i) > 0; i += side.offsetY) {
+					Block b = world.getBlock(x, y+i, z);
+					if(b instanceof BlockSupportColumn){
+						//world.setBlock(x, y+i, z, ( (ItemBlock)item ).field_150939_a);
+						List<ItemStack> drops = b.getDrops(world, x, y+i, z, world.getBlockMetadata(x, y+i, z), 0);
+						world.setBlockToAir(x, y+i, z);
+						for(ItemStack s : drops) {
+							CatwalkUtil.giveItemToPlayer(player, s);
+						}
+						break;
+					}
+				}
 			}
 		}
 		
