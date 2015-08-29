@@ -54,7 +54,8 @@ public class CatwalkUtil {
 		ItemStack stack = _stack.copy();
 		if(player.inventory.addItemStackToInventory(stack)) {
 			player.inventoryContainer.detectAndSendChanges();
-		} else if( !player.worldObj.isRemote ){
+		}
+		if( !player.worldObj.isRemote && stack.stackSize > 0){
 			double xSize = player.boundingBox.maxX - player.boundingBox.minX;
 			double ySize = player.boundingBox.maxY - player.boundingBox.minY;
 			double zSize = player.boundingBox.maxZ - player.boundingBox.minZ;
