@@ -934,7 +934,7 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	}
 
 	@Override
-	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
 	}

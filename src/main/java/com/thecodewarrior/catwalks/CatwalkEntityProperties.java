@@ -15,6 +15,9 @@ public class CatwalkEntityProperties implements IExtendedEntityProperties {
 	public double lastStepY;
 	public double lastStepZ;
 	public boolean isSlidingDownLadder = false;
+	public double lastPosX;
+	public double lastPosY;
+	public double lastPosZ;
 	
 	@Override
 	public void saveNBTData(NBTTagCompound compound) {}
@@ -27,8 +30,11 @@ public class CatwalkEntityProperties implements IExtendedEntityProperties {
 		timeout = -10;
 		multiplier = 0;
 		lastStepX = entity.posX;
-		lastStepX = entity.posY;
-		lastStepX = entity.posZ;
+		lastStepY = entity.posY;
+		lastStepZ = entity.posZ;
+		lastPosX = entity.posX;
+		lastPosY = entity.posY;
+		lastPosZ = entity.posZ;
 	}
 
 }

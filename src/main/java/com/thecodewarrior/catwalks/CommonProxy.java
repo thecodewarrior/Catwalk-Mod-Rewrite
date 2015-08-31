@@ -86,25 +86,29 @@ public class CommonProxy {
 		EntityLivingBase e = event.entityLiving;
 
 		CatwalkEntityProperties catwalkEP = getOrCreateEP(event.entity); // get entity properties object "for future uses"
+		
 		if(coord.y >= 0) { // if the block was found (y=-1 if not found)
 
 			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z); // get the custom ladder block
-			ICustomLadder icl = (ICustomLadder)b;
+			ICustomLadder icl = CustomLadderRegistry.getCustomLadderOrNull(b);
 			double   upSpeed = icl.getLadderVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
 			double downSpeed = icl.getLadderFallVelocity(e.worldObj, coord.x, coord.y, coord.z, e); // get custom fall velocity
-
+			double motY = e.posY - catwalkEP.lastPosY;
+			
+			
 			if(e.isCollidedHorizontally) { // entity is smashed up against something
 				e.motionY = upSpeed; // set the entity's upward velocity to the custom value
-				catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 whatevers when they stop
+				catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 blocks/tick when they stop
 			} else {
-				e.fallDistance = 0.0F; // reset fall distance to prevent fall damage
+				if(downSpeed > 0)
+					e.fallDistance = 0.0F; // reset fall distance to prevent fall damage
 				
-                if (e.motionY < -downSpeed) // if the entity is falling faster than custom fall velocity
+                if (downSpeed > 0 && e.motionY < -downSpeed) // if the entity is falling faster than custom fall velocity
                 {
                     e.motionY = -downSpeed; // set entity's velocity to the custom fall velocity
                 }
 
-                boolean shouldStopOnLadder = icl.shouldStopFall(e.worldObj, coord.x, coord.y, coord.z, e);
+                boolean shouldStopOnLadder = icl.shouldHoldOn(e.worldObj, coord.x, coord.y, coord.z, e);
                 boolean shouldClimbDown = icl.shouldClimbDown(e.worldObj, coord.x, coord.y, coord.z, e);
                 double climbDownSpeed = icl.getClimbDownVelocity(e.worldObj, coord.x, coord.y, coord.z, e);
                 
@@ -118,6 +122,12 @@ public class CommonProxy {
                 
                 
 			}
+			if(motY >= 0) {
+				e.fallDistance = 0.0F;
+			}
+			
+			
+			
 			
 			double dX = e.posX - catwalkEP.lastStepX;
 			double dY = e.posY - catwalkEP.lastStepY;
@@ -148,6 +158,9 @@ public class CommonProxy {
 			
 		}
 		
+		catwalkEP.lastPosX = e.posX;
+		catwalkEP.lastPosY = e.posY;
+		catwalkEP.lastPosZ = e.posZ;
 		
 		if(catwalkEP.highSpeedLadder && !event.entityLiving.isCollidedHorizontally) {
 			if(event.entity.motionY > 0.2D)
@@ -164,9 +177,12 @@ public class CommonProxy {
 			@Override
 			public boolean match(BlockCoord bc) {
 				Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
-				return  b != null &&
-						b instanceof ICustomLadder &&
-						( (ICustomLadder)b).isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
+				if(b == null)
+					return false;
+				ICustomLadder icl = CustomLadderRegistry.getCustomLadderOrNull(b);
+				if(icl == null)
+					return false;
+				return  icl.isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
 			}
 		});
 	}
@@ -181,14 +197,15 @@ public class CommonProxy {
 		World world = entity.worldObj;
         Block block;
 		AxisAlignedBB bb = entity.boundingBox;
-        int mX = MathHelper.floor_double(bb.minX);
-        int mY = MathHelper.floor_double(bb.minY);
-        int mZ = MathHelper.floor_double(bb.minZ);
-        for (int y2 = mY; y2 < bb.maxY; y2++)
+		double buf = 1/1024F; // so when the player is touching a full 1m cube they can climb it.
+        int mX = MathHelper.floor_double(bb.minX-buf);
+        int mY = MathHelper.floor_double(bb.minY-buf);
+        int mZ = MathHelper.floor_double(bb.minZ-buf);
+        for (int y2 = mY; y2 < bb.maxY+buf; y2++)
         {
-            for (int x2 = mX; x2 < bb.maxX; x2++)
+            for (int x2 = mX; x2 < bb.maxX+buf; x2++)
             {
-                for (int z2 = mZ; z2 < bb.maxZ; z2++)
+                for (int z2 = mZ; z2 < bb.maxZ+buf; z2++)
                 {
                 	
                 	BlockCoord bc = new BlockCoord(x2, y2, z2);

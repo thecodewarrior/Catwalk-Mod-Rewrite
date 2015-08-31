@@ -266,7 +266,11 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
     		d = 0.125;
     		//cuboids.add(new IndexedCuboid6(Hitboxes.BOTTOM, new Cuboid6(x+ px, y+ 0, z+ px, x+ 1-px, y+ px, z+ 1-px)));
     	} else {
-    		d = 0.25;
+    		if(world.getBlock(x,y-1,z) instanceof BlockCatwalk) {
+    			d = 0.4;
+    		} else {
+    			d = 0.25;
+    		}
     	}
     	
     	if(bottom || hasWrench)
@@ -357,7 +361,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
     	}
     	
     	if(( !getBit(meta, 3) && shouldHaveBox(world, x, y, z, ForgeDirection.NORTH) ) || ovr) {
-    		if(getStepConnect(world,x,y,z,ForgeDirection.NORTH)) {
+    		if(shouldSideBeShort(world,x,y,z,ForgeDirection.NORTH)) {
     			this.setBlockBounds(0, 0, 0, 1, 1, px);
     		} else {
     			this.setBlockBounds(0, 0, 0, 1, top, px);
@@ -365,7 +369,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
     	if(( !getBit(meta, 2) && shouldHaveBox(world, x, y, z, ForgeDirection.SOUTH) ) || ovr) {
-    		if(getStepConnect(world,x,y,z,ForgeDirection.SOUTH)) {
+    		if(shouldSideBeShort(world,x,y,z,ForgeDirection.SOUTH)) {
     			this.setBlockBounds(0, 0, 1-px, 1, 1, 1);
     		} else {
     			this.setBlockBounds(0, 0, 1-px, 1, top, 1);
@@ -373,7 +377,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
     	if(( !getBit(meta, 1) && shouldHaveBox(world, x, y, z, ForgeDirection.WEST) ) || ovr) {
-    		if(getStepConnect(world,x,y,z,ForgeDirection.WEST)) {
+    		if(shouldSideBeShort(world,x,y,z,ForgeDirection.WEST)) {
     			this.setBlockBounds(0, 0, 0, px, 1, 1);
     		} else {
     			this.setBlockBounds(0, 0, 0, px, top, 1);
@@ -381,7 +385,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
             super.addCollisionBoxesToList(world, x, y, z, blockBounds, list, collidingEntity);
     	}
     	if(( !getBit(meta, 0) && shouldHaveBox(world, x, y, z, ForgeDirection.EAST) ) || ovr) {
-    		if(getStepConnect(world,x,y,z,ForgeDirection.EAST)) {
+    		if(shouldSideBeShort(world,x,y,z,ForgeDirection.EAST)) {
     			this.setBlockBounds(1-px, 0, 0, 1, 1, 1);
     		} else {
     			this.setBlockBounds(1-px, 0, 0, 1, top, 1);    			
@@ -393,7 +397,10 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 //    	this.setBlockBounds(0, 0, 0, 1, 1, 1);
     }
 
-	public boolean getStepConnect(World w, int x, int y, int z, ForgeDirection direction) {
+	public boolean shouldSideBeShort(World w, int x, int y, int z, ForgeDirection direction) {
+		if(w.getBlock(x, y-1, z) instanceof BlockCatwalk)
+			return true;
+		
 		int newX = x+direction.offsetX,
 			newY = y+1,
 			newZ = z+direction.offsetZ;
@@ -684,7 +691,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	@Override
 	public double getLadderFallVelocity(IBlockAccess world, int x, int y,
 			int z, EntityLivingBase entity) {
-		return Integer.MAX_VALUE;
+		return -1;
 	}
 	
 	@Override
@@ -701,7 +708,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	}
 
 	@Override
-	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
 	}

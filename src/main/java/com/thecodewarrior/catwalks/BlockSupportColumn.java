@@ -226,7 +226,7 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 	@Override
 	public double getLadderFallVelocity(IBlockAccess world, int x, int y,
 			int z, EntityLivingBase entity) {
-		return Integer.MAX_VALUE;
+		return -1;
 	}
 
 	@Override
@@ -242,7 +242,7 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 	}
 
 	@Override
-	public boolean shouldStopFall(IBlockAccess world, int x, int y, int z,
+	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
 	}
