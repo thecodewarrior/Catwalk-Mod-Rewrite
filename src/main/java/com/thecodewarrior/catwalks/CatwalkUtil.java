@@ -11,6 +11,8 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.Vec3;
 import buildcraft.api.tools.IToolWrench;
 
+import com.thecodewarrior.mcjty.varia.WrenchChecker;
+
 public class CatwalkUtil {
 	
 	static boolean isDev = false;
@@ -22,6 +24,8 @@ public class CatwalkUtil {
 	public static void init() {
 		// Credit http://jabelarminecraft.blogspot.com/p/quick-tips-eclipse.html
 		isDev = (Boolean)Launch.blackboard.get("fml.deobfuscatedEnvironment");
+		
+		WrenchChecker.init();
 	}
 	
 	public static EntityPlayer getPlayerLooking(Vec3 start, Vec3 end) {
@@ -39,10 +43,9 @@ public class CatwalkUtil {
 		ItemStack heldStack = player.getHeldItem();
 		if(heldStack != null) {
 			Item item = heldStack.getItem();
-			if(item instanceof IToolWrench)
+			if(WrenchChecker.isAWrench(item))
 				return true;
-			Set<String> toolClasses = player.getHeldItem().getItem().getToolClasses(player.getHeldItem());
-			if(toolClasses.contains("wrench"))
+			if(item.getToolClasses(heldStack).contains("wrench"))
 				return true;
 		}
 		return false;
