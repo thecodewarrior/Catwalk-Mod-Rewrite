@@ -10,21 +10,18 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
+import com.thecodewarrior.mcjty.varia.WrenchChecker;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -230,11 +227,28 @@ public class CommonProxy {
 	}
 
 	@SubscribeEvent
-    public void onServerTick(TickEvent.ServerTickEvent event) {		
+	public void onClientTick(TickEvent.ClientTickEvent event) {
+		if(event.phase == Phase.END) {
+			CatwalkUtil.ticks++;
+		}
+	}
+	
+	@SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {	
+		
     	if( event.phase == Phase.END) {
     		List<EntityPlayerMP> players = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
     		
     		for (EntityPlayerMP player : players) { // for each player
+    			
+    			if(player.getCurrentEquippedItem() != null &&
+    			   player.getCurrentEquippedItem().getItem() instanceof ItemExtender &&
+    			   player.getCurrentEquippedItem().getItemDamage() != 0) {
+    				
+    				((ItemExtender)player.getCurrentEquippedItem().getItem()).extend(player.getCurrentEquippedItem(), player.worldObj, player);
+    			}
+    			
+    			
     			// find any catwalks
 				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord, EntityPlayerMP>(player) {
 					@Override

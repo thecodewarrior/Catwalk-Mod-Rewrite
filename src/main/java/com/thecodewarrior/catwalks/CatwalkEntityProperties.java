@@ -18,6 +18,7 @@ public class CatwalkEntityProperties implements IExtendedEntityProperties {
 	public double lastPosX;
 	public double lastPosY;
 	public double lastPosZ;
+	public boolean currentUseKeyState;
 	
 	@Override
 	public void saveNBTData(NBTTagCompound compound) {}

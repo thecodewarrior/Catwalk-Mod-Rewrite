@@ -2,13 +2,16 @@ package com.thecodewarrior.catwalks;
 
 import java.util.Set;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
+import net.minecraftforge.common.util.ForgeDirection;
 import buildcraft.api.tools.IToolWrench;
 
 public class CatwalkUtil {
@@ -22,6 +25,47 @@ public class CatwalkUtil {
 	public static void init() {
 		// Credit http://jabelarminecraft.blogspot.com/p/quick-tips-eclipse.html
 		isDev = (Boolean)Launch.blackboard.get("fml.deobfuscatedEnvironment");
+	}
+	
+	public static CatwalkEntityProperties getOrCreateEP(Entity e) {
+		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)e.getExtendedProperties("catwalkmod.catwalkdata");
+		if(catwalkEP == null) {
+			catwalkEP = new CatwalkEntityProperties();
+			e.registerExtendedProperties("catwalkmod.catwalkdata", catwalkEP);
+		}
+		return catwalkEP;
+	}
+	
+	public static ForgeDirection getHorizontalFacingDirection(EntityPlayer player) {
+		int dir = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+		switch(dir) {
+		case 0:
+			return ForgeDirection.SOUTH;
+		case 1:
+			return ForgeDirection.WEST;
+		case 2:
+			return ForgeDirection.NORTH;
+		case 3:
+			return ForgeDirection.EAST;
+		}
+		
+		return null;
+	}
+	
+	public static ForgeDirection getVerticalFacingDirection(EntityPlayer player) {
+		float rot = player.rotationPitch;
+		if(rot > 60)
+			return ForgeDirection.DOWN;
+		if(rot < -60)
+			return ForgeDirection.UP;
+		return null;
+	}
+	
+	public static ForgeDirection getFacingDirection(EntityPlayer player) {
+		ForgeDirection dir = getVerticalFacingDirection(player);
+		if(dir == null)
+			dir = getHorizontalFacingDirection(player);
+		return dir;
 	}
 	
 	public static EntityPlayer getPlayerLooking(Vec3 start, Vec3 end) {
@@ -67,5 +111,21 @@ public class CatwalkUtil {
 			entity.motionZ = 0;
 			player.worldObj.spawnEntityInWorld(entity);
 		}
+	}
+
+	public static void consumeFromStack(EntityPlayer player, ItemStack stack) {
+		if(player.capabilities.isCreativeMode)
+			return;
+		else {
+			stack.stackSize--;
+			if(stack.stackSize <= 0) {
+				for(int i = 0; i < player.inventory.mainInventory.length; i++) {
+					if(player.inventory.mainInventory[i] == stack) {
+						player.inventory.mainInventory[i] = null;
+					}
+				}
+			}
+		}
+		
 	}
 }

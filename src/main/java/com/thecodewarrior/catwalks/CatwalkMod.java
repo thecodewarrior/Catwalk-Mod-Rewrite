@@ -30,7 +30,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.10";
+    public static final String MODVER = "0.1.11";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -80,6 +80,7 @@ public class CatwalkMod
     public static Item itemBlowtorch;
     public static Item itemRopeLight;
     public static Item itemCautionTape;
+    public static Item itemExtender;
     
     public static int speedEffectLevel = 2;
     public static AttributeModifier speedModifier;
@@ -212,10 +213,12 @@ public class CatwalkMod
     	itemBlowtorch   = new ItemBlowtorch();
     	itemRopeLight   = new ItemRopeLight();
     	itemCautionTape = new ItemCautionTape();
+    	itemExtender    = new ItemExtender();
     	
     	GameRegistry.registerItem(itemBlowtorch,   "blowtorch"  );
     	GameRegistry.registerItem(itemRopeLight,   "ropeLight"  );
     	GameRegistry.registerItem(itemCautionTape, "cautionTape");
+    	GameRegistry.registerItem(itemExtender,    "extender"   );
     	
     	proxy.init();
     }

@@ -9,6 +9,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityMinecart;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
@@ -21,7 +22,7 @@ import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackExtendable {
+public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackExtendable, IExtendable {
 	public IIcon powered;
 	public IIcon unpowered;
 		
@@ -151,4 +152,43 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
             list.add(aabb);
         }
     }
+    
+  //==============================================================================
+  	// IExtendable
+  	//==============================================================================
+
+  	@Override
+  	public boolean extend(World world, int _x, int _y, int _z,
+  			EntityPlayer player) {
+  		ForgeDirection dir = CatwalkUtil.getFacingDirection(player);
+  		if(dir == ForgeDirection.UP || dir == ForgeDirection.DOWN)
+  			return false;
+  		int x = _x+dir.offsetX,
+  			y = _y+dir.offsetY,
+  			z = _z+dir.offsetZ;
+  		if(!world.getBlock(x, y, z).isReplaceable(world, x, y, z))
+  			return false;
+  		InventoryPlayer inv = player.inventory;
+  		for(ItemStack stack : inv.mainInventory) {
+  			if(stack == null)
+  				continue;
+  			if(stack.getItem() instanceof ItemBlock &&
+  					((ItemBlock) stack.getItem()).field_150939_a instanceof BlockSturdyRailActivator) {
+  				
+  				
+  				boolean res = ((ItemBlock) stack.getItem()).placeBlockAt(
+  						stack, player,
+  						world, x, y, z, dir.getOpposite().ordinal(),
+  						dir.offsetX == 0 ? 0.5F : dir.offsetX < 0 ? 0 : 1,
+  						dir.offsetY == 0 ? 0.5F : dir.offsetY < 0 ? 0 : 1,
+  						dir.offsetZ == 0 ? 0.5F : dir.offsetZ < 0 ? 0 : 1,
+  						stack.getItemDamage()
+  					);
+  				if(res)
+  					CatwalkUtil.consumeFromStack(player, stack);
+  				return res;
+  			}
+  		}
+  		return false;
+  	}
 }

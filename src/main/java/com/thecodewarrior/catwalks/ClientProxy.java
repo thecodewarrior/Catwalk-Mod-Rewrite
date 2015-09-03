@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.FoodStats;
 import net.minecraft.util.Vec3;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -47,9 +46,6 @@ public class ClientProxy extends CommonProxy {
     	headers.add("m/s:");
     	headers.add("m/t max:");
     	headers.add("m/s max:");
-    	for(int i = 0; i < 5; i++) {
-    		headers.add("_" + i + ":");
-    	}
     }
     
     @Override
