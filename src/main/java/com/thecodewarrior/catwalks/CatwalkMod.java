@@ -30,7 +30,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.10";
+    public static final String MODVER = "0.1.11";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -57,6 +57,7 @@ public class CatwalkMod
     public static Block sturdyActivatorTrack;
     
     public static Block supportColumn;
+    public static Block scaffold;
     
     public static Block defaultCatwalk;
     /**
@@ -155,6 +156,8 @@ public class CatwalkMod
     	
     	supportColumn = new BlockSupportColumn();
     	GameRegistry.registerBlock(supportColumn, "support_column");
+    	scaffold = new BlockScaffold();
+    	GameRegistry.registerBlock(scaffold, ItemBlockScaffold.class, "scaffold");
     	
     	catwalks = new HashMap<Boolean, Map<Boolean, Map<Boolean,Block>>>();
     	for(boolean lights : trueFalse) {

@@ -619,12 +619,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	public int getRenderType(){
 	    return CatwalkMod.catwalkRenderType;
 	}
-
-	@SideOnly(Side.CLIENT)
-	public int getRenderBlockPass()
-	{
-	    return 0;
-	}
 	
 	@SideOnly(Side.CLIENT)
 	public boolean isBlockNormalCube()
