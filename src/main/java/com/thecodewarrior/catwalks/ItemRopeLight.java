@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 public class ItemRopeLight extends Item {
 	public ItemRopeLight() {
 		setCreativeTab(CreativeTabs.tabMisc);
-		setUnlocalizedName("ropelight");
+		setUnlocalizedName("rope_light");
 	}
 	
 	@SideOnly(Side.CLIENT)

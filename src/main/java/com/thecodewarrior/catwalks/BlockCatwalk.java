@@ -46,6 +46,8 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	private RayTracer rayTracer = new RayTracer();
 	
+	public IIcon inventory_bottom;
+	public IIcon inventory_side;
 	
 	public IIcon transparent;
 		
@@ -426,14 +428,17 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-		transparent   			= reg.registerIcon("catwalks:transparent");
+		transparent   			= reg.registerIcon(CatwalkMod.MODID + ":transparent");
+		
+		inventory_bottom = reg.registerIcon(CatwalkMod.MODID + ":inventory/catwalk_bottom");
+		inventory_side   = reg.registerIcon(CatwalkMod.MODID + ":inventory/catwalk_side");
 		
 		textures = new HashMap<TextureSide, Map<TextureType,IIcon>>();
 	    for (TextureSide side : TextureSide.values()) {
 	    	Map<TextureType, IIcon> sideMap = new HashMap<TextureType, IIcon>();
 	    	textures.put(side, sideMap);
 	    	for (TextureType type : TextureType.values()) {
-				IIcon icon = reg.registerIcon("catwalks:catwalk/" + side.filename + "/" + type.filename);
+				IIcon icon = reg.registerIcon(CatwalkMod.MODID + ":catwalk/" + side.filename + "/" + type.filename);
 				
 				sideMap.put(type, icon);
 			}
@@ -443,6 +448,17 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	@Override
 	public IIcon getIcon(int _side, int meta) {
+		if(_side >= 100) {
+			ForgeDirection side = ForgeDirection.getOrientation(_side - 100);
+			if(side == ForgeDirection.UP) {
+				return transparent;
+			} else if(side == ForgeDirection.DOWN) {
+				return inventory_bottom;
+			} else {
+				return inventory_side;
+			}
+		}
+		
 		ForgeDirection side = ForgeDirection.getOrientation(_side);
 		
 		if(side == ForgeDirection.UP) {

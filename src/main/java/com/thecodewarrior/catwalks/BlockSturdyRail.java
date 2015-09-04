@@ -92,13 +92,16 @@ public class BlockSturdyRail extends BlockRail implements ISturdyTrackExtendable
 	{
 	    return super.getRailMaxSpeed(world, cart, y, x, z);
 	}
-	
-	/**
-     * Gets the block's texture. Args: side, meta
-     */
+
     @SideOnly(Side.CLIENT)
-    public IIcon getIcon(int p_149691_1_, int p_149691_2_) {
-    	return p_149691_2_ >= 6 ? curved : straight;
+    public String getItemIconName()
+    {
+        return CatwalkMod.MODID + ":blocks/sturdy_rail";
+    }
+	
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(int side, int meta) {
+    	return meta >= 6 ? curved : straight;
     }
 
     @SideOnly(Side.CLIENT)

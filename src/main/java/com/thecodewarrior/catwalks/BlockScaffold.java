@@ -9,6 +9,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
@@ -19,10 +20,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockScaffold extends Block implements ICustomLadder {
+public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderSettings {
 
 	IIcon side;
 	IIcon top;
+
+	IIcon inventory_top;
+	IIcon inventory_side;
 	
 	public BlockScaffold() {
 		super(Material.iron);
@@ -31,19 +35,28 @@ public class BlockScaffold extends Block implements ICustomLadder {
 	}
 	
 	@SideOnly(Side.CLIENT)
-    public void registerBlockIcons(IIconRegister reg)
-    {
-        this.side = reg.registerIcon(CatwalkMod.MODID + ":" + "scaffold_side");
-        this.top = reg.registerIcon(CatwalkMod.MODID + ":" + "scaffold_top");
+    public void registerBlockIcons(IIconRegister reg) {
+        this.side = reg.registerIcon(CatwalkMod.MODID + ":scaffold_side");
+        this.top = reg.registerIcon(CatwalkMod.MODID + ":scaffold_top");
+        
+        this.inventory_top  = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_top");
+        this.inventory_side = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_side");
     }
 	
 	
     @SideOnly(Side.CLIENT)
-    public IIcon getIcon(int side, int meta)
-    {
-        ForgeDirection d = ForgeDirection.getOrientation(side);
+    public IIcon getIcon(int _side, int meta) {
+    	
+    	if(_side >= 100) {
+    		ForgeDirection side = ForgeDirection.getOrientation(_side - 100);
+    		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
+            	return this.inventory_top;
+            return this.inventory_side;
+    	}
+    	
+        ForgeDirection side = ForgeDirection.getOrientation(_side);
         
-        if(d == ForgeDirection.UP || d == ForgeDirection.DOWN)
+        if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
         	return this.top;
         return this.side;
     }
@@ -66,8 +79,8 @@ public class BlockScaffold extends Block implements ICustomLadder {
     }
     
     public void breakBlock(World world, int x, int y, int z, Block b, int p_149749_6_) {
-    	super.breakBlock(world, x, y, z, b, p_149749_6_);
-    	ItemStack stack = new ItemStack(CatwalkMod.scaffold.getItem(world, x, y, z), 1);
+//    	super.breakBlock(world, x, y, z, b, p_149749_6_);
+    	ItemStack stack = new ItemStack(Item.getItemFromBlock(this), 1);
     	int d = 10;
     	List<EntityPlayer> l = world.getEntitiesWithinAABB(EntityPlayer.class, AxisAlignedBB.getBoundingBox(x-d, y-d, z-d, x+d, y+d, z+d));
     	EntityPlayer closest = null;
@@ -161,6 +174,11 @@ public class BlockScaffold extends Block implements ICustomLadder {
 	public double getClimbDownVelocity(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return 0.15;
+	}
+
+	@Override
+	public boolean shouldForceBackFaceRender() {
+		return false;
 	}
 
 }

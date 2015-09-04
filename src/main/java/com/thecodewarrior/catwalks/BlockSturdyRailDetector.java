@@ -24,8 +24,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class BlockSturdyRailDetector extends BlockRailDetector implements ISturdyTrackExtendable {
 
 //	private int renderType = 9;
-	public IIcon straight;
-	public IIcon curved;
+	public IIcon off;
+	public IIcon on;
 		
 	public BlockSturdyRailDetector() {
 		this.setCreativeTab(CreativeTabs.tabTransport);
@@ -90,19 +90,22 @@ public class BlockSturdyRailDetector extends BlockRailDetector implements ISturd
 	    return super.getRailMaxSpeed(world, cart, y, x, z);
 	}
 	
-	/**
-     * Gets the block's texture. Args: side, meta
-     */
+	@SideOnly(Side.CLIENT)
+    public String getItemIconName()
+    {
+        return CatwalkMod.MODID + ":blocks/sturdy_rail_detector";
+    }
+	
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(int p_149691_1_, int p_149691_2_) {
-    	return p_149691_2_ >= 6 ? curved : straight;
+    	return p_149691_2_ >= 6 ? on : off;
     }
 
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg)
     {
-        this.straight  = reg.registerIcon("catwalks:sturdy_rail_detector");
-        this.curved    = reg.registerIcon("catwalks:sturdy_rail_detector_powered");
+        this.off  = reg.registerIcon("catwalks:sturdy_rail_detector_off");
+        this.on   = reg.registerIcon("catwalks:sturdy_rail_detector_on");
     }
 	
     /**

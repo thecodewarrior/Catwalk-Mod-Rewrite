@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 public class ItemCautionTape extends Item {
 	public ItemCautionTape() {
 		setCreativeTab(CreativeTabs.tabMisc);
-		setUnlocalizedName("cautionTape");
+		setUnlocalizedName("caution_tape");
 	}
 	
 	@SideOnly(Side.CLIENT)

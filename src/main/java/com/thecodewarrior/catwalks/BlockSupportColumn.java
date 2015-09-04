@@ -23,12 +23,15 @@ import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSupportColumn extends Block implements ICustomLadder {
+public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRenderSettings {
 
 	RayTracer raytracer = new RayTracer();
 	
 	IIcon side;
 	IIcon top;
+	
+	IIcon inventory_top;
+	IIcon inventory_side;
 	
 	public BlockSupportColumn() {
 		super(Material.iron);
@@ -114,12 +117,23 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-		side = reg.registerIcon("catwalks:support_side");
-		top  = reg.registerIcon("catwalks:support_top");
+		this.side = reg.registerIcon(CatwalkMod.MODID + ":support_side");
+		this.top  = reg.registerIcon(CatwalkMod.MODID + ":support_top");
+        
+        this.inventory_top  = reg.registerIcon(CatwalkMod.MODID + ":inventory/support_top");
+        this.inventory_side = reg.registerIcon(CatwalkMod.MODID + ":inventory/support_side");
 	}
 	
 	@Override
 	public IIcon getIcon(int _side, int meta) {
+		
+		if(_side >= 100) {
+    		ForgeDirection side = ForgeDirection.getOrientation(_side - 100);
+    		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
+            	return this.inventory_top;
+            return this.inventory_side;
+    	}
+		
 		ForgeDirection side = ForgeDirection.getOrientation(_side);
 		
 		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN) {
@@ -257,6 +271,11 @@ public class BlockSupportColumn extends Block implements ICustomLadder {
 	public double getClimbDownVelocity(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return 0.03;
+	}
+
+	@Override
+	public boolean shouldForceBackFaceRender() {
+		return false;
 	}
 
 }

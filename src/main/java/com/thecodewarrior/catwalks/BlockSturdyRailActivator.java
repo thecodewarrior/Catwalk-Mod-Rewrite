@@ -22,8 +22,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackExtendable {
-	public IIcon powered;
-	public IIcon unpowered;
+	public IIcon on;
+	public IIcon off;
 		
 	public BlockSturdyRailActivator() {
 	  this.setCreativeTab(CreativeTabs.tabTransport);
@@ -90,7 +90,7 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	
 	public void onMinecartPass(World world, EntityMinecart cart, int x, int y, int z) {
 		int meta = world.getBlockMetadata(x, y, z);
-		boolean active = world.isBlockIndirectlyGettingPowered(x, y, z);//(meta & 8) != 0;
+		boolean active = (meta & 8) != 0; // world.isBlockIndirectlyGettingPowered(x, y, z);
         cart.onActivatorRailPass(x, y, z, active);
     }
 	
@@ -107,19 +107,22 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	    return super.getRailMaxSpeed(world, cart, y, x, z);
 	}
 	
-	/**
-     * Gets the block's texture. Args: side, meta
-     */
+	@SideOnly(Side.CLIENT)
+    public String getItemIconName()
+    {
+        return CatwalkMod.MODID + ":blocks/sturdy_rail_activator";
+    }
+	
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(int p_149691_1_, int p_149691_2_)
     {
-    	return (p_149691_2_ & 8) == 0 ? unpowered : powered;
+    	return (p_149691_2_ & 8) == 0 ? off : on;
     }
 
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg) {
-        this.powered   = reg.registerIcon("catwalks:sturdy_rail_activator_powered");
-        this.unpowered = reg.registerIcon("catwalks:sturdy_rail_activator");
+        this.on  = reg.registerIcon("catwalks:sturdy_rail_activator_on");
+        this.off = reg.registerIcon("catwalks:sturdy_rail_activator_off");
     }
 	
     /**

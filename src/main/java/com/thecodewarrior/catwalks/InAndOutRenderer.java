@@ -19,26 +19,57 @@ public class InAndOutRenderer implements ISimpleBlockRenderingHandler {
 	@Override
 	public void renderInventoryBlock(Block block, int meta, int modelId,
 			RenderBlocks renderer) {
+		boolean forceBackFace = false;
+		
+		if(block instanceof IInOutRenderSettings) {
+			forceBackFace = ( (IInOutRenderSettings)block ).shouldForceBackFaceRender();
+		}
+		
 		Tessellator tessellator = Tessellator.instance;
 	    GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 	    tessellator.startDrawingQuads();
 
-	    // no need for inside/outside rendering, items don't hide the backs of faces
+	    if(forceBackFace) {
+		    renderer.flipTexture = true;
+		    renderer.renderFromInside = true;
+		    tessellator.setNormal(0, +1, 0);
+		    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 100, meta));
+		    tessellator.setNormal(0, -1, 0);
+		    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 101, meta));
+		    tessellator.setNormal(0, 0, +1);
+		    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 102, meta));
+		    tessellator.setNormal(0, 0, -1);
+		    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 103, meta));
+		    tessellator.setNormal(+1, 0, 0);
+		    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 104, meta));
+		    tessellator.setNormal(-1, 0, 0);
+		    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 105, meta));
+	    }
 	    
+	    renderer.flipTexture = false;
+	    renderer.renderFromInside = false;
 	    tessellator.setNormal(0, -1, 0);
-	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, meta));
+	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 100, meta));
 	    tessellator.setNormal(0, +1, 0);
-	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, meta));
+	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 101, meta));
 	    tessellator.setNormal(0, 0, -1);
-	    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, meta));
+	    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 102, meta));
 	    tessellator.setNormal(0, 0, +1);
-	    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, meta));
+	    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 103, meta));
 	    tessellator.setNormal(-1, 0, 0);
-	    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, meta));
+	    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 104, meta));
 	    tessellator.setNormal(+1, 0, 0);
-	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, meta));
+	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 105, meta));
+	    
+	    boolean a = GL11.glGetBoolean(GL11.GL_CULL_FACE);
+	    if(forceBackFace)
+	    	GL11.glEnable(GL11.GL_CULL_FACE);
 	    
 	    tessellator.draw();
+	    
+	    if(!a && forceBackFace)
+	    	GL11.glDisable(GL11.GL_CULL_FACE);
+	    
 	    GL11.glTranslatef(0.5F, 0.5F, 0.5F);
 	}
 

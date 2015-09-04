@@ -49,6 +49,11 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	public boolean isBottomOpen;
 	public boolean tape;
 	
+	IIcon inventory_bottom;
+	IIcon inventory_side;
+	IIcon inventory_front;
+	IIcon inventory_ladder;
+	
 	public Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
 	public enum TextureSide {
@@ -117,7 +122,7 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 		setStepSound(Block.soundTypeMetal);
 		float px = 1/16F;
     	setBlockBounds(px, 0, px, 1-px, 1, 1-px);
-		setBlockName("cagedladder");
+		setBlockName("caged_ladder");
 		setStepSound(soundTypeLadder);
 		if(direction == ForgeDirection.NORTH && !lights && !bottom && !tape)
 			setCreativeTab(CreativeTabs.tabTransport);
@@ -431,25 +436,35 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-	    transparent   		= reg.registerIcon("catwalks:transparent");
+	    transparent   		= reg.registerIcon(CatwalkMod.MODID + ":transparent");
+	    
+	    inventory_bottom = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_bottom");
+	    inventory_front  = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_front");
+	    inventory_side   = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_side");
+	    inventory_ladder = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_ladder");
 	    
 	    textures = new HashMap<BlockCagedLadder.TextureSide, Map<TextureType,IIcon>>();
 	    for (TextureSide side : TextureSide.values()) {
 	    	Map<TextureType, IIcon> sideMap = new HashMap<BlockCagedLadder.TextureType, IIcon>();
 	    	textures.put(side, sideMap);
 	    	for (TextureType type : TextureType.values()) {
-				IIcon icon = reg.registerIcon("catwalks:ladder/" + side.filename + "/" + type.filename);
+				IIcon icon = reg.registerIcon(CatwalkMod.MODID + ":ladder/" + side.filename + "/" + type.filename);
 				
 				sideMap.put(type, icon);
 			}
 		}
 	    
-		landing 	 = reg.registerIcon("catwalks:ladder/landing");
-		landing_tape = reg.registerIcon("catwalks:ladder/landing_tape");
+		landing 	 = reg.registerIcon(CatwalkMod.MODID + ":ladder/landing");
+		landing_tape = reg.registerIcon(CatwalkMod.MODID + ":ladder/landing_tape");
 	}
 	
 	@Override
 	public IIcon getIcon(int _side, int meta) {
+		boolean isInventory = false;
+		if(_side >= 100) {
+			_side = _side - 100;
+			isInventory = true;
+		}
 		ForgeDirection side = ForgeDirection.getOrientation(_side);
 		RelativeSide dir = RelativeSide.FDtoRS( side, direction );
 		
@@ -460,7 +475,23 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 		TextureSide tSide = TextureSide.fromRS(dir);
 		TextureType type = TextureType.fromLightsAndTape(lights, tape);
 		
-		IIcon ic = textures.get(tSide).get(type);
+		IIcon ic = null;
+		
+		if(isInventory) {
+			switch(tSide) {
+			case BOTTOM:
+				ic = inventory_bottom; break;
+			case FRONT:
+				ic = inventory_front;  break;
+			case LADDER:
+				ic = inventory_ladder; break;
+			case SIDE:
+				ic = inventory_side;   break;
+			}
+		} else {
+			ic = textures.get(tSide).get(type);
+		}
+		
 		if(dir == RelativeSide.RIGHT) {
 			return new IconFlipped(ic, true, false);
 		}
