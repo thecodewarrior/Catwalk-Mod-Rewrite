@@ -1,4 +1,6 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.util;
+
+import com.thecodewarrior.catwalks.ICustomLadder;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPane;

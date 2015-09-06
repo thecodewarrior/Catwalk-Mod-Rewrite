@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,10 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ICustomLadder;
+import com.thecodewarrior.catwalks.IInOutRenderSettings;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 
 import cpw.mods.fml.relauncher.Side;

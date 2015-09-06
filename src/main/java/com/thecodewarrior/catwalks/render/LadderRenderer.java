@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.render;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -10,7 +10,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
-import com.thecodewarrior.catwalks.BlockCagedLadder.RelativeSide;
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ICagedLadderConnectable;
+import com.thecodewarrior.catwalks.block.BlockCagedLadder;
+import com.thecodewarrior.catwalks.block.BlockCagedLadder.RelativeSide;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;

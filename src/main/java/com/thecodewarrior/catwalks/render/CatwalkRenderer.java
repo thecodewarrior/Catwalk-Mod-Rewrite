@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.render;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -7,6 +7,9 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
+
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.block.BlockCatwalk;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 

@@ -1,6 +1,10 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.List;
+
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ISturdyTrackExtendable;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRail;

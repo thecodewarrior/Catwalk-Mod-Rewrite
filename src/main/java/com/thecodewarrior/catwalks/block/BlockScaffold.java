@@ -1,7 +1,12 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ICustomLadder;
+import com.thecodewarrior.catwalks.IInOutRenderSettings;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;

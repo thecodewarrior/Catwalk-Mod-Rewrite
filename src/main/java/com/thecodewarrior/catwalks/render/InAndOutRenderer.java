@@ -1,6 +1,8 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.render;
 
 import org.lwjgl.opengl.GL11;
+
+import com.thecodewarrior.catwalks.IInOutRenderSettings;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;

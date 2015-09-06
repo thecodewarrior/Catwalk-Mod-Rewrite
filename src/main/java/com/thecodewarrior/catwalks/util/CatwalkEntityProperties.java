@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.util;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;

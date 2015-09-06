@@ -14,6 +14,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.thecodewarrior.catwalks.block.BlockCagedLadder;
+import com.thecodewarrior.catwalks.block.BlockCatwalk;
+import com.thecodewarrior.catwalks.block.BlockScaffold;
+import com.thecodewarrior.catwalks.block.BlockSturdyRail;
+import com.thecodewarrior.catwalks.block.BlockSturdyRailActivator;
+import com.thecodewarrior.catwalks.block.BlockSturdyRailBooster;
+import com.thecodewarrior.catwalks.block.BlockSturdyRailDetector;
+import com.thecodewarrior.catwalks.block.BlockSupportColumn;
+import com.thecodewarrior.catwalks.item.ItemBlockScaffold;
+import com.thecodewarrior.catwalks.item.ItemBlowtorch;
+import com.thecodewarrior.catwalks.item.ItemCautionTape;
+import com.thecodewarrior.catwalks.item.ItemRopeLight;
+import com.thecodewarrior.catwalks.util.CatwalkOptions;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
+import com.thecodewarrior.catwalks.util.CommonProxy;
+
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -85,7 +101,7 @@ public class CatwalkMod
     public static int speedEffectLevel = 2;
     public static AttributeModifier speedModifier;
     
-    @SidedProxy(clientSide="com.thecodewarrior.catwalks.ClientProxy", serverSide="com.thecodewarrior.catwalks.CommonProxy")
+    @SidedProxy(clientSide="com.thecodewarrior.catwalks.util.ClientProxy", serverSide="com.thecodewarrior.catwalks.util.CommonProxy")
     public static CommonProxy proxy;
     
     public static int catwalkRenderType;

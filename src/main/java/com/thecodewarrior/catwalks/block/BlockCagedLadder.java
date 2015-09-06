@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +29,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ICagedLadderConnectable;
+import com.thecodewarrior.catwalks.ICustomLadder;
+import com.thecodewarrior.catwalks.item.ItemCautionTape;
+import com.thecodewarrior.catwalks.item.ItemRopeLight;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
 import com.thecodewarrior.codechicken.lib.raytracer.ExtendedMOP;
 import com.thecodewarrior.codechicken.lib.raytracer.IndexedCuboid6;
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;

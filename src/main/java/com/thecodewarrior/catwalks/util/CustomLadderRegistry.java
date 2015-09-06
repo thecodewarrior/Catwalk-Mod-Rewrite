@@ -1,7 +1,9 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.thecodewarrior.catwalks.ICustomLadder;
 
 import net.minecraft.block.Block;
 

@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.item;
 
 import java.util.Set;
 
@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import buildcraft.api.tools.IToolWrench;
 
 import com.google.common.collect.ImmutableSet;
+import com.thecodewarrior.catwalks.CatwalkMod;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

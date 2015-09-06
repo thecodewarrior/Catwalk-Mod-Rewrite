@@ -1,9 +1,14 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.List;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ISturdyTrackExtendable;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRailPowered;
+import net.minecraft.block.BlockRailBase;
+import net.minecraft.block.BlockRailDetector;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -17,23 +22,19 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyTrackExtendable{
+public class BlockSturdyRailDetector extends BlockRailDetector implements ISturdyTrackExtendable {
 
-	public IIcon on;
+//	private int renderType = 9;
 	public IIcon off;
+	public IIcon on;
 		
-	public BlockSturdyRailBooster() {
-	  this.setCreativeTab(CreativeTabs.tabTransport);
-		this.setBlockName("sturdy_booster_rail");
+	public BlockSturdyRailDetector() {
+		this.setCreativeTab(CreativeTabs.tabTransport);
+		this.setBlockName("sturdy_detector_rail");
 		this.setHardness(0.7F);
-	}
-
-	public boolean isFlexibleRail(IBlockAccess world, int y, int x, int z) {
-	  return !field_150053_a;
 	}
 	
 	@Override
@@ -66,15 +67,6 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 		
 		ItemStack held = player.getCurrentEquippedItem();
 		
-		if(held != null && held.getItem() instanceof IToolWrench) {
-			int meta = world.getBlockMetadata(x,y,z);
-			if((meta & 8) == 0) {
-				meta = meta | 8;
-			} else {
-				meta = meta & ~8;
-			}
-			world.setBlockMetadataWithNotify(x, y, z, meta, 3);
-		}
 		if(blockSide == ForgeDirection.UP.ordinal() && held != null && held.getItem() instanceof ItemBlock && ( (ItemBlock) held.getItem()).field_150939_a instanceof ISturdyTrackExtendable) {
 			if(this.canPlaceBlockAt(world, x+d.offsetX, y+d.offsetY, z+d.offsetZ)) {
 				ItemBlock ib = (ItemBlock) held.getItem();
@@ -88,51 +80,13 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 		}
 		return false;
 	}
-	
-	public void onMinecartPass(World world, EntityMinecart cart, int x, int y, int z) {
-        int railMeta = this.getBasicRailMetadata(world, cart, x, y, z);
-        int meta = world.getBlockMetadata(x,y,z);
-		double d15 = Math.sqrt(cart.motionX * cart.motionX + cart.motionZ * cart.motionZ);
+//	
+//	public boolean isFlexibleRail(IBlockAccess world, int y, int x, int z) {
+//	  return false;
+//	}
 
-		if( (meta & 8) == 0)
-			return;
-		
-        if (d15 > 0.01D)
-        {
-            double d16 = 0.06D;
-            cart.motionX += cart.motionX / d15 * d16;
-            cart.motionZ += cart.motionZ / d15 * d16;
-        }
-        else if (railMeta == 1)
-        {
-            if (cart.worldObj.getBlock(x - 1, y, z).isNormalCube())
-            {
-                cart.motionX = 0.02D;
-            }
-            else if (cart.worldObj.getBlock(x + 1, y, z).isNormalCube())
-            {
-                cart.motionX = -0.02D;
-            }
-        }
-        else if (railMeta == 0)
-        {
-            if (cart.worldObj.getBlock(x, y, z - 1).isNormalCube())
-            {
-                cart.motionZ = 0.02D;
-            }
-            else if (cart.worldObj.getBlock(x, y, z + 1).isNormalCube())
-            {
-                cart.motionZ = -0.02D;
-            }
-        }
-    }
-	
-	public boolean isPowered() {
-		return true;
-	}
-	
 	public boolean canPlaceBlockAt(World world, int x, int y, int z) {
-        return world.getBlock(x, y, z).isReplaceable(world, x, y, z); // base Block class behavior
+        return world.getBlock(x, y, z).isReplaceable(world, x, y, z) && !( world.getBlock(x, y-1, z) instanceof BlockRailBase);
     }
 	  
 	public float getRailMaxSpeed(World world, EntityMinecart cart, int y, int x, int z)
@@ -143,38 +97,37 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 	@SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail_booster";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail_detector";
     }
 	
     @SideOnly(Side.CLIENT)
-    public IIcon getIcon(int p_149691_1_, int p_149691_2_)
-    {
-    	return (p_149691_2_ & 8) == 0 ? off : on;
+    public IIcon getIcon(int p_149691_1_, int p_149691_2_) {
+    	return p_149691_2_ >= 6 ? on : off;
     }
 
     @SideOnly(Side.CLIENT)
-    public void registerBlockIcons(IIconRegister reg) {
-        this.on   = reg.registerIcon("catwalks:sturdy_rail_booster_on");
-        this.off = reg.registerIcon("catwalks:sturdy_rail_booster_off");
+    public void registerBlockIcons(IIconRegister reg)
+    {
+        this.off  = reg.registerIcon("catwalks:sturdy_rail_detector_off");
+        this.on   = reg.registerIcon("catwalks:sturdy_rail_detector_on");
     }
 	
     /**
      * Lets the block know when one of its neighbor changes. Doesn't know which neighbor changed (coordinates passed are
      * their own) Args: x, y, z, neighbor Block
      */
-    public void onNeighborBlockChange(World world, int x, int y, int z, Block b)
+    public void onNeighborBlockChange(World p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_, Block p_149695_5_)
     {
-        if (!world.isRemote)
+        if (!p_149695_1_.isRemote)
         {
-            int l = world.getBlockMetadata(x, y, z);
+            int l = p_149695_1_.getBlockMetadata(p_149695_2_, p_149695_3_, p_149695_4_);
             int i1 = l;
 
             if (this.field_150053_a)
             {
                 i1 = l & 7;
             }
-            func_150052_a(world, x, y, z, (l & 8) > 1);
-            //            this.func_150048_a(p_149695_1_, p_149695_2_, p_149695_3_, p_149695_4_, l, i1, p_149695_5_);
+            this.func_150048_a(p_149695_1_, p_149695_2_, p_149695_3_, p_149695_4_, l, i1, p_149695_5_);
         }
     }
     

@@ -1,6 +1,8 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.item;
 
 import java.util.List;
+
+import com.thecodewarrior.catwalks.block.BlockScaffold;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;

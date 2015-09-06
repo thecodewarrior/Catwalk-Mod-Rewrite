@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.util;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.Vec3;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.mcjty.varia.WrenchChecker;
 
 public class CatwalkUtil {

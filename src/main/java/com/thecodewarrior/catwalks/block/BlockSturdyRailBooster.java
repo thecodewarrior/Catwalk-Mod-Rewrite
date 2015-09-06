@@ -1,9 +1,13 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.block;
 
 import java.util.List;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ISturdyTrackExtendable;
+import com.thecodewarrior.catwalks.util.CatwalkUtil;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRail;
+import net.minecraft.block.BlockRailPowered;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -21,20 +25,21 @@ import buildcraft.api.tools.IToolWrench;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackExtendable {
+public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyTrackExtendable{
+
 	public IIcon on;
 	public IIcon off;
 		
-	public BlockSturdyRailActivator() {
+	public BlockSturdyRailBooster() {
 	  this.setCreativeTab(CreativeTabs.tabTransport);
-		this.setBlockName("sturdy_activator_rail");
+		this.setBlockName("sturdy_booster_rail");
 		this.setHardness(0.7F);
 	}
 
 	public boolean isFlexibleRail(IBlockAccess world, int y, int x, int z) {
-	  return false;
+	  return !field_150053_a;
 	}
-
+	
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
 		if(CatwalkUtil.isHoldingWrench(player)) {
@@ -48,7 +53,7 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 			}
 		}
 	}
-	
+
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {
 		int l = MathHelper.floor_double((double)((player.rotationYaw * 4F) / 360F) + 0.5D) & 3;
 		ForgeDirection d = ForgeDirection.NORTH;
@@ -89,9 +94,41 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	}
 	
 	public void onMinecartPass(World world, EntityMinecart cart, int x, int y, int z) {
-		int meta = world.getBlockMetadata(x, y, z);
-		boolean active = (meta & 8) != 0; // world.isBlockIndirectlyGettingPowered(x, y, z);
-        cart.onActivatorRailPass(x, y, z, active);
+        int railMeta = this.getBasicRailMetadata(world, cart, x, y, z);
+        int meta = world.getBlockMetadata(x,y,z);
+		double d15 = Math.sqrt(cart.motionX * cart.motionX + cart.motionZ * cart.motionZ);
+
+		if( (meta & 8) == 0)
+			return;
+		
+        if (d15 > 0.01D)
+        {
+            double d16 = 0.06D;
+            cart.motionX += cart.motionX / d15 * d16;
+            cart.motionZ += cart.motionZ / d15 * d16;
+        }
+        else if (railMeta == 1)
+        {
+            if (cart.worldObj.getBlock(x - 1, y, z).isNormalCube())
+            {
+                cart.motionX = 0.02D;
+            }
+            else if (cart.worldObj.getBlock(x + 1, y, z).isNormalCube())
+            {
+                cart.motionX = -0.02D;
+            }
+        }
+        else if (railMeta == 0)
+        {
+            if (cart.worldObj.getBlock(x, y, z - 1).isNormalCube())
+            {
+                cart.motionZ = 0.02D;
+            }
+            else if (cart.worldObj.getBlock(x, y, z + 1).isNormalCube())
+            {
+                cart.motionZ = -0.02D;
+            }
+        }
     }
 	
 	public boolean isPowered() {
@@ -110,7 +147,7 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	@SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail_activator";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail_booster";
     }
 	
     @SideOnly(Side.CLIENT)
@@ -121,8 +158,8 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg) {
-        this.on  = reg.registerIcon("catwalks:sturdy_rail_activator_on");
-        this.off = reg.registerIcon("catwalks:sturdy_rail_activator_off");
+        this.on   = reg.registerIcon("catwalks:sturdy_rail_booster_on");
+        this.off = reg.registerIcon("catwalks:sturdy_rail_booster_off");
     }
 	
     /**

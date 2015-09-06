@@ -1,4 +1,4 @@
-package com.thecodewarrior.catwalks;
+package com.thecodewarrior.catwalks.util;
 
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -20,6 +20,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
+import com.thecodewarrior.catwalks.ICustomLadder;
+import com.thecodewarrior.catwalks.block.BlockCatwalk;
+import com.thecodewarrior.catwalks.block.BlockScaffold;
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
