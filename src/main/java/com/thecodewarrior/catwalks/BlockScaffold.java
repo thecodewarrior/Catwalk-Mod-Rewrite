@@ -1,5 +1,6 @@
 package com.thecodewarrior.catwalks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -10,6 +11,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
@@ -28,10 +30,57 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	IIcon inventory_top;
 	IIcon inventory_side;
 	
+	IIcon builders_side;
+	IIcon builders_top;
+
+	IIcon builders_inventory_top;
+	IIcon builders_inventory_side;
+	
 	public BlockScaffold() {
 		super(Material.iron);
 		setCreativeTab(CreativeTabs.tabTransport);
 		setBlockName("scaffold");
+	}
+	
+	@SideOnly(Side.CLIENT)
+	public void getSubBlocks(Item item, CreativeTabs tab, List subItems) {
+		subItems.add(new ItemStack(this, 1, 0));
+		subItems.add(new ItemStack(this, 1, 1));
+	}
+	
+    public boolean isReplaceable(IBlockAccess world, int x, int y, int z) {
+    	return world.getBlockMetadata(x,y,z) != 0;
+    }
+    
+	
+	@Override
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {		
+		ForgeDirection side = ForgeDirection.getOrientation(blockSide);
+		
+		if(player.getCurrentEquippedItem() != null) {
+			Item item = player.getCurrentEquippedItem().getItem();
+			
+			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking()) {
+				int newX = x+( 128*-side.offsetX );
+				int newY = y+( 128*-side.offsetY );
+				int newZ = z+( 128*-side.offsetZ );
+				
+				for(int i = 1; i < 128; i ++) {
+					newX += side.offsetX;
+					newY += side.offsetY;
+					newZ += side.offsetZ;
+					
+					Block b = world.getBlock(newX, newY, newZ);
+					if(b instanceof BlockScaffold){
+						CatwalkUtil.giveItemsToPlayer(player, this.getDrops(world, newX, newY, newZ, world.getBlockMetadata(newX, newY, newZ), 0));
+						world.setBlockToAir(newX, newY, newZ);
+						break;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -41,6 +90,12 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
         
         this.inventory_top  = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_top");
         this.inventory_side = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_side");
+        
+        this.builders_side = reg.registerIcon(CatwalkMod.MODID + ":scaffold_builders_side");
+        this.builders_top = reg.registerIcon(CatwalkMod.MODID + ":scaffold_builders_top");
+        
+        this.builders_inventory_top  = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_builders_top");
+        this.builders_inventory_side = reg.registerIcon(CatwalkMod.MODID + ":inventory/scaffold_builders_side");
     }
 	
 	
@@ -50,63 +105,39 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
     	if(_side >= 100) {
     		ForgeDirection side = ForgeDirection.getOrientation(_side - 100);
     		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
-            	return this.inventory_top;
-            return this.inventory_side;
+            	return meta == 0 ? this.inventory_top : this.builders_inventory_top;
+            return meta == 0 ? this.inventory_side : this.builders_inventory_side;
     	}
     	
         ForgeDirection side = ForgeDirection.getOrientation(_side);
         
         if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
-        	return this.top;
-        return this.side;
+        	return meta == 0 ? this.top : this.builders_top;
+        return meta == 0 ? this.side : this.builders_side;
     }
     
     @SideOnly(Side.CLIENT)
-	public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int _side)
-	{
+	public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int _side) {
     	ForgeDirection side = ForgeDirection.getOrientation(_side);
     	
     	return !w.isSideSolid(x, y, z, side, false);
 	}
     
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {
-    	CatwalkMod.l.info("hey");
-    	return false;
+    public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
+    	ArrayList<ItemStack> arr = new ArrayList<ItemStack>();
+    	arr.add( new ItemStack(Item.getItemFromBlock(this), 1, metadata) );
+    	return arr;
     }
     
-    public void onBlockDestroyedByPlayer(World p_149664_1_, int p_149664_2_, int p_149664_3_, int p_149664_4_, int p_149664_5_) {
-    	CatwalkMod.l.info("onBlockDestroyedByPlayer");
-    }
-    
-    public void breakBlock(World world, int x, int y, int z, Block b, int p_149749_6_) {
-//    	super.breakBlock(world, x, y, z, b, p_149749_6_);
-    	ItemStack stack = new ItemStack(Item.getItemFromBlock(this), 1);
-    	int d = 10;
-    	List<EntityPlayer> l = world.getEntitiesWithinAABB(EntityPlayer.class, AxisAlignedBB.getBoundingBox(x-d, y-d, z-d, x+d, y+d, z+d));
-    	EntityPlayer closest = null;
-    	double dist = Integer.MAX_VALUE;
-    	for(EntityPlayer p : l) {
-    		double playerDist = MathHelper.sqrt_double(
-    				( (p.posX - x)*(p.posX - x) ) +
-    				( (p.posY - y)*(p.posY - y) ) +
-    				( (p.posZ - z)*(p.posZ - z) )
-    		);
-    		if(playerDist < dist) {
-    			closest = p;
-    			dist = playerDist;
-    		}
-    	}
-    	if(closest == null) {
-    		EntityItem ent = new EntityItem(world, x+0.5, y+0.5, z+0.5, stack);
-    		world.spawnEntityInWorld(ent);
-    	} else {
-    		CatwalkUtil.giveItemToPlayer(closest, stack);
-    	}
+    public boolean canHarvestBlock(EntityPlayer player, int meta) {
+        return false;
     }
 
-
-    public boolean isReplaceable(IBlockAccess world, int x, int y, int z) {
-    	return true;
+    /**
+     * Called when the block is attempted to be harvested
+     */
+    public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
+    	CatwalkUtil.giveItemsToPlayer(player, this.getDrops(world, x, y, z, meta, 0));
     }
     
     //==============================================================================
@@ -161,13 +192,31 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	@Override
 	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return entity.isSneaking();
+		boolean isHoldingScaffold = false;
+		if(entity instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer)entity;
+			if(player.getHeldItem() != null) {
+				Item item = player.getHeldItem().getItem();
+				if(item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockScaffold)
+					isHoldingScaffold = true;
+			}
+		}
+		return entity.isSneaking() || isHoldingScaffold;
 	}
 
 	@Override
 	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return false;
+		boolean isHoldingScaffold = false;
+		if(entity instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer)entity;
+			if(player.getHeldItem() != null) {
+				Item item = player.getHeldItem().getItem();
+				if(item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockScaffold)
+					isHoldingScaffold = true;
+			}
+		}
+		return entity.isSneaking() && isHoldingScaffold;
 	}
 
 	@Override

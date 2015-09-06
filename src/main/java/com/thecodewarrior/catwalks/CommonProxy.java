@@ -10,18 +10,15 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import buildcraft.api.tools.IToolWrench;
+import net.minecraftforge.event.world.BlockEvent;
 
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
@@ -199,9 +196,9 @@ public class CommonProxy {
 		AxisAlignedBB bb = entity.boundingBox;
 		double buf = 1/1024F; // so when the player is touching a full 1m cube they can climb it.
         int mX = MathHelper.floor_double(bb.minX-buf);
-        int mY = MathHelper.floor_double(bb.minY-buf);
+        int mY = MathHelper.floor_double(bb.minY);
         int mZ = MathHelper.floor_double(bb.minZ-buf);
-        for (int y2 = mY; y2 < bb.maxY+buf; y2++)
+        for (int y2 = mY; y2 < bb.maxY; y2++)
         {
             for (int x2 = mX; x2 < bb.maxX+buf; x2++)
             {
@@ -268,5 +265,13 @@ public class CommonProxy {
 			} // end for
     		
     	}
+	}
+
+	@SubscribeEvent
+	public void blockPlaceEvent(BlockEvent.PlaceEvent event) {
+		if(event.blockSnapshot.replacedBlock instanceof BlockScaffold) {
+			CatwalkUtil.giveItemsToPlayer(event.player,
+					event.blockSnapshot.replacedBlock.getDrops(event.world, event.x, event.y, event.z, event.blockMetadata, 0));
+		}
 	}
 }

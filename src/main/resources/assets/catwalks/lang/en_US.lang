@@ -5,6 +5,7 @@ item.caution_tape.name=Caution Tape
 tile.catwalk.name=Catwalk
 tile.caged_ladder.name=Caged Ladder
 tile.scaffold.name=Scaffold
+tile.scaffold.builder.name=Builder's Scaffold
 tile.support_column.name=Support Column
 tile.sturdy_rail.name=Sturdy Rail
 tile.sturdy_booster_rail.name=Sturdy Powered Rail

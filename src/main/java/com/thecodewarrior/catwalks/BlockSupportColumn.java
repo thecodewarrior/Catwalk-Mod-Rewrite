@@ -88,8 +88,10 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 				}
 				if(!use) {
 			        double d = 0.2; // random values will be between -d and +d
+			        double velocity = 0.07;
 					for(int i = 0; i < 10; i++) {
-						world.spawnParticle("smoke", x+0.5 + ( (Math.random()-0.5)* 2*d ), y+(side.offsetY > 0 ? 1 : -0.15)+ (Math.random()*d), z+0.5+( (Math.random()-0.5)* 2*d ), 0.0D, 0.0D, 0.0D);
+						world.spawnParticle("smoke", x+0.5 + ( (Math.random()-0.5)* 2*d ), y+(side.offsetY > 0 ? 1 : -0.15)+ (Math.random()*d), z+0.5+( (Math.random()-0.5)* 2*d ),
+								0,0,0);
 					}
 				}
 				if(use && !player.capabilities.isCreativeMode)

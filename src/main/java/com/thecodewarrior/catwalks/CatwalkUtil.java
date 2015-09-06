@@ -1,6 +1,6 @@
 package com.thecodewarrior.catwalks;
 
-import java.util.Set;
+import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -9,7 +9,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.Vec3;
-import buildcraft.api.tools.IToolWrench;
 
 import com.thecodewarrior.mcjty.varia.WrenchChecker;
 
@@ -49,6 +48,12 @@ public class CatwalkUtil {
 				return true;
 		}
 		return false;
+	}
+	
+	public static void giveItemsToPlayer(EntityPlayer player, List<ItemStack> stacks) {
+		for(ItemStack s : stacks) {
+			giveItemToPlayer(player, s);
+		}
 	}
 	
 	public static void giveItemToPlayer(EntityPlayer player, ItemStack _stack) {
