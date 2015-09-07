@@ -3,16 +3,17 @@ package com.thecodewarrior.catwalks.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.Vec3;
+
 import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.render.CatwalkRenderer;
 import com.thecodewarrior.catwalks.render.InAndOutRenderer;
 import com.thecodewarrior.catwalks.render.LadderRenderer;
+import com.thecodewarrior.catwalks.render.SupportRenderer;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.FoodStats;
-import net.minecraft.util.Vec3;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -23,10 +24,9 @@ public class ClientProxy extends CommonProxy {
     	public boolean isBottomOpen = false;
 	
     public ISimpleBlockRenderingHandler catwalkRenderer;
-    
     public ISimpleBlockRenderingHandler ladderRenderer;
-
     public ISimpleBlockRenderingHandler inAndOutRenderer;
+    public ISimpleBlockRenderingHandler supportRenderer;
     
     boolean debug = true;
     
@@ -47,6 +47,9 @@ public class ClientProxy extends CommonProxy {
     	
     	inAndOutRenderer = new InAndOutRenderer(CatwalkMod.inAndOutRenderType);
     	RenderingRegistry.registerBlockHandler(CatwalkMod.inAndOutRenderType, inAndOutRenderer);
+    	
+    	supportRenderer = new SupportRenderer(CatwalkMod.supportRenderType);
+    	RenderingRegistry.registerBlockHandler(CatwalkMod.supportRenderType, supportRenderer);
 
     	headers.add("m/t:");
     	headers.add("m/s:");

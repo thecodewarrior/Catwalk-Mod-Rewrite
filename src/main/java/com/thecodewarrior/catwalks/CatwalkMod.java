@@ -23,6 +23,7 @@ import com.thecodewarrior.catwalks.block.BlockSturdyRailBooster;
 import com.thecodewarrior.catwalks.block.BlockSturdyRailDetector;
 import com.thecodewarrior.catwalks.block.BlockSupportColumn;
 import com.thecodewarrior.catwalks.item.ItemBlockScaffold;
+import com.thecodewarrior.catwalks.item.ItemBlockSupportColumn;
 import com.thecodewarrior.catwalks.item.ItemBlowtorch;
 import com.thecodewarrior.catwalks.item.ItemCautionTape;
 import com.thecodewarrior.catwalks.item.ItemRopeLight;
@@ -46,7 +47,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.13";
+    public static final String MODVER = "0.1.14";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -107,6 +108,7 @@ public class CatwalkMod
     public static int catwalkRenderType;
     public static int ladderRenderType;
     public static int inAndOutRenderType;
+    public static int supportRenderType;
     
 	public static int lightLevel = 12;
     
@@ -120,6 +122,7 @@ public class CatwalkMod
     	catwalkRenderType   = RenderingRegistry.getNextAvailableRenderId();
     	ladderRenderType    = RenderingRegistry.getNextAvailableRenderId();
     	inAndOutRenderType  = RenderingRegistry.getNextAvailableRenderId();
+    	supportRenderType   = RenderingRegistry.getNextAvailableRenderId();
     	
     	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
     		public String getBreakSound()
@@ -171,7 +174,7 @@ public class CatwalkMod
     	
     	
     	supportColumn = new BlockSupportColumn();
-    	GameRegistry.registerBlock(supportColumn, "support_column");
+    	GameRegistry.registerBlock(supportColumn, ItemBlockSupportColumn.class, "support_column");
     	scaffold = new BlockScaffold();
     	GameRegistry.registerBlock(scaffold, ItemBlockScaffold.class, "scaffold");
     	
