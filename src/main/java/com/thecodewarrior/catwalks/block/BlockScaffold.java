@@ -173,7 +173,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	@Override
 	public double getLadderVelocity(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return 0.15;
+		return entity.isSneaking() ? 0 : 0.15;
 	}
 
 	@Override

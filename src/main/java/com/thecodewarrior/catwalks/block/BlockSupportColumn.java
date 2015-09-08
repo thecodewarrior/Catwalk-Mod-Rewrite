@@ -34,13 +34,8 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 
 	RayTracer raytracer = new RayTracer();
 	
-	IIcon side;
-	IIcon top;
-	
-	IIcon inventory_top;
-	IIcon inventory_side;
-	
-	public IIcon support_cross;
+	IIcon inventory;	
+	public IIcon support;
 	
 	public BlockSupportColumn() {
 		super(Material.iron);
@@ -52,6 +47,10 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 		setHardness(1.0F);
 	}
 
+	public double getWidth() {
+		return 10/16F;
+	}
+	
 	@Override
 	public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
 		if(CatwalkUtil.isHoldingWrench(player)) {
@@ -74,50 +73,40 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 			Item item = player.getCurrentEquippedItem().getItem();
 			boolean use = false;
 			
-//			if(item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockSupportColumn &&
-//					( side == ForgeDirection.UP || side == ForgeDirection.DOWN )) {
-//				ItemBlock ib = (ItemBlock)item;
-//				for(int i = 0; Math.abs(i) < 128; i -= side.offsetY) {
-//					Block b = world.getBlock(x, y+i, z);
-//					if(b.isReplaceable(world, x, y+i, z)){
-//						//world.setBlock(x, y+i, z, ( (ItemBlock)item ).field_150939_a);
-//						use = ib.placeBlockAt(player.getCurrentEquippedItem(), player, world,
-//								x, y+i, z, side.getOpposite().ordinal(),
-//								hitX, hitY+i, hitZ, player.getCurrentEquippedItem().getItemDamage());
-//						
-//						if(use) {
-//							world.playSoundEffect(x+0.5, y+i+0.5, z+0.5, ib.field_150939_a.stepSound.func_150496_b(), (ib.field_150939_a.stepSound.getVolume() + 1.0F) / 2.0F, ib.field_150939_a.stepSound.getPitch() * 0.8F);
-//						}
-//						break;
-//					} else {
-//						if( !(b instanceof BlockSupportColumn) ) {
-//							break;
-//						}
-//					}
-//				}
-//				if(!use) {
-//			        double d = 0.2; // random values will be between -d and +d
-//			        double velocity = 0.07;
-//					for(int i = 0; i < 10; i++) {
-//						world.spawnParticle("smoke", x+0.5 + ( (Math.random()-0.5)* 2*d ), y+(side.offsetY > 0 ? 1 : -0.15)+ (Math.random()*d), z+0.5+( (Math.random()-0.5)* 2*d ),
-//								0,0,0);
-//					}
-//				}
-//				if(use && !player.capabilities.isCreativeMode)
-//					player.getCurrentEquippedItem().stackSize--;
-//				return true;
-//			} else
-			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking() && ( side == ForgeDirection.UP || side == ForgeDirection.DOWN)) {
-				for(int i = 128*-side.offsetY; Math.abs(i) > 0; i += side.offsetY) {
-					Block b = world.getBlock(x, y+i, z);
-					if(b instanceof BlockSupportColumn){
-						//world.setBlock(x, y+i, z, ( (ItemBlock)item ).field_150939_a);
-						List<ItemStack> drops = b.getDrops(world, x, y+i, z, world.getBlockMetadata(x, y+i, z), 0);
-						world.setBlockToAir(x, y+i, z);
-						for(ItemStack s : drops) {
-							CatwalkUtil.giveItemToPlayer(player, s);
+			if(CatwalkUtil.isHoldingWrench(player)) {
+				if(player.isSneaking()) {
+					ForgeDirection opp = side.getOpposite();
+					for(int i = 128; i > 0; i--) {
+						int newX = x + ( i*opp.offsetX );
+						int newY = y + ( i*opp.offsetY );
+						int newZ = z + ( i*opp.offsetZ );
+						
+						Block b = world.getBlock(newX, newY, newZ);
+						if(b instanceof BlockSupportColumn){
+							List<ItemStack> drops = b.getDrops(world, newX, newY, newZ, world.getBlockMetadata(x, y+i, z), 0);
+							world.setBlockToAir(newX, newY, newZ);
+							for(ItemStack s : drops) {
+								CatwalkUtil.giveItemToPlayer(player, s);
+							}
+							break;
 						}
-						break;
+					}
+				} else {
+					int meta = world.getBlockMetadata(x,y,z);
+					if(meta < 3) {
+						world.setBlockMetadataWithNotify(x, y, z, 3, 3);
+					} else {
+						int newMeta = 0;
+						if(side == ForgeDirection.UP || side == ForgeDirection.DOWN) {
+							newMeta = 0;
+						}
+						if(side == ForgeDirection.NORTH || side == ForgeDirection.SOUTH) {
+							newMeta = 1;
+						}
+						if(side == ForgeDirection.EAST || side == ForgeDirection.WEST){ 
+							newMeta = 2;
+						}
+						world.setBlockMetadataWithNotify(x, y, z, newMeta, 3);
 					}
 				}
 			}
@@ -128,13 +117,10 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-		this.side = reg.registerIcon(CatwalkMod.MODID + ":support_side");
-		this.top  = reg.registerIcon(CatwalkMod.MODID + ":support_top");
         
-        this.inventory_top  = reg.registerIcon(CatwalkMod.MODID + ":inventory/support_top");
-        this.inventory_side = reg.registerIcon(CatwalkMod.MODID + ":inventory/support_side");
+        this.inventory  = reg.registerIcon(CatwalkMod.MODID + ":inventory/support");
         
-        this.support_cross = reg.registerIcon(CatwalkMod.MODID + ":support_cross");
+        this.support = reg.registerIcon(CatwalkMod.MODID + ":support");
 	}
 	
 	@Override
@@ -142,17 +128,9 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 		
 		if(_side >= 100) {
     		ForgeDirection side = ForgeDirection.getOrientation(_side - 100);
-    		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN)
-            	return this.inventory_top;
-            return this.inventory_side;
+            return this.inventory;
     	}
-		
-		ForgeDirection side = ForgeDirection.getOrientation(_side);
-		
-		if(side == ForgeDirection.UP || side == ForgeDirection.DOWN) {
-		    return top;
-		}
-		return this.side;
+		return this.support;
 	}
 	
 	public boolean isOpaqueCube() {
@@ -173,24 +151,7 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
     @SideOnly(Side.CLIENT)
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side)
     {
-    	boolean render = true;
-    	
-//    	if(isSideEnd(world, x, y, z, si))
-//    	
-//    	if(ForgeDirection.UP.ordinal() == side && (
-//    			world.isSideSolid(x, y, z, ForgeDirection.DOWN, false) ||
-//    			world.getBlock(x, y, z) instanceof BlockSupportColumn
-//    		)) {
-//    		render = false;
-//    	}
-//    	if(ForgeDirection.DOWN.ordinal() == side && (
-//    			world.isSideSolid(x, y, z, ForgeDirection.UP, false) ||
-//    			world.getBlock(x, y, z) instanceof BlockSupportColumn
-//    		)) {
-//    		render = false;
-//    	}
-//    	
-        return render;
+    	return true;
     }
     
     public boolean isSideEnd(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
@@ -243,20 +204,24 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
     public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z) {
         int meta = world.getBlockMetadata(x, y, z);
     	float d = 3/16F;
-        
+        float D = 1-d;
         float minX = 0, minY = 0, minZ = 0, maxX = 1, maxY = 1, maxZ = 1;
 
         if(meta == 0) { // up/down
-    		minX= d;   minY= 0; minZ= d;
-    		maxX= 1-d; maxY= 1; maxZ= 1-d;
+    		minX= d; minY= 0; minZ= d;
+    		maxX= D; maxY= 1; maxZ= D;
         }
         if(meta == 1) { // north/south
-    		minX= d;   minY= d;   minZ= 0;
-    		maxX= 1-d; maxY= 1-d; maxZ= 1;
+    		minX= d; minY= d; minZ= 0;
+    		maxX= D; maxY= D; maxZ= 1;
         }
         if(meta == 2) { // east/west
-        	minX= 0; minY= d;   minZ= d;
-    		maxX= 1; maxY= 1-d; maxZ= 1-d;
+        	minX= 0; minY= d; minZ= d;
+    		maxX= 1; maxY= D; maxZ= D;
+        }
+        if(meta == 3) {
+        	minX= d; minY= d; minZ= d;
+        	maxX= D; maxY= D; maxZ= D;
         }
         
         if(world.getBlock(x-1, y, z) instanceof BlockSupportColumn) {

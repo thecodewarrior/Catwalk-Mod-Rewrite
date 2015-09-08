@@ -97,7 +97,7 @@ public class BlockSturdyRailDetector extends BlockRailDetector implements ISturd
 	@SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail_detector";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail/detector";
     }
 	
     @SideOnly(Side.CLIENT)
@@ -108,8 +108,8 @@ public class BlockSturdyRailDetector extends BlockRailDetector implements ISturd
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg)
     {
-        this.off  = reg.registerIcon("catwalks:sturdy_rail_detector_off");
-        this.on   = reg.registerIcon("catwalks:sturdy_rail_detector_on");
+        this.off  = reg.registerIcon("catwalks:sturdy_rail/detector_off");
+        this.on   = reg.registerIcon("catwalks:sturdy_rail/detector_on");
     }
 	
     /**

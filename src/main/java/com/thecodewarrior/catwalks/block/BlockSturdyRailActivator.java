@@ -114,7 +114,7 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	@SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail_activator";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail/activator";
     }
 	
     @SideOnly(Side.CLIENT)
@@ -125,8 +125,8 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg) {
-        this.on  = reg.registerIcon("catwalks:sturdy_rail_activator_on");
-        this.off = reg.registerIcon("catwalks:sturdy_rail_activator_off");
+        this.on  = reg.registerIcon("catwalks:sturdy_rail/activator_on");
+        this.off = reg.registerIcon("catwalks:sturdy_rail/activator_off");
     }
 	
     /**

@@ -147,7 +147,7 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 	@SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail_booster";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail/booster";
     }
 	
     @SideOnly(Side.CLIENT)
@@ -158,8 +158,8 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg) {
-        this.on   = reg.registerIcon("catwalks:sturdy_rail_booster_on");
-        this.off = reg.registerIcon("catwalks:sturdy_rail_booster_off");
+        this.on   = reg.registerIcon("catwalks:sturdy_rail/booster_on");
+        this.off = reg.registerIcon("catwalks:sturdy_rail/booster_off");
     }
 	
     /**

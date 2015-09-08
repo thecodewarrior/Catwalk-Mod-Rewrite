@@ -130,11 +130,9 @@ public class CommonProxy {
 			
 			
 			
-			double dX = e.posX - catwalkEP.lastStepX;
 			double dY = e.posY - catwalkEP.lastStepY;
-			double dZ = e.posZ - catwalkEP.lastStepZ;
 			
-			double distanceClimbed = Math.abs(dY);//MathHelper.sqrt_double( (dX * dX ) + (dY * dY) + (dZ * dZ));
+			double distanceClimbed = Math.abs(dY);
 			double distanceRequired = upSpeed * 10;
 			
 			if(catwalkEP.isSlidingDownLadder && dY >= 0) {
@@ -142,7 +140,7 @@ public class CommonProxy {
 			}
 			catwalkEP.isSlidingDownLadder = (dY < 0);
 			
-			if(distanceClimbed > distanceRequired) {
+			if(distanceClimbed > distanceRequired && distanceRequired > 0) {
 				catwalkEP.lastStepX = e.posX;
 				catwalkEP.lastStepY = e.posY;
 				catwalkEP.lastStepZ = e.posZ;

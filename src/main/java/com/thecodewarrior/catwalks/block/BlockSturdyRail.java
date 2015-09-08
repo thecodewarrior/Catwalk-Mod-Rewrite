@@ -100,7 +100,7 @@ public class BlockSturdyRail extends BlockRail implements ISturdyTrackExtendable
     @SideOnly(Side.CLIENT)
     public String getItemIconName()
     {
-        return CatwalkMod.MODID + ":blocks/sturdy_rail";
+        return CatwalkMod.MODID + ":blocks/sturdy_rail/normal";
     }
 	
     @SideOnly(Side.CLIENT)
@@ -111,8 +111,8 @@ public class BlockSturdyRail extends BlockRail implements ISturdyTrackExtendable
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister reg)
     {
-        this.straight  = reg.registerIcon("catwalks:sturdy_rail");
-        this.curved    = reg.registerIcon("catwalks:sturdy_rail_turned");
+        this.straight  = reg.registerIcon("catwalks:sturdy_rail/normal");
+        this.curved    = reg.registerIcon("catwalks:sturdy_rail/turned");
     }
 	
     /**

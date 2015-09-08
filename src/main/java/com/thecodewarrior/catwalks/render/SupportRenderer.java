@@ -1,5 +1,7 @@
 package com.thecodewarrior.catwalks.render;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,17 +22,44 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 	}
 	
 	@Override
-	public void renderInventoryBlock(Block block, int metadata, int modelId,
+	public void renderInventoryBlock(Block block, int meta, int modelId,
 			RenderBlocks renderer) {
-		// TODO Auto-generated method stub
 		
+		double blockWidth = ( (BlockSupportColumn)block ).getWidth();
+		double d = (1-blockWidth)/2;
+		double D = 1-d;
+		
+		Tessellator tessellator = Tessellator.instance;
+	    tessellator.startDrawingQuads();
+	    
+	    renderer.overrideBlockBounds(d, 0, d, D, 1, D);
+	    
+	    tessellator.setNormal(0, -1, 0);
+	    renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 100, meta));
+	    tessellator.setNormal(0, +1, 0);
+	    renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 101, meta));
+	    tessellator.setNormal(0, 0, -1);
+	    renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 102, meta));
+	    tessellator.setNormal(0, 0, +1);
+	    renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 103, meta));
+	    tessellator.setNormal(-1, 0, 0);
+	    renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 104, meta));
+	    tessellator.setNormal(+1, 0, 0);
+	    renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 105, meta));
+	    
+	    renderer.unlockBlockBounds();
+	    
+	    GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+	    tessellator.draw();
+	    GL11.glTranslatef(0.5F, 0.5F, 0.5F);
 	}
 
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
 		int meta = world.getBlockMetadata(x, y, z);
-		double d = 3/16F;
+		double blockWidth = ( (BlockSupportColumn)block ).getWidth();
+		double d = (1-blockWidth)/2;
 		double D = 1-d;
 		
 		boolean force = false;
@@ -77,206 +106,212 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(world, x, y, z));
 		Tessellator.instance.setColorOpaque_F(1F, 1F, 1F);
 		
-		IIcon icon = ( (BlockSupportColumn)block ).support_cross;
+		IIcon icon = ( (BlockSupportColumn)block ).support;
 		
 		double o = D;
+		boolean back = false;
 		
-		if(posX || meta == 2) {
+		if(posX || meta == 2) { // east
 			o = 1;
-			renderFace( 1, D, D,   16, 13,
-						D, D, D,   13, 13,
+			renderFace( 1, D, d,   16, 3,
 						D, D, d,   13, 3,
-						1, D, d,   16, 3,
-						0, 1, 0, icon); // top
+						D, D, D,   13, 13,
+						1, D, D,   16, 13,
+						0, 1, 0, icon, back); // top
 			renderFace( 1, d, D,   16, 13,
 						D, d, D,   13, 13,
 						D, d, d,   13, 3,
 						1, d, d,   16, 3,
-						0, -1, 0, icon); // bottom
+						0, -1, 0, icon, back); // bottom
 			
-			renderFace( D, D, D,   13, 3,
-						1, D, D,   16, 3,
+			renderFace( D, d, D,   13, 13,
 						1, d, D,   16, 13,
-						D, d, D,   13, 13,
-						0, 0, 1, icon); // north
+						1, D, D,   16, 3,
+						D, D, D,   13, 3,
+						0, 0, 1, icon, back); // south
 			
-			renderFace( 1, D, d,   0, 3,
-						D, D, d,   3, 3,
+			renderFace( 1, d, d,   0, 13,
 						D, d, d,   3, 13,
-						1, d, d,   0, 13,
-						0, 0, -1, icon);
+						D, D, d,   3, 3,
+						1, D, d,   0, 3,
+						0, 0, -1, icon, back); // north
 			
 		}
-		if(!posXSolid)
-			renderFace( o, D, D,   3,  3,
-						o, D, d,   13, 3,
+		if(!posXSolid && !posX)
+			renderFace( o, d, D,   3,  13,
 						o, d, d,   13, 13,
-						o, d, D,   3,  13,
-						1, 0, 0, icon);
+						o, D, d,   13, 3,
+						o, D, D,   3,  3,
+						1, 0, 0, icon, back);
 		
 		o = d;
-		if(negX || meta == 2) {
+		if(negX || meta == 2) { // west
 			o = 0;
 			
 			renderFace( 0, D, D,   0, 13,
 						d, D, D,   3, 13,
 						d, D, d,   3, 3,
 						0, D, d,   0, 3,
-						0, 1, 0, icon); // top
-			renderFace( 0, d, D,   0, 13,
-						d, d, D,   3, 13,
+						0, 1, 0, icon, back); // top
+			renderFace( 0, d, d,   0, 3,
 						d, d, d,   3, 3,
-						0, d, d,   0, 3,
-						0, -1, 0, icon); // bottom
+						d, d, D,   3, 13,
+						0, d, D,   0, 13,
+						0, -1, 0, icon, back); // bottom
 			
 			renderFace( d, D, D,   3, 3,
 						0, D, D,   0, 3,
 						0, d, D,   0, 13,
 						d, d, D,   3, 13,
-						0, 0, 1, icon); // north
+						0, 0, 1, icon, back); // south
 			
 			renderFace( 0, D, d,   16, 3,
 						d, D, d,   13, 3,
 						d, d, d,   13, 13,
 						0, d, d,   16, 13,
-						0, 0, -1, icon);
+						0, 0, -1, icon, back); // north
 			
 		}
-		if(!negXSolid)
-			renderFace( o, D, d,   3,  3,
-						o, D, D,   13, 3,
+		if(!negXSolid && !negX)
+			renderFace( o, d, d,   3,  13,
 						o, d, D,   13, 13,
-						o, d, d,   3,  13,
-						-1, 0, 0, icon);
+						o, D, D,   13, 3,
+						o, D, d,   3,  3,
+						-1, 0, 0, icon, back);
 			
 		o = D;
-		if(posZ || meta == 1) {
+		if(posZ || meta == 1) { // south
 			o = 1;
 			
-			renderFace( d, D, D,   3, 13,
-						D, D, D,   13, 13,
+			renderFace( d, D, 1,   3, 16,
 						D, D, 1,   13, 16,
-						d, D, 1,   3, 16,
-						0, 1, 0, icon);
+						D, D, D,   13, 13,
+						d, D, D,   3, 13,
+						0, 1, 0, icon, back); // top
 			renderFace( d, d, D,   3, 13,
 						D, d, D,   13, 13,
 						D, d, 1,   13, 16,
 						d, d, 1,   3, 16,
-						0, 1, 0, icon);
+						0, 1, 0, icon, back); // bottom
 			
-			renderFace( D, D, 1,   0, 3,
-						D, D, D,   3, 3,
+			renderFace( D, d, 1,   0, 13,
 						D, d, D,   3, 13,
-						D, d, 1,   0, 13,
-						1, 0, 0, icon);
-			renderFace( d, D, D,   13, 3,
-						d, D, 1,   16, 3,
+						D, D, D,   3, 3,
+						D, D, 1,   0, 3,
+						1, 0, 0, icon, back); // east
+			renderFace( d, d, D,   13, 13,
 						d, d, 1,   16, 13,
-						d, d, D,   13, 13,
-						-1, 0, 0, icon);
+						d, D, 1,   16, 3,
+						d, D, D,   13, 3,
+						-1, 0, 0, icon, back); // west
 			
 		}
-		if(!posZSolid)
+		if(!posZSolid && !posZ)
 			renderFace( D, D, o,   3,  3,
 						d, D, o,   13, 3,
 						d, d, o,   13, 13,
 						D, d, o,   3,  13,
-						1, 0, 0, icon);
+						1, 0, 0, icon, back);
 		
 		o = d;
 		if(negZ || meta == 1) {
 			o = 0;
 			
-			renderFace( d, D, 0,   3, 0,
-						D, D, 0,   13, 0,
+			renderFace( d, D, d,   3, 3,
 						D, D, d,   13, 3,
-						d, D, d,   3, 3,
-						0, 1, 0, icon);
+						D, D, 0,   13, 0,
+						d, D, 0,   3, 0,
+						0, 1, 0, icon, back); // top
+			renderFace( d, d, 0,   3, 0,
+						D, d, 0,   13, 0,
+						D, d, d,   13, 3,
+						d, d, d,   3, 3,
+						0, 1, 0, icon, back); // bottom
 			
-			renderFace( D, D, d,   13, 3,
-						D, D, 0,   16, 3,
+			renderFace( D, d, d,   13, 13,
 						D, d, 0,   16, 13,
-						D, d, d,   13, 13,
-						1, 0, 0, icon);
+						D, D, 0,   16, 3,
+						D, D, d,   13, 3,
+						1, 0, 0, icon, back); // east
 			
-			renderFace( d, D, 0,   0, 3,
-						d, D, d,   3, 3,
+			renderFace( d, d, 0,   0, 13,
 						d, d, d,   3, 13,
-						d, d, 0,   0, 13,
-						-1, 0, 0, icon);
+						d, D, d,   3, 3,
+						d, D, 0,   0, 3,
+						-1, 0, 0, icon, back); // west
 			
 		}
-		if(!negZSolid)
+		if(!negZSolid && !negZ)
 			renderFace( d, D, o,   3,  3,
 						D, D, o,   13, 3,
 						D, d, o,   13, 13,
 						d, d, o,   3,  13,
-						-1, 0, 0, icon);
+						-1, 0, 0, icon, back);
 		o = D;
-		if(posY || meta == 0) {
+		if(posY || meta == 0) { // top
 			o = 1;
 			
-			renderFace( D, 1, d,   3, 0,
-						d, 1, d,   13, 0,
+			renderFace( D, D, d,   3, 3,
 						d, D, d,   13, 3,
-						D, D, d,   3, 3,
-						0, 0, -1, icon); // north
-			renderFace( d, 1, D,   3, 0,
-						D, 1, D,   13, 0,
+						d, 1, d,   13, 0,
+						D, 1, d,   3, 0,
+						0, 0, -1, icon, back); // north
+			renderFace( d, D, D,   3, 3,
 						D, D, D,   13, 3,
-						d, D, D,   3, 3,
-						0, 0, -1, icon); // south
+						D, 1, D,   13, 0,
+						d, 1, D,   3, 0,
+						0, 0, -1, icon, back); // south
 			
-			renderFace( D, 1, D,   3, 0,
-						D, 1, d,   13, 0,
+			renderFace( D, D, D,   3, 3,
 						D, D, d,   13, 3,
-						D, D, D,   3, 3,
-						1, 0, 0, icon); // east
-			renderFace( d, 1, d,   3, 0,
-						d, 1, D,   13, 0,
+						D, 1, d,   13, 0,
+						D, 1, D,   3, 0,
+						1, 0, 0, icon, back); // east
+			renderFace( d, D, d,   3, 3,
 						d, D, D,   13, 3,
-						d, D, d,   3, 3,
-						1, 0, 0, icon); // west
+						d, 1, D,   13, 0,
+						d, 1, d,   3, 0,
+						1, 0, 0, icon, back); // west
 		}
-		if(!posYSolid)
-			renderFace( d, o, d,   3, 3,
-						D, o, d,   13, 3,
+		if(!posYSolid && !posY)
+			renderFace( d, o, D,   3, 13,
 						D, o, D,   13, 13,
-						d, o, D,   3, 13,
-						0, 1, 0, icon);
+						D, o, d,   13, 3,
+						d, o, d,   3, 3,
+						0, 1, 0, icon, back);
 		
 		o = d;
-		if(negY || meta == 0) {
+		if(negY || meta == 0) { // bottom
 			o = 0;
 			
 			renderFace( D, 0, d,   3, 16,
 						d, 0, d,   13, 16,
 						d, d, d,   13, 13,
 						D, d, d,   3, 13,
-						0, 0, -1, icon); // north
+						0, 0, -1, icon, back); // north
 			renderFace( d, 0, D,   3, 16,
 						D, 0, D,   13, 16,
 						D, d, D,   13, 13,
 						d, d, D,   3, 13,
-						0, 0, -1, icon); // south
+						0, 0, -1, icon, back); // south
 			
 			renderFace( D, 0, D,   3, 16,
 						D, 0, d,   13, 16,
 						D, d, d,   13, 13,
 						D, d, D,   3, 13,
-						1, 0, 0, icon); // east
+						1, 0, 0, icon, back); // east
 			renderFace( d, 0, d,   3, 16,
 						d, 0, D,   13, 16,
 						d, d, D,   13, 13,
 						d, d, d,   3, 13,
-						1, 0, 0, icon); // west
+						1, 0, 0, icon, back); // west
 		}
-		if(!negYSolid)
-			renderFace( d, o, D,   3, 13,
-						D, o, D,   13, 13,
+		if(!negYSolid && !negY)
+			renderFace( d, o, d,   3, 3,
 						D, o, d,   13, 3,
-						d, o, d,   3, 3,
-						0, -1, 0, icon);
+						D, o, D,   13, 13,
+						d, o, D,   3, 13,
+						0, -1, 0, icon, back);
 		
 		
 		
@@ -296,7 +331,7 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 							double x4, double y4, double z4,
 							int u4, int v4,
 							float nX, float nY, float nZ,
-							IIcon icon) {
+							IIcon icon, boolean back) {
 		Tessellator t = Tessellator.instance;
 		
 		t.setNormal(nX, nY, nZ);
@@ -304,6 +339,9 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2), icon.getInterpolatedV(v2));
 		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3), icon.getInterpolatedV(v3));
 		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4), icon.getInterpolatedV(v4));
+		
+		if(!back)
+			return;
 		
 		t.setNormal(-nX, -nY, -nZ);
 		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4), icon.getInterpolatedV(v4));
@@ -315,13 +353,11 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 
 	@Override
 	public boolean shouldRender3DInInventory(int modelId) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public int getRenderId() {
-		// TODO Auto-generated method stub
 		return typeID;
 	}
 
