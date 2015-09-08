@@ -1,22 +1,19 @@
 package com.thecodewarrior.catwalks.item;
 
-import java.util.List;
+import java.util.Random;
 
-import com.thecodewarrior.catwalks.block.BlockScaffold;
-
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.thecodewarrior.catwalks.block.BlockScaffold;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemBlockScaffold extends ItemBlock {
 
@@ -40,6 +37,7 @@ public class ItemBlockScaffold extends ItemBlock {
         Block block = world.getBlock(x, y, z);
 
         boolean isExtending = false;
+        boolean isNextBlockSupport = false;
         boolean ret = false;
         
         int oldX = x;
@@ -65,6 +63,14 @@ public class ItemBlockScaffold extends ItemBlock {
 					y = newY-dir.offsetY;
 					z = newZ-dir.offsetZ;
 					side = dir.ordinal();
+					block = world.getBlock(x,y,z);
+					newX += dir.offsetX;
+					newY += dir.offsetY;
+					newZ += dir.offsetZ;
+					if(world.getBlock(newX, newY, newZ) instanceof BlockScaffold) {
+						isNextBlockSupport = true;
+					}
+					
 					break;
 				}
 			}
@@ -136,23 +142,36 @@ public class ItemBlockScaffold extends ItemBlock {
         {
             ret = false;
         }
+    	
         
+        ForgeDirection dir = ForgeDirection.getOrientation(side);
         if(!ret && isExtending) {
-        	ForgeDirection dir = ForgeDirection.getOrientation(side).getOpposite();
-	        double d = 0.2; // random values will be between -d and +d
+	        double d  = 0.3; // random position will be between -d and +d
+	        
 			for(int i = 0; i < 10; i++) {
-				double particleX = oldX+(Math.random()*d) + (dir.offsetX!=0 ? (  (dir.offsetX > 0 ? 1.15 : -0.15)  ) :0.5);				
-				double particleY = oldY+(Math.random()*d) + (dir.offsetY!=0 ? (  (dir.offsetY > 0 ? 1.15 : -0.15)  ) :0.5);
-				double particleZ = oldZ+(Math.random()*d) + (dir.offsetZ!=0 ? (  (dir.offsetZ > 0 ? 1.15 : -0.15)  ) :0.5);
-				world.spawnParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+				double particleX = oldX+hitX+(dir.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
+				double particleY = oldY+hitY+(dir.offsetY == 0 ? (Math.random()-0.5)*d : 0);
+				double particleZ = oldZ+hitZ+(dir.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
+				world.spawnParticle("smoke", particleX, particleY, particleZ, 0,0,0);
 			}
-		}
+		} else if(isNextBlockSupport) {
+	        double d  = 0.3; // random position will be between -d and +d
+	        
+	    	for(int i = 0; i < 10; i++) {
+				double particleX = oldX+hitX+(dir.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
+				double particleY = oldY+hitY+(dir.offsetY == 0 ? (Math.random()-0.5)*d : 0);
+				double particleZ = oldZ+hitZ+(dir.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
+				world.spawnParticle("crit", particleX, particleY, particleZ, 0,0,0);
+			}
+        }
+			
         return ret;
     }
     
     @SideOnly(Side.CLIENT)
     public boolean func_150936_a(World world, int x, int y, int z, int side, EntityPlayer player, ItemStack stack)
     {
+    	/*
         Block block = world.getBlock(x, y, z);
         
         if (block instanceof BlockScaffold && player.isSneaking())
@@ -173,6 +192,7 @@ public class ItemBlockScaffold extends ItemBlock {
 					y = newY-dir.offsetY;
 					z = newZ-dir.offsetZ;
 					side = dir.ordinal();
+					block = world.getBlock(x,y,z);
 					break;
 				}
 			}
@@ -217,7 +237,8 @@ public class ItemBlockScaffold extends ItemBlock {
             }
         }
 
-        return world.canPlaceEntityOnSide(this.field_150939_a, x, y, z, false, side, (Entity)null, stack);
+        return world.canPlaceEntityOnSide(this.field_150939_a, x, y, z, false, side, (Entity)null, stack); */
+    	return true;
     }
 	
 }

@@ -28,15 +28,8 @@ public class ItemBlockSupportColumn extends ItemBlock {
         ForgeDirection side = ForgeDirection.getOrientation(_side);
         
         boolean isExtending = false;
-//        boolean isOnCorrectSide = false;
+        boolean isNextBlockSupport = false;
         boolean ret = false;
-        
-//        if(meta == 0 && ( side == ForgeDirection.UP    || side == ForgeDirection.DOWN  ))
-//        	isOnCorrectSide = true;
-//        if(meta == 1 && ( side == ForgeDirection.NORTH || side == ForgeDirection.SOUTH ))
-//        	isOnCorrectSide = true;
-//        if(meta == 2 && ( side == ForgeDirection.WEST  || side == ForgeDirection.EAST  ))
-//        	isOnCorrectSide = true;
         
         int oldX = x;
         int oldY = y;
@@ -62,6 +55,13 @@ public class ItemBlockSupportColumn extends ItemBlock {
 					y = newY-dir.offsetY;
 					z = newZ-dir.offsetZ;
 					_side = dir.ordinal();
+					
+					newX += dir.offsetX;
+					newY += dir.offsetY;
+					newZ += dir.offsetZ;
+					if(world.getBlock(newX, newY, newZ) instanceof BlockSupportColumn) {
+						isNextBlockSupport = true;
+					}
 					break;
 				}
 			}
@@ -134,36 +134,35 @@ public class ItemBlockSupportColumn extends ItemBlock {
             ret = false;
         }
         
-        //TODO: get smoke particles working
         if(!ret && isExtending) {
-        	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
-	        double d = 0.2; // random values will be between -d and +d
+	        double d  = 0.3; // random position will be between -d and +d
+	        
 			for(int i = 0; i < 10; i++) {
-				double particleX = oldX+(Math.random()*d) + (dir.offsetX!=0 ? (  (dir.offsetX > 0 ? 1.15 : -0.15)  ) :0.5);				
-				double particleY = oldY+(Math.random()*d) + (dir.offsetY!=0 ? (  (dir.offsetY > 0 ? 1.15 : -0.15)  ) :0.5);
-				double particleZ = oldZ+(Math.random()*d) + (dir.offsetZ!=0 ? (  (dir.offsetZ > 0 ? 1.15 : -0.15)  ) :0.5);
-				world.spawnParticle("smoke", particleX, particleY, particleZ, 0.0D, 0.0D, 0.0D);
+				double particleX = oldX+hitX+(side.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
+				double particleY = oldY+hitY+(side.offsetY == 0 ? (Math.random()-0.5)*d : 0);
+				double particleZ = oldZ+hitZ+(side.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
+				world.spawnParticle("smoke", particleX, particleY, particleZ, 0,0,0);
 			}
-		}
+		} else if(isNextBlockSupport) {
+	        double d  = 0.3; // random position will be between -d and +d
+	        
+	    	for(int i = 0; i < 10; i++) {
+				double particleX = oldX+hitX+(side.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
+				double particleY = oldY+hitY+(side.offsetY == 0 ? (Math.random()-0.5)*d : 0);
+				double particleZ = oldZ+hitZ+(side.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
+				world.spawnParticle("crit", particleX, particleY, particleZ, 0,0,0);
+			}
+        }
+        
         return ret;
     }
     
     @SideOnly(Side.CLIENT)
     public boolean func_150936_a(World world, int x, int y, int z, int _side, EntityPlayer player, ItemStack stack)
     {
+    	/*
         Block block = world.getBlock(x, y, z);
         int meta = world.getBlockMetadata(x, y, z);
-        
-//        boolean isOnCorrectSide = false;
-//        ForgeDirection side = ForgeDirection.getOrientation(_side);
-        
-//        if(meta == 0 && ( side == ForgeDirection.UP    || side == ForgeDirection.DOWN  ))
-//        	isOnCorrectSide = true;
-//        if(meta == 1 && ( side == ForgeDirection.NORTH || side == ForgeDirection.SOUTH ))
-//        	isOnCorrectSide = true;
-//        if(meta == 2 && ( side == ForgeDirection.WEST  || side == ForgeDirection.EAST  ))
-//        	isOnCorrectSide = true;
-        
         
         int oldX = x;
         int oldY = y;
@@ -233,6 +232,8 @@ public class ItemBlockSupportColumn extends ItemBlock {
         }
 
         return world.canPlaceEntityOnSide(this.field_150939_a, x, y, z, false, _side, (Entity)null, stack);
+        */
+    	return true;
     }
 	
 }

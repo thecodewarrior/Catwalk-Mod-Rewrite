@@ -87,19 +87,19 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		boolean posXSolid = solidForce, negXSolid = solidForce, posYSolid = solidForce, negYSolid = solidForce, posZSolid = solidForce, negZSolid = solidForce;
 
 		
-		if(world.isSideSolid(x+1, y, z, ForgeDirection.WEST, false))
+		if(posX || meta == 2 && world.isSideSolid(x+1, y, z, ForgeDirection.WEST, false))
 			posXSolid = true;
-		if(world.isSideSolid(x-1, y, z, ForgeDirection.EAST, false))
+		if(negX || meta == 2 && world.isSideSolid(x-1, y, z, ForgeDirection.EAST, false))
 			negXSolid = true;
 		
-		if(world.isSideSolid(x, y+1, z, ForgeDirection.DOWN, false))
+		if(posY || meta == 0 && world.isSideSolid(x, y+1, z, ForgeDirection.DOWN, false))
 			posYSolid = true;
-		if(world.isSideSolid(x, y-1, z, ForgeDirection.UP, false))
+		if(negY || meta == 0 && world.isSideSolid(x, y-1, z, ForgeDirection.UP, false))
 			negYSolid = true;
 		
-		if(world.isSideSolid(x, y, z+1, ForgeDirection.NORTH, false))
+		if(posZ || meta == 1 && world.isSideSolid(x, y, z+1, ForgeDirection.NORTH, false))
 			posZSolid = true;
-		if(world.isSideSolid(x, y, z-1, ForgeDirection.SOUTH, false))
+		if(negZ || meta == 1 && world.isSideSolid(x, y, z-1, ForgeDirection.SOUTH, false))
 			negZSolid = true;
 		
 		Tessellator.instance.addTranslation(x, y, z);
