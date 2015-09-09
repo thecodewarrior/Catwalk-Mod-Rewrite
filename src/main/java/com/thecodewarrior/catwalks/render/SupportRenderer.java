@@ -1,13 +1,13 @@
 package com.thecodewarrior.catwalks.render;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.lwjgl.opengl.GL11;
 
 import com.thecodewarrior.catwalks.block.BlockSupportColumn;
 
@@ -58,11 +58,8 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z,
 			Block block, int modelId, RenderBlocks renderer) {
 		int meta = world.getBlockMetadata(x, y, z);
-		double blockWidth = ( (BlockSupportColumn)block ).getWidth();
-		double d = (1-blockWidth)/2;
-		double D = 1-d;
 		
-		boolean force = false;
+		boolean force = false; // used to test by setting all sides to extend
 		boolean posX = force, posY = force, posZ = force, negX = force, negY = force, negZ = force;
 		
 		if(world.getBlock(x+1, y, z) instanceof BlockSupportColumn)
@@ -82,19 +79,19 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 
 		
 		
-
-		boolean solidForce = false;
-		boolean posXSolid = solidForce, negXSolid = solidForce, posYSolid = solidForce, negYSolid = solidForce, posZSolid = solidForce, negZSolid = solidForce;
-
 		
-		if(posX || meta == 2 && world.isSideSolid(x+1, y, z, ForgeDirection.WEST, false))
+		boolean solidForce = false; // used to test by setting solid to true for all sides
+		boolean posXSolid = solidForce, negXSolid = solidForce, posYSolid = solidForce, negYSolid = solidForce, posZSolid = solidForce, negZSolid = solidForce;
+			// stores whether any of the sides are solid, doesn't get set if the particular side isn't going to be in contact with the block
+		
+		if(posX || meta == 2 && world.isSideSolid(x+1, y, z, ForgeDirection.WEST , false))
 			posXSolid = true;
-		if(negX || meta == 2 && world.isSideSolid(x-1, y, z, ForgeDirection.EAST, false))
+		if(negX || meta == 2 && world.isSideSolid(x-1, y, z, ForgeDirection.EAST , false))
 			negXSolid = true;
 		
-		if(posY || meta == 0 && world.isSideSolid(x, y+1, z, ForgeDirection.DOWN, false))
+		if(posY || meta == 0 && world.isSideSolid(x, y+1, z, ForgeDirection.DOWN , false))
 			posYSolid = true;
-		if(negY || meta == 0 && world.isSideSolid(x, y-1, z, ForgeDirection.UP, false))
+		if(negY || meta == 0 && world.isSideSolid(x, y-1, z, ForgeDirection.UP   , false))
 			negYSolid = true;
 		
 		if(posZ || meta == 1 && world.isSideSolid(x, y, z+1, ForgeDirection.NORTH, false))
@@ -108,214 +105,262 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		
 		IIcon icon = ( (BlockSupportColumn)block ).support;
 		
-		double o = D;
-		boolean back = false;
+		// vertex coords
+		double blockWidth = ( (BlockSupportColumn)block ).getWidth(); // width of block
+		double d = (1-blockWidth)/2; // low inside coord
+		double D = 1-d;              // high inside coord
+		double smidge = 1/1024F; // faces will be offset by a smidge to prevent z-fighting. small enough to not be noticed, high enough to prevent z-fighting when the player is close
+		double m = 0; // "zero", offset by a smidge for some sides to prevent z-fighting
+		double M = 1; // "one", offset by a smidge for some sides to prevent z-fighting
+		double o = D; // offset for the center faces, used so I only have to write one draw call for each. set for each side independantly.
+		boolean back = false; // whether to draw the backs of the faces
 		
+		// texture coords
+		int _m = 0;      // minimum
+		int _M = 16;     // maximum
+		int _d  = 3;     // minimum u/v of center part
+		int _D  = _M-_d; // maximum u/v of center part
+		
+		
+		if(posXSolid) { // if the side is solid we need to offset by a smidge.
+			m = smidge;
+			M = 1-smidge;
+		} else { // if it isn't we should reset them.
+			m = 0;
+			M = 1;
+		}
+		o = D;
 		if(posX || meta == 2) { // east
-			o = 1;
-			renderFace( 1, D, d,   16, 3,
-						D, D, d,   13, 3,
-						D, D, D,   13, 13,
-						1, D, D,   16, 13,
+			o = M;
+			renderFace( M, D, d,   _M, _d,
+						D, D, d,   _D, _d,
+						D, D, D,   _D, _D,
+						M, D, D,   _M, _D,
 						0, 1, 0, icon, back); // top
-			renderFace( 1, d, D,   16, 13,
-						D, d, D,   13, 13,
-						D, d, d,   13, 3,
-						1, d, d,   16, 3,
+			renderFace( M, d, D,   _M, _D,
+						D, d, D,   _D, _D,
+						D, d, d,   _D, _d,
+						M, d, d,   _M, _d,
 						0, -1, 0, icon, back); // bottom
 			
-			renderFace( D, d, D,   13, 13,
-						1, d, D,   16, 13,
-						1, D, D,   16, 3,
-						D, D, D,   13, 3,
+			renderFace( D, d, D,   _D, _D,
+						M, d, D,   _M, _D,
+						M, D, D,   _M, _d,
+						D, D, D,   _D, _d,
 						0, 0, 1, icon, back); // south
 			
-			renderFace( 1, d, d,   0, 13,
-						D, d, d,   3, 13,
-						D, D, d,   3, 3,
-						1, D, d,   0, 3,
+			renderFace( M, d, d,   _m, _D,
+						D, d, d,   _d, _D,
+						D, D, d,   _d, _d,
+						M, D, d,   _m, _d,
 						0, 0, -1, icon, back); // north
 			
 		}
-		if(!posXSolid && !posX)
-			renderFace( o, d, D,   3,  13,
-						o, d, d,   13, 13,
-						o, D, d,   13, 3,
-						o, D, D,   3,  3,
-						1, 0, 0, icon, back);
+		renderFace( o, d, D,   _d, _D,
+					o, d, d,   _D, _D,
+					o, D, d,   _D, _d,
+					o, D, D,   _d, _d,
+					1, 0, 0, icon, back); // center
 		
+		if(negXSolid) {
+			m = smidge;
+			M = 1-smidge;
+		} else {
+			m = 0;
+			M = 1;
+		}
 		o = d;
 		if(negX || meta == 2) { // west
-			o = 0;
+			o = m;
 			
-			renderFace( 0, D, D,   0, 13,
-						d, D, D,   3, 13,
-						d, D, d,   3, 3,
-						0, D, d,   0, 3,
+			renderFace( m, D, D,   _m, _D,
+						d, D, D,   _d, _D,
+						d, D, d,   _d, _d,
+						m, D, d,   _m, _d,
 						0, 1, 0, icon, back); // top
-			renderFace( 0, d, d,   0, 3,
-						d, d, d,   3, 3,
-						d, d, D,   3, 13,
-						0, d, D,   0, 13,
+			renderFace( m, d, d,   _m, _d,
+						d, d, d,   _d, _d,
+						d, d, D,   _d, _D,
+						m, d, D,   _m, _D,
 						0, -1, 0, icon, back); // bottom
 			
-			renderFace( d, D, D,   3, 3,
-						0, D, D,   0, 3,
-						0, d, D,   0, 13,
-						d, d, D,   3, 13,
+			renderFace( d, D, D,   _d, _d,
+						m, D, D,   _m, _d,
+						m, d, D,   _m, _D,
+						d, d, D,   _d, _D,
 						0, 0, 1, icon, back); // south
 			
-			renderFace( 0, D, d,   16, 3,
-						d, D, d,   13, 3,
-						d, d, d,   13, 13,
-						0, d, d,   16, 13,
+			renderFace( m, D, d,   _M, _d,
+						d, D, d,   _D, _d,
+						d, d, d,   _D, _D,
+						m, d, d,   _M, _D,
 						0, 0, -1, icon, back); // north
 			
 		}
-		if(!negXSolid && !negX)
-			renderFace( o, d, d,   3,  13,
-						o, d, D,   13, 13,
-						o, D, D,   13, 3,
-						o, D, d,   3,  3,
-						-1, 0, 0, icon, back);
+		renderFace( o, d, d,   _d, _D,
+					o, d, D,   _D, _D,
+					o, D, D,   _D, _d,
+					o, D, d,   _d, _d,
+					-1, 0, 0, icon, back); // center
 			
+		if(posZSolid) {
+			m = smidge;
+			M = 1-smidge;
+		} else {
+			m = 0;
+			M = 1;
+		}
 		o = D;
 		if(posZ || meta == 1) { // south
-			o = 1;
+			o = M;
 			
-			renderFace( d, D, 1,   3, 16,
-						D, D, 1,   13, 16,
-						D, D, D,   13, 13,
-						d, D, D,   3, 13,
+			renderFace( d, D, M,   _d, _M,
+						D, D, M,   _D, _M,
+						D, D, D,   _D,  _D,
+						d, D, D,   _d,  _D,
 						0, 1, 0, icon, back); // top
-			renderFace( d, d, D,   3, 13,
-						D, d, D,   13, 13,
-						D, d, 1,   13, 16,
-						d, d, 1,   3, 16,
+			renderFace( d, d, D,   _d,  _D,
+						D, d, D,   _D,  _D,
+						D, d, M,   _D, _M,
+						d, d, M,   _d, _M,
 						0, 1, 0, icon, back); // bottom
 			
-			renderFace( D, d, 1,   0, 13,
-						D, d, D,   3, 13,
-						D, D, D,   3, 3,
-						D, D, 1,   0, 3,
+			renderFace( D, d, M,   _m, _D,
+						D, d, D,   _d, _D,
+						D, D, D,   _d, _d,
+						D, D, M,   _m, _d,
 						1, 0, 0, icon, back); // east
-			renderFace( d, d, D,   13, 13,
-						d, d, 1,   16, 13,
-						d, D, 1,   16, 3,
-						d, D, D,   13, 3,
+			renderFace( d, d, D,   _D, _D,
+						d, d, M,   _M, _D,
+						d, D, M,   _M, _d,
+						d, D, D,   _D, _d,
 						-1, 0, 0, icon, back); // west
 			
 		}
-		if(!posZSolid && !posZ)
-			renderFace( D, D, o,   3,  3,
-						d, D, o,   13, 3,
-						d, d, o,   13, 13,
-						D, d, o,   3,  13,
-						1, 0, 0, icon, back);
+		renderFace( D, D, o,   _d, _d,
+					d, D, o,   _D, _d,
+					d, d, o,   _D, _D,
+					D, d, o,   _d, _D,
+					1, 0, 0, icon, back); // center
 		
+		if(negZSolid) {
+			m = smidge;
+			M = 1-smidge;
+		} else {
+			m = 0;
+			M = 1;
+		}
 		o = d;
 		if(negZ || meta == 1) {
-			o = 0;
+			o = m;
 			
-			renderFace( d, D, d,   3, 3,
-						D, D, d,   13, 3,
-						D, D, 0,   13, 0,
-						d, D, 0,   3, 0,
+			renderFace( d, D, d,   _d, _d,
+						D, D, d,   _D, _d,
+						D, D, m,   _D, _m,
+						d, D, m,   _d, _m,
 						0, 1, 0, icon, back); // top
-			renderFace( d, d, 0,   3, 0,
-						D, d, 0,   13, 0,
-						D, d, d,   13, 3,
-						d, d, d,   3, 3,
+			renderFace( d, d, m,   _d, _m,
+						D, d, m,   _D, _m,
+						D, d, d,   _D, _d,
+						d, d, d,   _d, _d,
 						0, 1, 0, icon, back); // bottom
 			
-			renderFace( D, d, d,   13, 13,
-						D, d, 0,   16, 13,
-						D, D, 0,   16, 3,
-						D, D, d,   13, 3,
+			renderFace( D, d, d,   _D, _D,
+						D, d, m,   _M, _D,
+						D, D, m,   _M, _d,
+						D, D, d,   _D, _d,
 						1, 0, 0, icon, back); // east
 			
-			renderFace( d, d, 0,   0, 13,
-						d, d, d,   3, 13,
-						d, D, d,   3, 3,
-						d, D, 0,   0, 3,
+			renderFace( d, d, m,   _m, _D,
+						d, d, d,   _d, _D,
+						d, D, d,   _d, _d,
+						d, D, m,   _m, _d,
 						-1, 0, 0, icon, back); // west
 			
 		}
-		if(!negZSolid && !negZ)
-			renderFace( d, D, o,   3,  3,
-						D, D, o,   13, 3,
-						D, d, o,   13, 13,
-						d, d, o,   3,  13,
-						-1, 0, 0, icon, back);
+		renderFace( d, D, o,   _d, _d,
+					D, D, o,   _D, _d,
+					D, d, o,   _D, _D,
+					d, d, o,   _d, _D,
+					-1, 0, 0, icon, back); // center
+		
+		if(posYSolid) {
+			m = smidge;
+			M = 1-smidge;
+		} else {
+			m = 0;
+			M = 1;
+		}
 		o = D;
 		if(posY || meta == 0) { // top
-			o = 1;
+			o = M;
 			
-			renderFace( D, D, d,   3, 3,
-						d, D, d,   13, 3,
-						d, 1, d,   13, 0,
-						D, 1, d,   3, 0,
+			renderFace( D, D, d,   _d, _d,
+						d, D, d,   _D, _d,
+						d, M, d,   _D, _m,
+						D, M, d,   _d, _m,
 						0, 0, -1, icon, back); // north
-			renderFace( d, D, D,   3, 3,
-						D, D, D,   13, 3,
-						D, 1, D,   13, 0,
-						d, 1, D,   3, 0,
+			renderFace( d, D, D,   _d, _d,
+						D, D, D,   _D, _d,
+						D, 1, D,   _D, _m,
+						d, 1, D,   _d, _m,
 						0, 0, -1, icon, back); // south
 			
-			renderFace( D, D, D,   3, 3,
-						D, D, d,   13, 3,
-						D, 1, d,   13, 0,
-						D, 1, D,   3, 0,
+			renderFace( D, D, D,   _d, _d,
+						D, D, d,   _D, _d,
+						D, M, d,   _D, _m,
+						D, M, D,   _d, _m,
 						1, 0, 0, icon, back); // east
-			renderFace( d, D, d,   3, 3,
-						d, D, D,   13, 3,
-						d, 1, D,   13, 0,
-						d, 1, d,   3, 0,
+			renderFace( d, D, d,   _d, _d,
+						d, D, D,   _D, _d,
+						d, M, D,   _D, _m,
+						d, M, d,   _d, _m,
 						1, 0, 0, icon, back); // west
 		}
-		if(!posYSolid && !posY)
-			renderFace( d, o, D,   3, 13,
-						D, o, D,   13, 13,
-						D, o, d,   13, 3,
-						d, o, d,   3, 3,
-						0, 1, 0, icon, back);
+		renderFace( d, o, D,   _d, _D,
+					D, o, D,   _D, _D,
+					D, o, d,   _D, _d,
+					d, o, d,   _d, _d,
+					0, 1, 0, icon, back); // center
 		
+		if(negYSolid) {
+			m = smidge;
+			M = 1-smidge;
+		} else {
+			m = 0;
+			M = 1;
+		}
 		o = d;
 		if(negY || meta == 0) { // bottom
-			o = 0;
+			o = m;
 			
-			renderFace( D, 0, d,   3, 16,
-						d, 0, d,   13, 16,
-						d, d, d,   13, 13,
-						D, d, d,   3, 13,
+			renderFace( D, m, d,   _d, _M,
+						d, m, d,   _D, _M,
+						d, d, d,   _D, _D,
+						D, d, d,   _d, _D,
 						0, 0, -1, icon, back); // north
-			renderFace( d, 0, D,   3, 16,
-						D, 0, D,   13, 16,
-						D, d, D,   13, 13,
-						d, d, D,   3, 13,
+			renderFace( d, m, D,   _d, _M,
+						D, m, D,   _D, _M,
+						D, d, D,   _D, _D,
+						d, d, D,   _d, _D,
 						0, 0, -1, icon, back); // south
 			
-			renderFace( D, 0, D,   3, 16,
-						D, 0, d,   13, 16,
-						D, d, d,   13, 13,
-						D, d, D,   3, 13,
+			renderFace( D, m, D,   _d, _M,
+						D, m, d,   _D, _M,
+						D, d, d,   _D, _D,
+						D, d, D,   _d, _D,
 						1, 0, 0, icon, back); // east
-			renderFace( d, 0, d,   3, 16,
-						d, 0, D,   13, 16,
-						d, d, D,   13, 13,
-						d, d, d,   3, 13,
+			renderFace( d, m, d,   _d, _M,
+						d, m, D,   _D, _M,
+						d, d, D,   _D, _D,
+						d, d, d,   _d, _D,
 						1, 0, 0, icon, back); // west
 		}
-		if(!negYSolid && !negY)
-			renderFace( d, o, d,   3, 3,
-						D, o, d,   13, 3,
-						D, o, D,   13, 13,
-						d, o, D,   3, 13,
-						0, -1, 0, icon, back);
-		
-		
-		
-		
+		renderFace( d, o, d,   _d, _d,
+					D, o, d,   _D, _d,
+					D, o, D,   _D, _D,
+					d, o, D,   _d, _D,
+					0, -1, 0, icon, back); // center
 		
 		Tessellator.instance.addTranslation(-x, -y, -z);
 		

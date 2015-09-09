@@ -1,7 +1,6 @@
 package com.thecodewarrior.catwalks.item;
 
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
@@ -9,7 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.thecodewarrior.catwalks.block.BlockScaffold;
+import com.thecodewarrior.catwalks.block.BlockCagedLadder;
+import com.thecodewarrior.catwalks.block.BlockCatwalk;
 import com.thecodewarrior.catwalks.block.BlockSupportColumn;
 
 import cpw.mods.fml.relauncher.Side;
@@ -24,8 +24,21 @@ public class ItemBlockSupportColumn extends ItemBlock {
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int _side, float hitX, float hitY, float hitZ)
     {
         Block block = world.getBlock(x, y, z);
-        int meta = world.getBlockMetadata(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(_side);
+        
+        if(( block instanceof BlockCatwalk || block instanceof BlockCagedLadder ) && world.getBlock(x+side.offsetX, y+side.offsetY, z+side.offsetZ) instanceof BlockSupportColumn) {
+        	x += side.offsetX;
+        	y += side.offsetY;
+        	z += side.offsetZ;
+        	hitX -= side.offsetX;
+        	hitY -= side.offsetY;
+        	hitZ -= side.offsetZ;
+        	
+        	_side = side.getOpposite().ordinal();
+        	block = world.getBlock(x,y,z);
+        }
+        
+        int meta = world.getBlockMetadata(x, y, z);
         
         boolean isExtending = false;
         boolean isNextBlockSupport = false;

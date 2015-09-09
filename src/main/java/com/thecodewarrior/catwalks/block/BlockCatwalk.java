@@ -274,7 +274,8 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
     		d = 0.125;
     		//cuboids.add(new IndexedCuboid6(Hitboxes.BOTTOM, new Cuboid6(x+ px, y+ 0, z+ px, x+ 1-px, y+ px, z+ 1-px)));
     	} else {
-    		if(world.getBlock(x,y-1,z) instanceof BlockCatwalk) {
+    		Block below = world.getBlock(x,y-1,z);
+    		if(below instanceof BlockCatwalk || below instanceof BlockSupportColumn) {
     			d = 0.4;
     		} else {
     			d = 0.25;
@@ -324,7 +325,6 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
         if(mop != null) {
         	if(mop.sideHit == ((ForgeDirection)mop.data).getOpposite().ordinal()) {
         		mop.sideHit = ((ForgeDirection)mop.data).ordinal();
-        	
         	}
         }
         return mop;
