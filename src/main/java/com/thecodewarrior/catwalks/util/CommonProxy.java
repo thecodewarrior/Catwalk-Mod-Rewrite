@@ -42,7 +42,10 @@ public class CommonProxy {
 		initClient();
 	}
 	
+	// client only =================================================================
 	public void initClient() {}
+	public void spawnCustomParticle(String name, World world, double x, double y, double z) {}
+	// client only =================================================================
 	
 	public void postInit() {}
 	

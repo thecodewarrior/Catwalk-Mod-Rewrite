@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.block.BlockCagedLadder;
 import com.thecodewarrior.catwalks.block.BlockCatwalk;
 import com.thecodewarrior.catwalks.block.BlockSupportColumn;
@@ -150,21 +151,23 @@ public class ItemBlockSupportColumn extends ItemBlock {
         if(!ret && isExtending) {
 	        double d  = 0.3; // random position will be between -d and +d
 	        
-			for(int i = 0; i < 10; i++) {
-				double particleX = oldX+hitX+(side.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
-				double particleY = oldY+hitY+(side.offsetY == 0 ? (Math.random()-0.5)*d : 0);
-				double particleZ = oldZ+hitZ+(side.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
-				world.spawnParticle("smoke", particleX, particleY, particleZ, 0,0,0);
-			}
+//			for(int i = 0; i < 1; i++) {
+				double particleX = oldX+hitX+(side.offsetX*0.2);//(side.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
+				double particleY = oldY+hitY+(side.offsetY*0.2);//(side.offsetY == 0 ? (Math.random()-0.5)*d : 0);
+				double particleZ = oldZ+hitZ+(side.offsetZ*0.2);//(side.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
+				CatwalkMod.proxy.spawnCustomParticle("cantExtend", world, particleX, particleY, particleZ);
+				//world.spawnParticle("smoke", particleX, particleY, particleZ, 0,0,0);
+//			}
 		} else if(isNextBlockSupport) {
 	        double d  = 0.3; // random position will be between -d and +d
 	        
-	    	for(int i = 0; i < 10; i++) {
+//	    	for(int i = 0; i < 1; i++) {
 				double particleX = oldX+hitX+(side.offsetX == 0 ? (Math.random()-0.5)*d : 0);				
 				double particleY = oldY+hitY+(side.offsetY == 0 ? (Math.random()-0.5)*d : 0);
 				double particleZ = oldZ+hitZ+(side.offsetZ == 0 ? (Math.random()-0.5)*d : 0);
-				world.spawnParticle("crit", particleX, particleY, particleZ, 0,0,0);
-			}
+				CatwalkMod.proxy.spawnCustomParticle("hitAnother", world, particleX, particleY, particleZ);
+				//world.spawnParticle("crit", particleX, particleY, particleZ, 0,0,0);
+//			}
         }
         
         return ret;
