@@ -6,9 +6,14 @@ import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +32,7 @@ import com.thecodewarrior.catwalks.item.ItemBlockSupportColumn;
 import com.thecodewarrior.catwalks.item.ItemBlowtorch;
 import com.thecodewarrior.catwalks.item.ItemCautionTape;
 import com.thecodewarrior.catwalks.item.ItemRopeLight;
-import com.thecodewarrior.catwalks.legacy.BlockLegacyCatwalk;
+import com.thecodewarrior.catwalks.item.ItemSteelGrate;
 import com.thecodewarrior.catwalks.util.CatwalkOptions;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
 import com.thecodewarrior.catwalks.util.CommonProxy;
@@ -48,7 +53,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.18";
+    public static final String MODVER = "0.1.19";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -99,6 +104,7 @@ public class CatwalkMod
     public static Item itemBlowtorch;
     public static Item itemRopeLight;
     public static Item itemCautionTape;
+    public static Item itemSteelGrate;
     
     public static int speedEffectLevel = 2;
     public static AttributeModifier speedModifier;
@@ -235,10 +241,62 @@ public class CatwalkMod
     	itemBlowtorch   = new ItemBlowtorch();
     	itemRopeLight   = new ItemRopeLight();
     	itemCautionTape = new ItemCautionTape();
+    	itemSteelGrate  = new ItemSteelGrate();
     	
     	GameRegistry.registerItem(itemBlowtorch,   "blowtorch"  );
     	GameRegistry.registerItem(itemRopeLight,   "ropeLight"  );
     	GameRegistry.registerItem(itemCautionTape, "cautionTape");
+    	GameRegistry.registerItem(itemSteelGrate,  "steelgrate" );
+    	
+    	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlowtorch), new Object[] {
+    		"FXX",
+    		"XIX",
+    		"XXI",
+    		'F', Items.flint_and_steel,
+    		'I', "ingotIron"
+    	}));
+    	
+    	GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(itemCautionTape, 16), "dyeYellow", "dyeBlack", "slimeball"));
+    	
+    	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemRopeLight, 8), new Object[]{
+    		"GSG",
+    		'G', "dustGlowstone",
+    		'S', Items.string
+    	}));
+    	
+    	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
+    		"IXI",
+    		"XIX",
+    		"IXI",
+    		'I', "ingotIron"
+    	}));
+    	
+    	GameRegistry.addRecipe(new ItemStack(defaultCatwalk, 3), new Object[] {
+    		"GXG",
+    		"XGX",
+    		'G', itemSteelGrate
+    	});
+    	
+    	GameRegistry.addRecipe(new ItemStack(defaultLadder, 3), new Object[] {
+    		"GLG",
+    		"XGX",
+    		'G', itemSteelGrate,
+    		'L', Item.getItemFromBlock(Blocks.ladder)
+    	});
+    	
+    	GameRegistry.addRecipe(new ItemStack(scaffold, 4), new Object[] {
+    		"GG",
+    		"GG",
+    		'G', itemSteelGrate
+    	});
+    	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 1), new ItemStack(scaffold, 1, 0));
+    	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 0), new ItemStack(scaffold, 1, 1));
+    	
+    	GameRegistry.addRecipe(new ItemStack(supportColumn, 2), new Object[] {
+    		"G",
+    		"G",
+    		'G', itemSteelGrate
+    	});
     	
     	proxy.init();
     }
