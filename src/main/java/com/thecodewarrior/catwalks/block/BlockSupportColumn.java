@@ -41,14 +41,14 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 		super(Material.iron);
 		setCreativeTab(CreativeTabs.tabTransport);
 		setBlockName("support_column");
-		float d = 3/16F;
+		float d = (float)( (1-getWidth())/2 );
 		setBlockBounds(   d, 0,   d,
 						1-d, 1, 1-d);
 		setHardness(1.0F);
 	}
 
 	public double getWidth() {
-		return 10/16F;
+		return 9/16F;
 	}
 	
 	@Override
@@ -203,7 +203,7 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 
     public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z) {
         int meta = world.getBlockMetadata(x, y, z);
-    	float d = 3/16F;
+    	float d = (float)( (1-getWidth())/2 );
         float D = 1-d;
         float minX = 0, minY = 0, minZ = 0, maxX = 1, maxY = 1, maxZ = 1;
 

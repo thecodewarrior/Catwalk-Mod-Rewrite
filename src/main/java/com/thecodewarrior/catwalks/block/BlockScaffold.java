@@ -125,7 +125,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int _side) {
     	ForgeDirection side = ForgeDirection.getOrientation(_side);
     	
-    	return !w.isSideSolid(x, y, z, side, false);
+    	return !w.isSideSolid(x, y, z, side, false) || ( w.getBlock(x,y,z) instanceof BlockCatwalk);
 	}
     
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {

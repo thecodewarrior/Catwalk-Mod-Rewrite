@@ -20,7 +20,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "0.1.17"
+version = "0.1.18"
 group= "com.thecodewarrior.catwalk" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "catwalks"
 

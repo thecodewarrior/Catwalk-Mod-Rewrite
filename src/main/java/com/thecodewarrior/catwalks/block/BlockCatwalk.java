@@ -497,43 +497,38 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		return !getOpenState(w,x,y,z,side);//getOpenState(w, x-side.offsetX, y-side.offsetY, z-side.offsetZ, side.getOpposite());
 	}
 
+	public boolean calcSideRender(ForgeDirection target, IBlockAccess w, int x, int y, int z, ForgeDirection side, boolean manual) {
+		if(target != side)
+			return false;
+		Block b = w.getBlock(x,y,z);
+		
+		if(b instanceof BlockCatwalk && !manual)
+			return false;
+		if(w.isSideSolid(x, y, z, side.getOpposite(), false) && !(b instanceof BlockCatwalk))
+			return false;
+		
+		
+		return manual;
+	}
+	
 	@SideOnly(Side.CLIENT)
 	public boolean shouldSideBeRendered(IBlockAccess w, int x, int y, int z, int _side)
 	{
 		ForgeDirection dir = ForgeDirection.getOrientation(_side);
 	    int meta = w.getBlockMetadata(x-dir.offsetX, y-dir.offsetY, z-dir.offsetZ);
-	
-	    if(dir == ForgeDirection.DOWN && (
-	    		bottom == false ||
-	    		( w.isSideSolid(x, y, z, ForgeDirection.UP, false) && !(w.getBlock(x,y,z) instanceof BlockCatwalk) )
-	    	)) {
-	    	return false;
-	    }
-	    if(dir == ForgeDirection.NORTH && (
-	    		(meta & 8) > 0 ||
-	    		( w.isSideSolid(x, y, z, ForgeDirection.SOUTH, false) && !(w.getBlock(x,y,z) instanceof BlockCatwalk) )
-	    	)) {
-	    	return false;
-	    }
-	    if(dir == ForgeDirection.SOUTH && (
-	    		(meta & 4) > 0 ||
-	    		( w.isSideSolid(x, y, z, ForgeDirection.NORTH, false) )// && !(w.getBlock(x,y,z) instanceof BlockCatwalk) )
-	    	)) {
-	    	return false;
-	    }
-	    if(dir == ForgeDirection.WEST && (
-	    		(meta & 2) > 0 ||
-	    		( w.isSideSolid(x, y, z, ForgeDirection.EAST, false) && !(w.getBlock(x,y,z) instanceof BlockCatwalk) )
-	    	)) {
-	    	return false;
-	    }
-	    if(dir == ForgeDirection.EAST && (
-	    		(meta & 1) > 0 ||
-	    		( w.isSideSolid(x, y, z, ForgeDirection.WEST, false) )// && !(w.getBlock(x,y,z) instanceof BlockCatwalk) )
-	    	)) {
-	    	return false;
-	    }
-	    return true;
+	    
+	    if(calcSideRender(ForgeDirection.DOWN,  w, x, y, z, dir, bottom))
+	    	return true;
+	    if(calcSideRender(ForgeDirection.NORTH, w, x, y, z, dir, !getBit(meta, 3)))
+	    	return true;
+	    if(calcSideRender(ForgeDirection.SOUTH, w, x, y, z, dir, !getBit(meta, 2)))
+	    	return true;
+	    if(calcSideRender(ForgeDirection.WEST, w, x, y, z, dir, !getBit(meta, 1)))
+	    	return true;
+	    if(calcSideRender(ForgeDirection.EAST, w, x, y, z, dir, !getBit(meta, 0)))
+	    	return true;
+	    
+	    return false;
 	}
 	
 	

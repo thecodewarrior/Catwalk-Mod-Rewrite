@@ -84,24 +84,25 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		boolean posXSolid = solidForce, negXSolid = solidForce, posYSolid = solidForce, negYSolid = solidForce, posZSolid = solidForce, negZSolid = solidForce;
 			// stores whether any of the sides are solid, doesn't get set if the particular side isn't going to be in contact with the block
 		
-		if(posX || meta == 2 && world.isSideSolid(x+1, y, z, ForgeDirection.WEST , false))
+		if((posX || meta == 2) && world.isSideSolid(x+1, y, z, ForgeDirection.WEST , false) && !(world.getBlock(x+1, y, z) instanceof BlockSupportColumn))
 			posXSolid = true;
-		if(negX || meta == 2 && world.isSideSolid(x-1, y, z, ForgeDirection.EAST , false))
+		if((negX || meta == 2) && world.isSideSolid(x-1, y, z, ForgeDirection.EAST , false) && !(world.getBlock(x-1, y, z) instanceof BlockSupportColumn))
 			negXSolid = true;
 		
-		if(posY || meta == 0 && world.isSideSolid(x, y+1, z, ForgeDirection.DOWN , false))
+		if((posY || meta == 0) && world.isSideSolid(x, y+1, z, ForgeDirection.DOWN , false) && !(world.getBlock(x, y+1, z) instanceof BlockSupportColumn))
 			posYSolid = true;
-		if(negY || meta == 0 && world.isSideSolid(x, y-1, z, ForgeDirection.UP   , false))
+		if((negY || meta == 0) && world.isSideSolid(x, y-1, z, ForgeDirection.UP   , false) && !(world.getBlock(x, y-1, z) instanceof BlockSupportColumn))
 			negYSolid = true;
 		
-		if(posZ || meta == 1 && world.isSideSolid(x, y, z+1, ForgeDirection.NORTH, false))
+		if((posZ || meta == 1) && world.isSideSolid(x, y, z+1, ForgeDirection.NORTH, false) && !(world.getBlock(x, y, z+1) instanceof BlockSupportColumn))
 			posZSolid = true;
-		if(negZ || meta == 1 && world.isSideSolid(x, y, z-1, ForgeDirection.SOUTH, false))
+		if((negZ || meta == 1) && world.isSideSolid(x, y, z-1, ForgeDirection.SOUTH, false) && !(world.getBlock(x, y, z-1) instanceof BlockSupportColumn))
 			negZSolid = true;
 		
 		Tessellator.instance.addTranslation(x, y, z);
 		Tessellator.instance.setBrightness(block.getMixedBrightnessForBlock(world, x, y, z));
-		Tessellator.instance.setColorOpaque_F(1F, 1F, 1F);
+		Tessellator.instance.setColorOpaque_F(0.5F, 0.5F, 0.5F);
+
 		
 		IIcon icon = ( (BlockSupportColumn)block ).support;
 		
@@ -117,8 +118,8 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		
 		// texture coords
 		int _m = 0;      // minimum
-		int _M = 16;     // maximum
-		int _d  = 3;     // minimum u/v of center part
+		int _M = 32;     // maximum
+		int _d  = 7;     // minimum u/v of center part
 		int _D  = _M-_d; // maximum u/v of center part
 		
 		
@@ -156,11 +157,12 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						0, 0, -1, icon, back); // north
 			
 		}
-		renderFace( o, d, D,   _d, _D,
-					o, d, d,   _D, _D,
-					o, D, d,   _D, _d,
-					o, D, D,   _d, _d,
-					1, 0, 0, icon, back); // center
+		if(!(world.getBlock(x+1, y, z) instanceof BlockSupportColumn))
+			renderFace( o, d, D,   _d, _D,
+						o, d, d,   _D, _D,
+						o, D, d,   _D, _d,
+						o, D, D,   _d, _d,
+						1, 0, 0, icon, back); // center
 		
 		if(negXSolid) {
 			m = smidge;
@@ -197,11 +199,12 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						0, 0, -1, icon, back); // north
 			
 		}
-		renderFace( o, d, d,   _d, _D,
-					o, d, D,   _D, _D,
-					o, D, D,   _D, _d,
-					o, D, d,   _d, _d,
-					-1, 0, 0, icon, back); // center
+		if(!(world.getBlock(x-1, y, z) instanceof BlockSupportColumn))
+			renderFace( o, d, d,   _d, _D,
+						o, d, D,   _D, _D,
+						o, D, D,   _D, _d,
+						o, D, d,   _d, _d,
+						-1, 0, 0, icon, back); // center
 			
 		if(posZSolid) {
 			m = smidge;
@@ -237,11 +240,12 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						-1, 0, 0, icon, back); // west
 			
 		}
-		renderFace( D, D, o,   _d, _d,
-					d, D, o,   _D, _d,
-					d, d, o,   _D, _D,
-					D, d, o,   _d, _D,
-					1, 0, 0, icon, back); // center
+		if(!(world.getBlock(x, y, z+1) instanceof BlockSupportColumn))
+			renderFace( D, D, o,   _d, _d,
+						d, D, o,   _D, _d,
+						d, d, o,   _D, _D,
+						D, d, o,   _d, _D,
+						0, 0, 1, icon, back); // center
 		
 		if(negZSolid) {
 			m = smidge;
@@ -275,14 +279,15 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						d, d, d,   _d, _D,
 						d, D, d,   _d, _d,
 						d, D, m,   _m, _d,
-						-1, 0, 0, icon, back); // west
+						0, 0, -1, icon, back); // west
 			
 		}
-		renderFace( d, D, o,   _d, _d,
-					D, D, o,   _D, _d,
-					D, d, o,   _D, _D,
-					d, d, o,   _d, _D,
-					-1, 0, 0, icon, back); // center
+		if(!(world.getBlock(x, y, z-1) instanceof BlockSupportColumn))
+			renderFace( d, D, o,   _d, _d,
+						D, D, o,   _D, _d,
+						D, d, o,   _D, _D,
+						d, d, o,   _d, _D,
+						0, 0, -1, icon, back); // center
 		
 		if(posYSolid) {
 			m = smidge;
@@ -317,11 +322,12 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						d, M, d,   _d, _m,
 						1, 0, 0, icon, back); // west
 		}
-		renderFace( d, o, D,   _d, _D,
-					D, o, D,   _D, _D,
-					D, o, d,   _D, _d,
-					d, o, d,   _d, _d,
-					0, 1, 0, icon, back); // center
+		if(!(world.getBlock(x, y+1, z) instanceof BlockSupportColumn))
+			renderFace( d, o, D,   _d, _D,
+						D, o, D,   _D, _D,
+						D, o, d,   _D, _d,
+						d, o, d,   _d, _d,
+						0, 1, 0, icon, back); // center
 		
 		if(negYSolid) {
 			m = smidge;
@@ -354,13 +360,14 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 						d, m, D,   _D, _M,
 						d, d, D,   _D, _D,
 						d, d, d,   _d, _D,
-						1, 0, 0, icon, back); // west
+						-1, 0, 0, icon, back); // west
 		}
-		renderFace( d, o, d,   _d, _d,
-					D, o, d,   _D, _d,
-					D, o, D,   _D, _D,
-					d, o, D,   _d, _D,
-					0, -1, 0, icon, back); // center
+		if(!(world.getBlock(x, y-1, z) instanceof BlockSupportColumn))
+			renderFace( d, o, d,   _d, _d,
+						D, o, d,   _D, _d,
+						D, o, D,   _D, _D,
+						d, o, D,   _d, _D,
+						0, -1, 0, icon, back); // center
 		
 		Tessellator.instance.addTranslation(-x, -y, -z);
 		
@@ -379,20 +386,58 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 							IIcon icon, boolean back) {
 		Tessellator t = Tessellator.instance;
 		
+		float f3 = 0.5F;
+        float f4 = 1.0F;
+        float f5 = 0.8F;
+        float f6 = 0.6F;
+        float f7 = f4;
+        float f8 = f4;
+        float f9 = f4;
+        float f10 = f3;
+        float f11 = f5;
+        float f12 = f6;
+        float f13 = f3;
+        float f14 = f5;
+        float f15 = f6;
+        float f16 = f3;
+        float f17 = f5;
+        float f18 = f6;
+		
+		if(nX ==  1) {
+            t.setColorOpaque_F(f12, f15, f18);
+		} else
+		if(nX == -1) {
+            t.setColorOpaque_F(f12, f15, f18);
+		} else
+			
+		if(nY ==  1) {
+            t.setColorOpaque_F(f7, f8, f9);
+		} else
+		if(nY == -1) {
+            t.setColorOpaque_F(f10, f13, f16);
+		} else
+		
+		if(nZ ==  1) {
+            t.setColorOpaque_F(f11, f14, f17);
+		} else
+		if(nZ == -1) {
+            t.setColorOpaque_F(f11, f14, f17);
+		}
+		
 		t.setNormal(nX, nY, nZ);
-		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1), icon.getInterpolatedV(v1));
-		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2), icon.getInterpolatedV(v2));
-		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3), icon.getInterpolatedV(v3));
-		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4), icon.getInterpolatedV(v4));
+		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1/2F), icon.getInterpolatedV(v1/2F));
+		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2/2F), icon.getInterpolatedV(v2/2F));
+		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3/2F), icon.getInterpolatedV(v3/2F));
+		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4/2F), icon.getInterpolatedV(v4/2F));
 		
 		if(!back)
 			return;
 		
 		t.setNormal(-nX, -nY, -nZ);
-		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4), icon.getInterpolatedV(v4));
-		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3), icon.getInterpolatedV(v3));
-		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2), icon.getInterpolatedV(v2));
-		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1), icon.getInterpolatedV(v1));
+		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4/2F), icon.getInterpolatedV(v4/2F));
+		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3/2F), icon.getInterpolatedV(v3/2F));
+		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2/2F), icon.getInterpolatedV(v2/2F));
+		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1/2F), icon.getInterpolatedV(v1/2F));
 
 	}
 
