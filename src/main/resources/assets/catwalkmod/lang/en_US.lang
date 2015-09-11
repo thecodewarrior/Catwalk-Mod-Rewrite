@@ -1,0 +1,9 @@
+item.legacy.lore.0=§dThis item is outdated,
+item.legacy.lore.1=§dplace in a crafting
+item.legacy.lore.2=§dwindow to update
+item.legacy.name=%s §4(OUTDATED)
+tile.legacy.ladder.name=Caged Ladder
+tile.legacy.catwalk.name=Catwalk
+item.legacy.lightrope.name=Light Rope
+item.legacy.blowtorch.name=Blowtorch
+item.legacy.steelgrate.name=Steel grate

@@ -27,6 +27,7 @@ import com.thecodewarrior.catwalks.item.ItemBlockSupportColumn;
 import com.thecodewarrior.catwalks.item.ItemBlowtorch;
 import com.thecodewarrior.catwalks.item.ItemCautionTape;
 import com.thecodewarrior.catwalks.item.ItemRopeLight;
+import com.thecodewarrior.catwalks.legacy.BlockLegacyCatwalk;
 import com.thecodewarrior.catwalks.util.CatwalkOptions;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
 import com.thecodewarrior.catwalks.util.CommonProxy;
@@ -47,7 +48,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.16";
+    public static final String MODVER = "0.1.17";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
