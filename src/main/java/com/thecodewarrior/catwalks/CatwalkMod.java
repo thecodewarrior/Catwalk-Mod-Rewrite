@@ -53,7 +53,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.19";
+    public static final String MODVER = "0.1.20";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -292,7 +292,7 @@ public class CatwalkMod
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 1), new ItemStack(scaffold, 1, 0));
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 0), new ItemStack(scaffold, 1, 1));
     	
-    	GameRegistry.addRecipe(new ItemStack(supportColumn, 2), new Object[] {
+    	GameRegistry.addRecipe(new ItemStack(supportColumn, 4), new Object[] {
     		"G",
     		"G",
     		'G', itemSteelGrate

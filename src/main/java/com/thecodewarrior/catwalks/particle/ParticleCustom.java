@@ -13,22 +13,27 @@ import com.thecodewarrior.catwalks.util.ResourceManager;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class ParticleCantExtend extends EntityFX {
+public class ParticleCustom extends EntityFX {
 
 	static Random rand = new Random();
-	int red, green, blue;
+	int red, green, blue, animationLength, frameOffset;
+	IIcon[] particleIcons;
 	
-	public ParticleCantExtend(int index, World world, double x, double y, double z, double vX, double vY, double vZ) {
+	
+	public ParticleCustom(int index, World world, double x, double y, double z, double vX, double vY, double vZ) {
 		this(index, world, x, y, z, vX, vY, vZ, 255, 255, 255);
 	}
 	
-	public ParticleCantExtend(int index, World world, double x, double y, double z, double vX, double vY, double vZ, int red, int green, int blue) {
+	public ParticleCustom(int index, World world, double x, double y, double z, double vX, double vY, double vZ, int red, int green, int blue) {
 		super(world, x, y, z, vX, vY, vZ);
-		CatwalkMod.l.info("call1");
 		this.motionX = vX;// + (rand.nextGaussian() * 0.02D);
 	    this.motionY = vY;// + (rand.nextGaussian() * 0.02D);
 	    this.motionZ = vZ;// + (rand.nextGaussian() * 0.02D);
-	    this.particleIcon = ResourceManager.getParticle(index);
+	    this.particleIcons = ResourceManager.getParticle(index);
+	    this.animationLength = particleIcons.length;
+	    this.particleScale = this.particleScale/2F;
+	    this.frameOffset = rand.nextInt(3);
+	    this.particleMaxAge = animationLength-1 - frameOffset - rand.nextInt(2);
 	    this.red = red;
 	    this.green = green;
 	    this.blue = blue;
@@ -53,12 +58,14 @@ public class ParticleCantExtend extends EntityFX {
         float maxV = 1;
         float drawScale = 0.1F * this.particleScale;
 
-        if (this.particleIcon != null)
+        int frame = this.particleAge + frameOffset;
+        
+        if (this.particleIcons[frame] != null)
         {
-            minU = this.particleIcon.getMinU();
-            maxU = this.particleIcon.getMaxU();
-            minV = this.particleIcon.getMinV();
-            maxV = this.particleIcon.getMaxV();
+            minU = this.particleIcons[frame].getMinU();
+            maxU = this.particleIcons[frame].getMaxU();
+            minV = this.particleIcons[frame].getMinV();
+            maxV = this.particleIcons[frame].getMaxV();
         }
 
         float drawX = (float)(this.prevPosX + (this.posX - this.prevPosX) * (double)par2 - interpPosX);

@@ -11,7 +11,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 import com.thecodewarrior.catwalks.CatwalkMod;
-import com.thecodewarrior.catwalks.particle.ParticleCantExtend;
+import com.thecodewarrior.catwalks.particle.ParticleCustom;
 import com.thecodewarrior.catwalks.render.CatwalkRenderer;
 import com.thecodewarrior.catwalks.render.InAndOutRenderer;
 import com.thecodewarrior.catwalks.render.LadderRenderer;
@@ -44,11 +44,11 @@ public class ClientProxy extends CommonProxy {
 		int index = 0;
 
 		if(name.equals("hitAnother"))
-			index = 1;
+			index = 0;
 		if(name.equals("cantExtend"))
-			index = 2;
+			index = 3;
 		
-		EntityFX particle = new ParticleCantExtend(index, world, x, y, z, 0, 0, 0);
+		EntityFX particle = new ParticleCustom(index, world, x, y, z, 0, 0, 0);
 		
 //	    if(particle != null)
 	    Minecraft.getMinecraft().effectRenderer.addEffect(particle);

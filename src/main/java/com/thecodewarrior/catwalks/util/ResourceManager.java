@@ -14,25 +14,46 @@ import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class ResourceManager {
 	
-	static List<IIcon> particleIcons = new ArrayList<IIcon>();
+	static List<IIcon[]> particleIcons = new ArrayList<IIcon[]>();
 	static ResourceLocation particles = new ResourceLocation(CatwalkMod.MODID, "textures/particles.png");
 	static ResourceLocation defaultParticles;
 	
 	public static void refreshIcons() {
-		particleIcons = new ArrayList<IIcon>();
+		particleIcons = new ArrayList<IIcon[]>();
 		float widthPer = 1/(float)getParticleCount();
+		float heightPer = 1/(float)getParticleFrames();
 		
 		for(int i = 0; i < getParticleCount(); i++) {
-			IIcon icon = new BasicIcon(i*widthPer, 0, (i+1)*widthPer, 1, 1, 1);
-			particleIcons.add(icon);
+			IIcon[] arr = new IIcon[getParticleLength(i)];
+			particleIcons.add(arr);
+			for(int f = 0; f < getParticleLength(i); f++) {
+				IIcon icon = new BasicIcon(  i   *widthPer,  f   *heightPer,
+											(i+1)*widthPer, (f+1)*heightPer,
+											8, 8);
+				arr[f] = icon;
+			}
 		}
 	}
 	
 	public static int getParticleCount() {
-		return 3;
+		return 8;
 	}
 	
-	public static IIcon getParticle(int position) {
+	public static int getParticleFrames() {
+		return 8;
+	}
+	
+	public static int getParticleLength(int particle) {
+		switch(particle) {
+		case 0: return 8;
+		case 1: return 8;
+		case 2: return 8;
+		case 3: return 8;
+		default: return 1;
+		}
+	}
+	
+	public static IIcon[] getParticle(int position) {
 		if(getParticleCount() != particleIcons.size())
 			refreshIcons();
 		if(position >= particleIcons.size())
