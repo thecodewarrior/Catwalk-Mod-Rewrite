@@ -8,7 +8,7 @@ import com.thecodewarrior.catwalks.CatwalkMod;
 public class ItemSteelGrate extends Item {
 	public ItemSteelGrate() {
 		setUnlocalizedName("steel_grate");
-		setCreativeTab(CreativeTabs.tabMaterials);
+		setCreativeTab(CatwalkMod.catwalkTab);
 		setTextureName(CatwalkMod.MODID + ":steelgrate");
 	}
 }

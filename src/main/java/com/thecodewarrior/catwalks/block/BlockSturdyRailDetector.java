@@ -32,7 +32,7 @@ public class BlockSturdyRailDetector extends BlockRailDetector implements ISturd
 	public IIcon on;
 		
 	public BlockSturdyRailDetector() {
-		this.setCreativeTab(CreativeTabs.tabTransport);
+		this.setCreativeTab(CatwalkMod.catwalkTab);
 		this.setBlockName("sturdy_detector_rail");
 		this.setHardness(0.7F);
 	}

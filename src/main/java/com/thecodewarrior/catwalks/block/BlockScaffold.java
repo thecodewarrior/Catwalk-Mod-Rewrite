@@ -43,7 +43,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	
 	public BlockScaffold() {
 		super(Material.iron);
-		setCreativeTab(CreativeTabs.tabTransport);
+		setCreativeTab(CatwalkMod.catwalkTab);
 		setBlockName("scaffold");
 	}
 	

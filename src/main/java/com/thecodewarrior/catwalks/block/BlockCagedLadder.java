@@ -55,12 +55,12 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	public boolean isBottomOpen;
 	public boolean tape;
 	
-	IIcon inventory_bottom;
-	IIcon inventory_side;
-	IIcon inventory_front;
-	IIcon inventory_ladder;
+	static IIcon inventory_bottom;
+	static IIcon inventory_side;
+	static IIcon inventory_front;
+	static IIcon inventory_ladder;
 	
-	public Map<TextureSide, Map<TextureType, IIcon>> textures;
+	public static Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
 	public enum TextureSide {
 		LADDER("ladder"),
@@ -112,10 +112,10 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 		}
 	}
 	
-	public IIcon landing;
-	public IIcon landing_tape;
+	public static IIcon landing;
+	public static IIcon landing_tape;
 	
-	public IIcon transparent;
+	public static IIcon transparent;
 	
 	public Map<RelativeSide, Cuboid6> closed = new HashMap<RelativeSide, Cuboid6>();
 	public Map<RelativeSide, Cuboid6>   open = new HashMap<RelativeSide, Cuboid6>();
@@ -131,7 +131,7 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 		setBlockName("caged_ladder");
 		setStepSound(soundTypeLadder);
 		if(direction == ForgeDirection.NORTH && !lights && !bottom && !tape)
-			setCreativeTab(CreativeTabs.tabTransport);
+			setCreativeTab(CatwalkMod.catwalkTab);
 		setHarvestLevel("wrench", 0);
 		setHarvestLevel("pickaxe", 0);
 		this.lights = lights;
@@ -442,7 +442,10 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-	    transparent   		= reg.registerIcon(CatwalkMod.MODID + ":transparent");
+		if(this != CatwalkMod.defaultLadder)
+			return;
+		
+	    transparent   	 = reg.registerIcon(CatwalkMod.MODID + ":transparent");
 	    
 	    inventory_bottom = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_bottom");
 	    inventory_front  = reg.registerIcon(CatwalkMod.MODID + ":inventory/ladder_front");

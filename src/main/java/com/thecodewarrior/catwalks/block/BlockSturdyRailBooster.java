@@ -31,7 +31,7 @@ public class BlockSturdyRailBooster extends BlockRailPowered implements ISturdyT
 	public IIcon off;
 		
 	public BlockSturdyRailBooster() {
-	  this.setCreativeTab(CreativeTabs.tabTransport);
+	  this.setCreativeTab(CatwalkMod.catwalkTab);
 		this.setBlockName("sturdy_booster_rail");
 		this.setHardness(0.7F);
 	}

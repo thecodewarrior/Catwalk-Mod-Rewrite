@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -47,13 +48,15 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(modid=CatwalkMod.MODID, name=CatwalkMod.MODNAME, version=CatwalkMod.MODVER)
 public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.20";
+    public static final String MODVER = "0.1.21";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -71,6 +74,8 @@ public class CatwalkMod
     
     public static CatwalkOptions options = new CatwalkOptions();
         
+    public static CreativeTabs catwalkTab;
+    
     public static Block.SoundType catwalkSounds;
     public static Block.SoundType ladderSounds;
     
@@ -124,6 +129,14 @@ public class CatwalkMod
     	l = logger();
     	CatwalkUtil.init();
 
+    	catwalkTab = new CreativeTabs("catwalks") {
+    		@Override
+    		@SideOnly(Side.CLIENT)
+    		public Item getTabIconItem() {
+    			return Item.getItemFromBlock(CatwalkMod.scaffold);
+    		}
+    	};
+    	
     	boolean[] trueFalse = {true, false};
     	
     	catwalkRenderType   = RenderingRegistry.getNextAvailableRenderId();

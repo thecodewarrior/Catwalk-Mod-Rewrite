@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 
 public class ItemCautionTape extends Item {
 	public ItemCautionTape() {
-		setCreativeTab(CreativeTabs.tabMisc);
+		setCreativeTab(CatwalkMod.catwalkTab);
 		setUnlocalizedName("caution_tape");
 	}
 	

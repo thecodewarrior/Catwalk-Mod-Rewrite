@@ -11,3 +11,4 @@ tile.sturdy_rail.name=Sturdy Rail
 tile.sturdy_booster_rail.name=Sturdy Powered Rail
 tile.sturdy_activator_rail.name=Sturdy Activator Rail
 tile.sturdy_detector_rail.name=Sturdy Detector Rail
+itemGroup.catwalks=Catwalks

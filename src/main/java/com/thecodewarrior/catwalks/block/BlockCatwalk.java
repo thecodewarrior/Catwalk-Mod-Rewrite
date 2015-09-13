@@ -52,12 +52,12 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	private RayTracer rayTracer = new RayTracer();
 	
-	public IIcon inventory_bottom;
-	public IIcon inventory_side;
+	public static IIcon inventory_bottom;
+	public static IIcon inventory_side;
 	
-	public IIcon transparent;
+	public static IIcon transparent;
 		
-	public Map<TextureSide, Map<TextureType, IIcon>> textures;
+	public static Map<TextureSide, Map<TextureType, IIcon>> textures;
 	
 	public enum TextureSide {
 		BOTTOM("bottom"),
@@ -113,7 +113,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 		setStepSound(CatwalkMod.catwalkSounds);
 		setBlockName("catwalk");
 		if(!lights && !bottom && !tape)
-			setCreativeTab(CreativeTabs.tabTransport);
+			setCreativeTab(CatwalkMod.catwalkTab);
 		this.lights = lights;
 		this.bottom = bottom;
 		this.tape   = tape;
@@ -434,7 +434,9 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	
 	@Override
 	public void registerBlockIcons(IIconRegister reg) {
-		transparent   			= reg.registerIcon(CatwalkMod.MODID + ":transparent");
+		if(this != CatwalkMod.defaultCatwalk)
+			return;
+		transparent   	 = reg.registerIcon(CatwalkMod.MODID + ":transparent");
 		
 		inventory_bottom = reg.registerIcon(CatwalkMod.MODID + ":inventory/catwalk_bottom");
 		inventory_side   = reg.registerIcon(CatwalkMod.MODID + ":inventory/catwalk_side");

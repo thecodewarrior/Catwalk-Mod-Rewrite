@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 
 public class ItemRopeLight extends Item {
 	public ItemRopeLight() {
-		setCreativeTab(CreativeTabs.tabMisc);
+		setCreativeTab(CatwalkMod.catwalkTab);
 		setUnlocalizedName("rope_light");
 	}
 	
