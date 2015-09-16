@@ -178,7 +178,7 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 	
 	public void drawWideLanding(BlockCagedLadder block, IBlockAccess world, int x, int y, int z, ForgeDirection side) {
 
-		Tessellator tess = Tessellator.instance;
+		TransformingTessellator tess = TransformingTessellator.instance;
 		
 		int meta = world.getBlockMetadata(x,y,z);
 	
@@ -192,7 +192,19 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		int adjZ = z + side.offsetZ;
 		
 		// get one of the perpendicular directions
-		ForgeDirection diagDir1 = (side == ForgeDirection.NORTH || side == ForgeDirection.SOUTH) ? ForgeDirection.EAST : ForgeDirection.NORTH;
+		ForgeDirection diagDir1;
+		switch(side) {
+		case NORTH:
+			diagDir1 = ForgeDirection.WEST; break;
+		case SOUTH:
+			diagDir1 = ForgeDirection.EAST; break;
+		case EAST:
+			diagDir1 = ForgeDirection.NORTH; break;
+		case WEST:
+			diagDir1 = ForgeDirection.SOUTH; break;
+		default:
+			diagDir1 = ForgeDirection.NORTH;
+		}
 		ForgeDirection diagDir2 = diagDir1.getOpposite();
 		
 		Block adjacentBlock = world.getBlock(adjX,adjY,adjZ);
@@ -226,9 +238,9 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		if(!((ICagedLadderConnectable)block).shouldHaveBottom(world, x, y, z, side))
 			bottom = false;
 		
-		float p = 1/16F;
+		double p = 1/16F;
 		// all the capitals are 1-lowercase
-		float P = 1 - p;
+		double P = 1 - p;
 		
 		IIcon c = block.tape ? block.landing_tape : block.landing;//( (BlockCatwalk) CatwalkMod.catwalkUnlitBottom ).sideTexture;
 		
@@ -241,58 +253,53 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 		float u1 = c.getInterpolatedU(1);
 		float u2 = c.getInterpolatedU(2);
 
-		float v1 = c.getInterpolatedV(1);
-		
-		tess.addTranslation(x, y, z);
-		
+		float v1 = c.getInterpolatedV(1);		
 		
 		// 0 if the landing sides should be flush to the sides of the block
 		// side of block => __/ `- 0
 		// p if the landing sides should be flush to the ladder
 		// side of block => ___ ]<-p
-		float g = (isThin && side.offsetZ != 0) ? p : 0;
-		float h = (isThin && side.offsetX != 0) ? p : 0;
-		float G = 1-g;
-		float H = 1-h;
+		double g = (isThin && side.offsetZ != 0) ? p : 0;
+		double h = (isThin && side.offsetX != 0) ? p : 0;
+		double G = 1-g;
+		double H = 1-h;
 		
-		if(shouldCornerShow(world, x, y, z, block, meta, side,
-				ForgeDirection.NORTH, ForgeDirection.WEST))
+		double rot;
+		
+		switch(side) {
+		case NORTH:
+			rot = 0; break;
+		case SOUTH:
+			rot = 180; break;
+		case EAST:
+			rot = -90; break;
+		case WEST:
+			rot = 90; break;
+		default:
+			rot = 0;
+		}
+		
+		tess.addTranslation(x, y, z);
+		tess.pushMatrix();
+		tess.translate( 0.5, 0,  0.5);
+		tess.rotate(rot, 0, 1, 0);
+		tess.translate(-0.5, 0, -0.5);
+		
+		if(shouldCornerShow(world, x, y, z, block, meta, side, diagDir1)) {
 			drawBothSides(tess,
 					g, 0, h, u,  V,
 					g, 1, h, u,  v,
 					p, 1, p, u1, v,
-					p, 0, p, u1, V);
-		
-		if(shouldCornerShow(world, x, y, z, block, meta, side,
-				ForgeDirection.NORTH, ForgeDirection.EAST))
+					p, 0, p, u1, V); // north-west when not rotated
+		}
+		if(shouldCornerShow(world, x, y, z, block, meta, side, diagDir2)) {
 			drawBothSides(tess,
 					G, 0, h, u,  V,
 					G, 1, h, u,  v,
 					P, 1, p, u1, v,
-					P, 0, p, u1, V
-					);
-		
-		if(shouldCornerShow(world, x, y, z, block, meta, side,
-				ForgeDirection.SOUTH, ForgeDirection.WEST))
-			drawBothSides(tess,
-					g, 0, H, u,  V,
-					g, 1, H, u,  v,
-					p, 1, P, u1, v,
-					p, 0, P, u1, V
-					);
-		
-		if(shouldCornerShow(world, x, y, z, block, meta, side,
-				ForgeDirection.SOUTH, ForgeDirection.EAST))
-			drawBothSides(tess,
-					G, 0, H, u,  V,
-					G, 1, H, u,  v,
-					P, 1, P, u1, v,
-					P, 0, P, u1, V
-					);
-		
-		// start drawing the bottom of the landing
-		
-		if(side == ForgeDirection.NORTH && bottom) {
+					P, 0, p, u1, V); // north-east when not rotated
+		}
+		if(bottom) {
 			drawBothSides(tess,
 					p, 0, 0, u2, v,
 					P, 0, 0, U,  v,
@@ -314,82 +321,13 @@ public class LadderRenderer implements ISimpleBlockRenderingHandler {
 			}
 		}
 		
-		if(side == ForgeDirection.SOUTH && bottom) {
-			drawBothSides(tess,
-					p, 0, 1, u2, v,
-					P, 0, 1, U,  v,
-					P, 0, P, U,  v1,
-					p, 0, P, u2, v1);
-			// draw the corners
-			if(!isThin) {
-				drawBothSides(tess,
-						0, 0, 1, u1, v,
-						p, 0, 1, u2, v,
-						p, 0, P, u2, v1,
-						0, 0, 1, u1, v);
-				
-				drawBothSides(tess,
-						1, 0, 1, u1, v,
-						P, 0, 1, u2, v,
-						P, 0, P, u2, v1,
-						1, 0, 1, u1, v);
-			}
-		}
-		
-		if(side == ForgeDirection.EAST && bottom) {
-			drawBothSides(tess,
-					1, 0, p, u2, v,
-					1, 0, P, U,  v,
-					P, 0, P, U,  v1,
-					P, 0, p, u2, v1);
-			// draw the corners
-			if(!isThin) {
-				drawBothSides(tess,
-						1, 0, 0, u1, v,
-						1, 0, p, u2, v,
-						P, 0, p, u2, v1,
-						1, 0, 0, u1, v);
-				
-				drawBothSides(tess,
-						1, 0, 1, u1, v,
-						1, 0, P, u2, v,
-						P, 0, P, u2, v1,
-						1, 0, 1, u1, v);
-			}
-		}
-		
-		if(side == ForgeDirection.WEST && bottom) {
-			drawBothSides(tess,
-					0, 0, P, u2, v,
-					0, 0, p, U,  v,
-					p, 0, p, U,  v1,
-					p, 0, P, u2, v1);
-			// draw the corners
-			if(!isThin) {
-				drawBothSides(tess,
-						0, 0, 1, u1, v,
-						0, 0, P, u2, v,
-						p, 0, P, u2, v1,
-						0, 0, 1, u1, v);
-				
-				drawBothSides(tess,
-						0, 0, 0, u1, v,
-						0, 0, p, u2, v,
-						p, 0, p, u2, v1,
-						0, 0, 0, u1, v);
-			}
-		}
+		tess.popMatrix();
 		
 		tess.addTranslation(-x, -y, -z);
 	}
 	
 	public boolean shouldCornerShow(IBlockAccess w, int x, int y, int z,
-								BlockCagedLadder block, int meta, ForgeDirection side, ForgeDirection _a, ForgeDirection _b) {
-		if(side != _a && side != _b)
-			return false;
-		
-		ForgeDirection a = (side == _a) ? _a : _b;
-		ForgeDirection b = (side == _a) ? _b : _a;
+								BlockCagedLadder block, int meta, ForgeDirection a, ForgeDirection b) {
 		
 		if(block.isOpen(b, meta))
 			return false;

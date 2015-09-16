@@ -38,6 +38,7 @@ public class TransformingTessellator extends Tessellator {
 		matrix.scale(new Vector3(x,y,z));
 	}
 	public void rotate(double angle, double x, double y, double z) {
+		angle = (angle/180D)*Math.PI;
 		matrix.rotate(angle, new Vector3(x,y,z));
 	}
 	
