@@ -216,7 +216,7 @@ public class CatwalkMod
     			}
     		}
     	}
-    	defaultCatwalk = catwalks.get(false).get(false).get(false);
+    	defaultCatwalk = catwalks.get(false).get(true).get(false);
     	
     	ForgeDirection[] directions = {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST};
     	ladders = new HashMap<ForgeDirection, Map<Boolean,Map<Boolean,Map<Boolean,Block>>>>();

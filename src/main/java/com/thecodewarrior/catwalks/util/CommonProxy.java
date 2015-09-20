@@ -174,17 +174,18 @@ public class CommonProxy {
 	
 	public BlockCoord getLadderCoord(EntityLivingBase entity) {
 		
-		return findCollidingBlock(entity, new Matcher<BlockCoord, EntityLivingBase>(entity) {
+		return findCollidingBlock(entity, new Predicate<BlockCoord>(entity) {
 
 			@Override
-			public boolean match(BlockCoord bc) {
-				Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
+			public boolean test(BlockCoord bc) {
+				EntityLivingBase ent = (EntityLivingBase)args[0];
+				Block b = ent.worldObj.getBlock(bc.x, bc.y, bc.z);
 				if(b == null)
 					return false;
 				ICustomLadder icl = CustomLadderRegistry.getCustomLadderOrNull(b);
 				if(icl == null)
 					return false;
-				return  icl.isOnLadder(arg.worldObj, bc.x, bc.y, bc.z, arg);
+				return  icl.isOnLadder(ent.worldObj, bc.x, bc.y, bc.z, ent);
 			}
 		});
 	}
@@ -195,7 +196,7 @@ public class CommonProxy {
 	 * @param mat
 	 * @return
 	 */
-	public BlockCoord findCollidingBlock(EntityLivingBase entity, Matcher<BlockCoord, ?> mat) {
+	public BlockCoord findCollidingBlock(EntityLivingBase entity, Predicate<BlockCoord> mat) {
 		World world = entity.worldObj;
         Block block;
 		AxisAlignedBB bb = entity.boundingBox;
@@ -211,7 +212,7 @@ public class CommonProxy {
                 {
                 	
                 	BlockCoord bc = new BlockCoord(x2, y2, z2);
-                    if (mat.match(bc))
+                    if (mat.test(bc))
                     {
                         return bc;
                     }
@@ -221,16 +222,6 @@ public class CommonProxy {
         return new BlockCoord(0,-1,0);
 	}
 	
-	public static abstract class Matcher<T, A> {
-		public A arg;
-		
-		public Matcher(A arg) {
-			this.arg = arg;
-		}
-		
-		public abstract boolean match(T obj);
-	}
-
 	@SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {		
     	if( event.phase == Phase.END) {
@@ -238,10 +229,11 @@ public class CommonProxy {
     		
     		for (EntityPlayerMP player : players) { // for each player
     			// find any catwalks
-				BlockCoord coord = findCollidingBlock(player, new Matcher<BlockCoord, EntityPlayerMP>(player) {
+				BlockCoord coord = findCollidingBlock(player, new Predicate<BlockCoord>(player) {
 					@Override
-					public boolean match(BlockCoord bc) { 
-						Block b = arg.worldObj.getBlock(bc.x, bc.y, bc.z);
+					public boolean test(BlockCoord bc) { 
+						EntityPlayerMP player = (EntityPlayerMP)args[0];
+						Block b = player.worldObj.getBlock(bc.x, bc.y, bc.z);
 						return  b != null &&
 								b instanceof BlockCatwalk;
 					}

@@ -2,17 +2,17 @@ package com.thecodewarrior.catwalks.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.block.BlockCagedLadder;
 import com.thecodewarrior.catwalks.block.BlockCatwalk;
 import com.thecodewarrior.catwalks.block.BlockSupportColumn;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
+import com.thecodewarrior.catwalks.util.Predicate;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -40,12 +40,25 @@ public class ItemBlockSupportColumn extends ItemBlock {
         	block = world.getBlock(x,y,z);
         }
         
+        return CatwalkUtil.extendBlock(stack, player, world, x, y, z, _side, hitX, hitY, hitZ, this,
+        new Predicate<Block>() { public boolean test(Block block) { /*---*/ return block instanceof BlockSupportColumn; /*---*/ } },
+        new Predicate<BlockCoord>(world) {
+			@Override
+			public boolean test(BlockCoord coord) {
+				World world = (World)args[0];
+				return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockSupportColumn;
+			}
+    	},
+    	new Predicate<BlockCoord>() { public boolean test(BlockCoord coord) { /*---*/ return false; /*---*/ } });
+        
+        
+        /*
         int meta = world.getBlockMetadata(x, y, z);
         
         boolean isExtending = false;
-        boolean isNextBlockSupport = false;
-        boolean ret = false;
-        
+        boolean placeSucceeded = false;
+        boolean didHitAnother = false;
+
         int oldX = x;
         int oldY = y;
         int oldZ = z;
@@ -53,36 +66,29 @@ public class ItemBlockSupportColumn extends ItemBlock {
         if (block instanceof BlockSupportColumn && player.isSneaking() )//&& isOnCorrectSide)
         {
     		isExtending = true;
+    		
         	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
-        	
-        	int newX = x;
-        	int newY = y;
-        	int newZ = z;
-        	boolean use = false;
-        	for(int i = 0; i < 128; i += 1) {
-				newX += dir.offsetX;
-				newY += dir.offsetY;
-				newZ += dir.offsetZ;
-				
-				Block b = world.getBlock(newX, newY, newZ);
-				if(!( b instanceof BlockSupportColumn )) {
-					x = newX-dir.offsetX;
-					y = newY-dir.offsetY;
-					z = newZ-dir.offsetZ;
-					_side = dir.ordinal();
-					
-					newX += dir.offsetX;
-					newY += dir.offsetY;
-					newZ += dir.offsetZ;
-					if(world.getBlock(newX, newY, newZ) instanceof BlockSupportColumn) {
-						isNextBlockSupport = true;
-					}
-					break;
+        	Predicate<BlockCoord> pred = new Predicate<BlockCoord>(world) {
+				@Override
+				public boolean test(BlockCoord coord) {
+					World world = (World)args[0];
+					return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockSupportColumn;
 				}
-			}
+        	};
+        	BlockHit coord = CatwalkUtil.getExtendCoord(world, x, y, z, dir, pred);
+        	x = coord.x;
+        	y = coord.y;
+        	z = coord.z;
+        	_side = coord.side;
+        	if(_side == dir.ordinal())
+        		isExtending = true;
+        	didHitAnother = pred.test( new BlockCoord(x + (2*dir.offsetX), y + (2*dir.offsetY), z + (2*dir.offsetZ)) );
         }
         
-        if (block == Blocks.snow_layer && (world.getBlockMetadata(x, y, z) & 7) < 1)
+        if(_side == ForgeDirection.UNKNOWN.ordinal()) {
+        	// extension errored out, don't try to place.
+        }
+        else if (block == Blocks.snow_layer && (world.getBlockMetadata(x, y, z) & 7) < 1)
         {
             _side = 1;
         }
@@ -121,15 +127,15 @@ public class ItemBlockSupportColumn extends ItemBlock {
 
         if (stack.stackSize == 0)
         {
-            ret = false;
+            placeSucceeded = false;
         }
         else if (!player.canPlayerEdit(x, y, z, _side, stack))
         {
-            ret = false;
+            placeSucceeded = false;
         }
         else if (y == 255 && this.field_150939_a.getMaterial().isSolid())
         {
-            ret = false;
+            placeSucceeded = false;
         }
         else if (world.canPlaceEntityOnSide(this.field_150939_a, x, y, z, false, _side, player, stack))
         {
@@ -142,98 +148,23 @@ public class ItemBlockSupportColumn extends ItemBlock {
                 --stack.stackSize;
             }
 
-            ret = true;
+            placeSucceeded = true;
         }
         else
         {
-            ret = false;
+            placeSucceeded = false;
         }
         
-        if(!ret && isExtending) {
-        	CatwalkUtil.spawnHitParticles(oldX+hitX, oldY+hitY, oldZ+hitZ, side, "cantExtend", world);
-		} else if(isNextBlockSupport) {
-        	CatwalkUtil.spawnHitParticles(oldX+hitX, oldY+hitY, oldZ+hitZ, side, "hitAnother", world);
-        }
+        if(isExtending)
+        	CatwalkUtil.extendParticles(placeSucceeded, didHitAnother, world, oldX, oldY, oldZ, hitX, hitY, hitZ, side);
         
-        return ret;
+        return placeSucceeded;
+        */
     }
     
     @SideOnly(Side.CLIENT)
     public boolean func_150936_a(World world, int x, int y, int z, int _side, EntityPlayer player, ItemStack stack)
     {
-    	/*
-        Block block = world.getBlock(x, y, z);
-        int meta = world.getBlockMetadata(x, y, z);
-        
-        int oldX = x;
-        int oldY = y;
-        int oldZ = z;
-        
-        if (block instanceof BlockSupportColumn && player.isSneaking() )//&& isOnCorrectSide)
-        {
-        	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
-        	
-        	int newX = x;
-        	int newY = y;
-        	int newZ = z;
-        	boolean use = false;
-        	for(int i = 0; i < 128; i += 1) {
-				newX += dir.offsetX;
-				newY += dir.offsetY;
-				newZ += dir.offsetZ;
-				
-				Block b = world.getBlock(newX, newY, newZ);
-				if(!( b instanceof BlockSupportColumn )) {
-					x = newX-dir.offsetX;
-					y = newY-dir.offsetY;
-					z = newZ-dir.offsetZ;
-					_side = dir.ordinal();
-					break;
-				}
-			}
-        }
-        
-        if (block == Blocks.snow_layer)
-        {
-            _side = 1;
-        }
-        else if (block != Blocks.vine && block != Blocks.tallgrass && block != Blocks.deadbush && (
-        		!block.isReplaceable(world, x, y, z) ||
-        		block.getClass().isAssignableFrom(field_150939_a.getClass())))
-        {
-            if (_side == 0)
-            {
-                --y;
-            }
-
-            if (_side == 1)
-            {
-                ++y;
-            }
-
-            if (_side == 2)
-            {
-                --z;
-            }
-
-            if (_side == 3)
-            {
-                ++z;
-            }
-
-            if (_side == 4)
-            {
-                --x;
-            }
-
-            if (_side == 5)
-            {
-                ++x;
-            }
-        }
-
-        return world.canPlaceEntityOnSide(this.field_150939_a, x, y, z, false, _side, (Entity)null, stack);
-        */
     	return true;
     }
 	

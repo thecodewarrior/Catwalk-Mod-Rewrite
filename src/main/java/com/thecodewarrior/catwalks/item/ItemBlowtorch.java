@@ -20,7 +20,7 @@ public class ItemBlowtorch extends Item implements IToolWrench{
 	
 	public ItemBlowtorch() {
 		setMaxStackSize(1);
-		setCreativeTab(CreativeTabs.tabTools);
+		setCreativeTab(CatwalkMod.catwalkTab);
 		setUnlocalizedName("blowtorch");
 	}
 	

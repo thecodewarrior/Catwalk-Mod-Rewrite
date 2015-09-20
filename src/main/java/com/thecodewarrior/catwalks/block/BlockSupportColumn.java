@@ -6,12 +6,10 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
@@ -25,7 +23,9 @@ import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.ICustomLadder;
 import com.thecodewarrior.catwalks.IInOutRenderSettings;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
+import com.thecodewarrior.catwalks.util.Predicate;
 import com.thecodewarrior.codechicken.lib.raytracer.RayTracer;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -75,22 +75,13 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 			
 			if(CatwalkUtil.isHoldingWrench(player)) {
 				if(player.isSneaking()) {
-					ForgeDirection opp = side.getOpposite();
-					for(int i = 128; i > 0; i--) {
-						int newX = x + ( i*opp.offsetX );
-						int newY = y + ( i*opp.offsetY );
-						int newZ = z + ( i*opp.offsetZ );
-						
-						Block b = world.getBlock(newX, newY, newZ);
-						if(b instanceof BlockSupportColumn){
-							List<ItemStack> drops = b.getDrops(world, newX, newY, newZ, world.getBlockMetadata(x, y+i, z), 0);
-							world.setBlockToAir(newX, newY, newZ);
-							for(ItemStack s : drops) {
-								CatwalkUtil.giveItemToPlayer(player, s);
-							}
-							break;
+					CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
+						@Override
+						public boolean test(BlockCoord coord) {
+							World world = (World)args[0];
+							return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockSupportColumn;
 						}
-					}
+					});
 				} else {
 					int meta = world.getBlockMetadata(x,y,z);
 					if(meta < 3) {

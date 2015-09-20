@@ -95,7 +95,7 @@ public class ClientProxy extends CommonProxy {
     public void onRenderTick(TickEvent.RenderTickEvent event) {
     	if(!CatwalkUtil.isDev())
     		return;
-    	if(event.phase == Phase.END && !Minecraft.getMinecraft().gameSettings.showDebugInfo) {
+    	if(event.phase == Phase.END && !Minecraft.getMinecraft().gameSettings.showDebugInfo && Minecraft.getMinecraft().currentScreen == null) {
     		EntityPlayer p = Minecraft.getMinecraft().thePlayer;
     		if(p == null) {
     			return;

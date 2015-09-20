@@ -12,7 +12,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.block.BlockScaffold;
+import com.thecodewarrior.catwalks.block.BlockSupportColumn;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
+import com.thecodewarrior.catwalks.util.Predicate;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -38,6 +41,23 @@ public class ItemBlockScaffold extends ItemBlock {
 
     public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int _side, float hitX, float hitY, float hitZ)
     {
+    	
+    	return CatwalkUtil.extendBlock(stack, player, world, x, y, z, _side, hitX, hitY, hitZ, this,
+    	        new Predicate<Block>() { public boolean test(Block block) { /*---*/ return block instanceof BlockScaffold; /*---*/ } },
+    	        new Predicate<BlockCoord>(world) {
+    				public boolean test(BlockCoord coord) {
+    					World world = (World)args[0];
+    					return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
+    				}
+    	    	},
+    	    	new Predicate<BlockCoord>(world) {
+    	    		public boolean test(BlockCoord coord) {
+    	    			World world = (World)args[0];
+    					return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
+    	    		}
+    	    	});
+    	
+    	/*
         Block block = world.getBlock(x, y, z);
 
         boolean isExtending = false;
@@ -156,7 +176,7 @@ public class ItemBlockScaffold extends ItemBlock {
         	CatwalkUtil.spawnHitParticles(oldX+hitX, oldY+hitY, oldZ+hitZ, side, "crit", world);
         }
 			
-        return ret;
+        return ret; */
     }
     
     @SideOnly(Side.CLIENT)

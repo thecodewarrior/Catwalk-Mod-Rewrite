@@ -7,6 +7,8 @@ import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.ICustomLadder;
 import com.thecodewarrior.catwalks.IInOutRenderSettings;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
+import com.thecodewarrior.catwalks.util.Predicate;
+import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -66,22 +68,13 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 			Item item = player.getCurrentEquippedItem().getItem();
 			
 			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking()) {
-				int newX = x+( 128*-side.offsetX );
-				int newY = y+( 128*-side.offsetY );
-				int newZ = z+( 128*-side.offsetZ );
-				
-				for(int i = 1; i < 128; i ++) {
-					newX += side.offsetX;
-					newY += side.offsetY;
-					newZ += side.offsetZ;
-					
-					Block b = world.getBlock(newX, newY, newZ);
-					if(b instanceof BlockScaffold){
-						CatwalkUtil.giveItemsToPlayer(player, this.getDrops(world, newX, newY, newZ, world.getBlockMetadata(newX, newY, newZ), 0));
-						world.setBlockToAir(newX, newY, newZ);
-						break;
+				CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
+					@Override
+					public boolean test(BlockCoord coord) {
+						World world = (World)args[0];
+						return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
 					}
-				}
+				});
 			}
 		}
 		
