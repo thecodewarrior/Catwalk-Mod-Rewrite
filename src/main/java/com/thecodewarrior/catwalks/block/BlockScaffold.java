@@ -6,6 +6,7 @@ import java.util.List;
 import com.thecodewarrior.catwalks.CatwalkMod;
 import com.thecodewarrior.catwalks.ICustomLadder;
 import com.thecodewarrior.catwalks.IInOutRenderSettings;
+import com.thecodewarrior.catwalks.util.CatwalkEntityProperties;
 import com.thecodewarrior.catwalks.util.CatwalkUtil;
 import com.thecodewarrior.catwalks.util.Predicate;
 import com.thecodewarrior.codechicken.lib.vec.BlockCoord;
@@ -25,6 +26,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -56,10 +58,9 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	}
 	
     public boolean isReplaceable(IBlockAccess world, int x, int y, int z) {
-    	return world.getBlockMetadata(x,y,z) != 0;
+    	return world.getBlockMetadata(x,y,z) == 1;
     }
     
-	
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {		
 		ForgeDirection side = ForgeDirection.getOrientation(blockSide);
@@ -67,14 +68,21 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 		if(player.getCurrentEquippedItem() != null) {
 			Item item = player.getCurrentEquippedItem().getItem();
 			
-			if(CatwalkUtil.isHoldingWrench(player) && player.isSneaking()) {
-				CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
-					@Override
-					public boolean test(BlockCoord coord) {
-						World world = (World)args[0];
-						return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
-					}
-				});
+			if(CatwalkUtil.isHoldingWrench(player)) {
+				if(player.isSneaking()) {
+					CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
+						@Override
+						public boolean test(BlockCoord coord) {
+							World world = (World)args[0];
+							return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
+						}
+					});
+				} else {
+					int meta = world.getBlockMetadata(x,y,z);
+					meta = meta == 0 ? 2 : meta == 2 ? 0 : meta;
+					world.setBlockMetadataWithNotify(x, y, z, meta, 3);
+					return true;
+				}
 			}
 		}
 		
@@ -123,7 +131,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
     
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
     	ArrayList<ItemStack> arr = new ArrayList<ItemStack>();
-    	arr.add( new ItemStack(Item.getItemFromBlock(this), 1, metadata) );
+    	arr.add( new ItemStack(Item.getItemFromBlock(this), 1, metadata == 1 ? 1 : 0) );
     	return arr;
     }
     

@@ -71,15 +71,6 @@ public class CommonProxy {
 		}
 		return player;
 	}
-
-	public CatwalkEntityProperties getOrCreateEP(Entity entity) {
-		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)entity.getExtendedProperties("catwalkmod.catwalkdata");
-		if(catwalkEP == null) {
-			catwalkEP = new CatwalkEntityProperties();
-			entity.registerExtendedProperties("catwalkmod.catwalkdata", catwalkEP);
-		}
-		return catwalkEP;
-	}
 	
 	@SubscribeEvent
 	public void onLivingUpdate(LivingUpdateEvent event) {
@@ -89,8 +80,7 @@ public class CommonProxy {
 		BlockCoord coord = getLadderCoord(event.entityLiving); // find any caged ladders
 		EntityLivingBase e = event.entityLiving;
 
-		CatwalkEntityProperties catwalkEP = getOrCreateEP(event.entity); // get entity properties object "for future uses"
-		
+		CatwalkEntityProperties catwalkEP = CatwalkUtil.getOrCreateEP(event.entity); // get entity properties object "for future uses"
 		if(coord.y >= 0) { // if the block was found (y=-1 if not found)
 
 			Block b = event.entity.worldObj.getBlock(coord.x, coord.y, coord.z); // get the custom ladder block

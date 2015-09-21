@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -255,6 +256,15 @@ public class CatwalkUtil {
         return placeSucceeded;
 	}
 	
+	public static CatwalkEntityProperties getOrCreateEP(Entity entity) {
+		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)entity.getExtendedProperties("catwalkmod.catwalkdata");
+		if(catwalkEP == null) {
+			catwalkEP = new CatwalkEntityProperties();
+			entity.registerExtendedProperties("catwalkmod.catwalkdata", catwalkEP);
+		}
+		return catwalkEP;
+	}
+	
 	public static boolean retractBlock(World world, int x, int y, int z, ForgeDirection dir, EntityPlayer player,
 			Predicate<BlockCoord> continueSearching) {
 		int newX = x+dir.offsetX;
@@ -270,6 +280,8 @@ public class CatwalkUtil {
 				newX -= dir.offsetX;
 				newY -= dir.offsetY;
 				newZ -= dir.offsetZ;
+				if(i == 0)
+					break;
 				b = world.getBlock(newX, newY, newZ);
 				List<ItemStack> drops = b.getDrops(world, newX, newY, newZ, world.getBlockMetadata(x, y, z), 0);
 				world.setBlockToAir(newX, newY, newZ);
