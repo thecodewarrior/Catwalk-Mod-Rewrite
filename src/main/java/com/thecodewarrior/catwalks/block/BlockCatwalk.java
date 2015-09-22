@@ -342,7 +342,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	//==============================================================================
 
 	public boolean shouldHaveBox(World world, int x, int y, int z, ForgeDirection side) {
-		return  !(world.getBlock(x+side.offsetX, y+side.offsetY, z+side.offsetZ) instanceof BlockCatwalk) &&
+		return  side == ForgeDirection.DOWN || // don't check solidity if it's the bottom
 				!world.isSideSolid(x+side.offsetX, y+side.offsetY, z+side.offsetZ, side.getOpposite(), false);
 	}
 	
@@ -711,7 +711,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	public boolean isOnLadder(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
 		return  world.getBlock(x, y+1, z) instanceof BlockCatwalk ||
-				world.getBlock(x, y-1, z) instanceof BlockCatwalk;
+				( world.getBlock(x, y-1, z) instanceof BlockCatwalk && !bottom ); // don't count us as being connected if we have a bottom
 	}
 
 	@Override
