@@ -267,9 +267,9 @@ public class CatwalkUtil {
 	
 	public static boolean retractBlock(World world, int x, int y, int z, ForgeDirection dir, EntityPlayer player,
 			Predicate<BlockCoord> continueSearching) {
-		int newX = x+dir.offsetX;
-		int newY = y+dir.offsetY;
-		int newZ = z+dir.offsetZ;
+		int newX = x;//+dir.offsetX;
+		int newY = y;//+dir.offsetY;
+		int newZ = z;//+dir.offsetZ;
 		for(int i = 0; i < 128; i++) {
 			newX += dir.offsetX;
 			newY += dir.offsetY;
