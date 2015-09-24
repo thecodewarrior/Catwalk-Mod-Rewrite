@@ -64,25 +64,21 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int blockSide, float hitX, float hitY, float hitZ) {		
 		ForgeDirection side = ForgeDirection.getOrientation(blockSide);
-		
-		if(player.getCurrentEquippedItem() != null) {
-			Item item = player.getCurrentEquippedItem().getItem();
-			
-			if(CatwalkUtil.isHoldingWrench(player)) {
-				if(player.isSneaking()) {
-					CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
-						@Override
-						public boolean test(BlockCoord coord) {
-							World world = (World)args[0];
-							return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
-						}
-					});
-				} else {
-					int meta = world.getBlockMetadata(x,y,z);
-					meta = meta == 0 ? 2 : meta == 2 ? 0 : meta;
-					world.setBlockMetadataWithNotify(x, y, z, meta, 3);
-					return true;
-				}
+					
+		if(CatwalkUtil.isHoldingWrench(player)) {
+			if(player.isSneaking()) {
+				CatwalkUtil.retractBlock(world, x, y, z, side.getOpposite(), player, new Predicate<BlockCoord>(world) {
+					@Override
+					public boolean test(BlockCoord coord) {
+						World world = (World)args[0];
+						return world.getBlock(coord.x, coord.y, coord.z) instanceof BlockScaffold;
+					}
+				});
+			} else {
+				int meta = world.getBlockMetadata(x,y,z);
+				meta = meta == 0 ? 2 : meta == 2 ? 0 : meta;
+				world.setBlockMetadataWithNotify(x, y, z, meta, 3);
+				return true;
 			}
 		}
 		
@@ -198,31 +194,13 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	@Override
 	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		boolean isHoldingScaffold = false;
-		if(entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer)entity;
-			if(player.getHeldItem() != null) {
-				Item item = player.getHeldItem().getItem();
-				if(item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockScaffold)
-					isHoldingScaffold = true;
-			}
-		}
-		return entity.isSneaking() || isHoldingScaffold;
+		return entity.isSneaking() || ( CatwalkUtil.getHeldBlock(entity) instanceof BlockScaffold || CatwalkUtil.isHoldingWrench(entity, false) );
 	}
 
 	@Override
 	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		boolean isHoldingScaffold = false;
-		if(entity instanceof EntityPlayer) {
-			EntityPlayer player = (EntityPlayer)entity;
-			if(player.getHeldItem() != null) {
-				Item item = player.getHeldItem().getItem();
-				if(item instanceof ItemBlock && ((ItemBlock)item).field_150939_a instanceof BlockScaffold)
-					isHoldingScaffold = true;
-			}
-		}
-		return entity.isSneaking() && isHoldingScaffold;
+		return entity.isSneaking() && ( CatwalkUtil.getHeldBlock(entity) instanceof BlockScaffold || CatwalkUtil.isHoldingWrench(entity, false) );
 	}
 
 	@Override

@@ -48,6 +48,13 @@ public class CatwalkUtil {
 		return CatwalkMod.proxy.getPlayerLooking(start, end); // different on client/server
 	}
 	
+	public static Block getHeldBlock(EntityLivingBase entity) {
+		if(entity.getHeldItem() != null && entity.getHeldItem().getItem() instanceof ItemBlock) {
+			return ( (ItemBlock) entity.getHeldItem().getItem() ).field_150939_a;
+		}
+		return null;
+	}
+	
 	public static boolean isHoldingWrench(EntityLivingBase entity, boolean defult) {
 		if(entity instanceof EntityPlayer) {
 			return isHoldingWrench( (EntityPlayer) entity );

@@ -305,13 +305,13 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 	@Override
 	public boolean shouldHoldOn(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false);
+		return entity.isSneaking() || ( CatwalkUtil.isHoldingWrench(entity, false) || CatwalkUtil.getHeldBlock(entity) instanceof BlockSupportColumn);
 	}
 
 	@Override
 	public boolean shouldClimbDown(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return entity.isSneaking() && CatwalkUtil.isHoldingWrench(entity, false);
+		return entity.isSneaking() && ( CatwalkUtil.isHoldingWrench(entity, false) || CatwalkUtil.getHeldBlock(entity) instanceof BlockSupportColumn);
 	}
 
 	@Override
