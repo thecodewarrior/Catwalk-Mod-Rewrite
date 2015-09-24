@@ -406,7 +406,7 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
     }
 
 	public boolean shouldSideBeShort(World w, int x, int y, int z, ForgeDirection direction) {
-		if(w.getBlock(x, y-1, z) instanceof BlockCatwalk)
+		if(w.getBlock(x, y-1, z) instanceof BlockCatwalk && !bottom)
 			return true;
 		
 		int newX = x+direction.offsetX,
@@ -710,8 +710,11 @@ public class BlockCatwalk extends Block implements ICagedLadderConnectable, ICus
 	@Override
 	public boolean isOnLadder(IBlockAccess world, int x, int y, int z,
 			EntityLivingBase entity) {
-		return  world.getBlock(x, y+1, z) instanceof BlockCatwalk ||
-				( world.getBlock(x, y-1, z) instanceof BlockCatwalk && !bottom ); // don't count us as being connected if we have a bottom
+		Block above = world.getBlock(x, y+1, z);
+		Block below = world.getBlock(x, y-1, z);
+		
+		return  ( below instanceof BlockCatwalk && !bottom ) || // don't count us as being connected if we have a bottom
+				( above instanceof BlockCatwalk && !((BlockCatwalk)above).bottom); // if we don't have something below us, then don't connect with one above that has a bottom
 	}
 
 	@Override
