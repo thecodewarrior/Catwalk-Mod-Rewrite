@@ -11,8 +11,12 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "catwalkmod", version = "x.x.x", dependencies="required-after:catwalks")
+@Mod(modid = LegacyCatwalkMod.MODID, version = LegacyCatwalkMod.MODVER, name = LegacyCatwalkMod.MODNAME, dependencies="required-after:catwalks")
 public class LegacyCatwalkMod {
+	
+	public static final String MODID = "catwalkmod";
+	public static final String MODVER = "x.x.x";
+	public static final String MODNAME = "Legacy Catwalk Compat";
 	
     public static Block LEGACY_catwalk;
     public static Block LEGACY_ladder;

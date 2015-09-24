@@ -91,8 +91,10 @@ public class CommonProxy {
 			
 			
 			if(e.isCollidedHorizontally) { // entity is smashed up against something
-				e.motionY = upSpeed; // set the entity's upward velocity to the custom value
-				catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 blocks/tick when they stop
+				if(e.motionY < upSpeed) {
+					e.motionY = upSpeed; // set the entity's upward velocity to the custom value
+					catwalkEP.highSpeedLadder = true; // now when they stop they'll be slowed down to 0.2 blocks/tick when they stop
+				}
 			} else {
 				if(downSpeed > 0)
 					e.fallDistance = 0.0F; // reset fall distance to prevent fall damage
