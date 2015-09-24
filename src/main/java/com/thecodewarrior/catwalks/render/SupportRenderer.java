@@ -74,15 +74,11 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 	}
 	
 	public void renderFace( double x1, double y1, double z1,
-							int u1, int v1,
 							double x2, double y2, double z2,
-							int u2, int v2,
 							double x3, double y3, double z3,
-							int u3, int v3,
 							double x4, double y4, double z4,
-							int u4, int v4,
 							float nX, float nY, float nZ,
-							IIcon icon, boolean back) {
+							IIcon icon, int[][] corners, boolean back) {
 		TransformingTessellator t = TransformingTessellator.instance;
 		
 		Vector3 normal = new Vector3(nX, nY, nZ);
@@ -130,19 +126,19 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		}
 		
 		t.setNormal(nX, nY, nZ);
-		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1/2F), icon.getInterpolatedV(v1/2F));
-		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2/2F), icon.getInterpolatedV(v2/2F));
-		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3/2F), icon.getInterpolatedV(v3/2F));
-		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4/2F), icon.getInterpolatedV(v4/2F));
+		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(corners[3][0]/2F), icon.getInterpolatedV(corners[3][1]/2F));
+		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(corners[2][0]/2F), icon.getInterpolatedV(corners[2][1]/2F));
+		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(corners[1][0]/2F), icon.getInterpolatedV(corners[1][1]/2F));
+		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(corners[0][0]/2F), icon.getInterpolatedV(corners[0][1]/2F));
 		
 		if(!back)
 			return;
 		
 		t.setNormal(-nX, -nY, -nZ);
-		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(u4/2F), icon.getInterpolatedV(v4/2F));
-		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(u3/2F), icon.getInterpolatedV(v3/2F));
-		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(u2/2F), icon.getInterpolatedV(v2/2F));
-		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(u1/2F), icon.getInterpolatedV(v1/2F));
+		t.addVertexWithUV(x4, y4, z4, icon.getInterpolatedU(corners[0][0]/2F), icon.getInterpolatedV(corners[0][1]/2F));
+		t.addVertexWithUV(x3, y3, z3, icon.getInterpolatedU(corners[1][0]/2F), icon.getInterpolatedV(corners[1][1]/2F));
+		t.addVertexWithUV(x2, y2, z2, icon.getInterpolatedU(corners[2][0]/2F), icon.getInterpolatedV(corners[2][1]/2F));
+		t.addVertexWithUV(x1, y1, z1, icon.getInterpolatedU(corners[3][0]/2F), icon.getInterpolatedV(corners[3][1]/2F));
 
 	}
 								// U, D, N, S, W, E
@@ -178,13 +174,13 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		case DOWN:
 			t.rotate(180, 1, 0, 0); break;
 		case NORTH:
-			t.rotate(-90, 1, 0, 0); break;
+			t.rotate(-90, 1, 0, 0); t.rotate(-180, 0, 1, 0); break;
 		case SOUTH:
 			t.rotate(90, 1, 0, 0); break;
 		case WEST:
-			t.rotate(90, 0, 0, 1); break;
+			t.rotate(90, 0, 0, 1); t.rotate(-90, 0, 1, 0); break;
 		case EAST:
-			t.rotate(-90, 0, 0, 1); break;
+			t.rotate(-90, 0, 0, 1); t.rotate(90, 0, 1, 0); break;
 		default:
 		}
 		t.translate(-0.5,-0.5,-0.5);
@@ -207,6 +203,40 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 		int _d  = 7;     // minimum u/v of center part
 		int _D  = _M-_d; // maximum u/v of center part
 		
+		// [ clockwise end index ][ corner clockwise from "top-left" ][ u/v ]
+		int [][][] sides = { // the u/v coords of each extension side, in clockwise order (top,right,bottom,left,center)
+				{ // top
+					{ _d, _m }, // top-left
+					{ _D, _m }, // top-right
+					{ _D, _d }, // bottom-right
+					{ _d, _d }  // bottom-left
+				},
+				{ // right
+					{ _M, _d }, // top-left
+					{ _M, _D }, // top-right
+					{ _D, _D }, // bottom-right
+					{ _D, _d }  // bottom-left
+				},
+				{ // bottom
+					{ _d, _M }, // top-left
+					{ _D, _M }, // top-right
+					{ _D, _D }, // bottom-right
+					{ _d, _D }  // bottom-left
+				},
+				{ // left
+					{ _m, _D }, // top-left
+					{ _m, _d }, // top-right
+					{ _d, _d }, // bottom-right
+					{ _d, _D }  // bottom-left
+				},
+				{ // center
+					{ _d, _d }, // top-left
+					{ _D, _d }, // top-right
+					{ _D, _D }, // bottom-right
+					{ _d, _D }  // bottom-left
+				}
+		};
+		
 		if(solid) {
 			m = smidge;
 			M = 1-smidge;
@@ -215,38 +245,79 @@ public class SupportRenderer implements ISimpleBlockRenderingHandler {
 			M = 1;
 		}
 		o = D;
-		
+		int side = 0;
 		if(shouldExtend) { // top
 			o = M;
+			// sides
+									
+			switch(dir) { // get the correct side for the top/south when on top/north when on bottom
+			case NORTH:
+				side = 0; break; //
+			case SOUTH:
+				side = 2; break;
+			case EAST:
+				side = 1; break;
+			case WEST:
+				side = 3; break;
+			case UP:
+				side = 0; break;
+			case DOWN:
+				side = 2; break;
+			}
 			
-			renderFace( D, D, d,   _d, _d,
-						d, D, d,   _D, _d,
-						d, M, d,   _D, _m,
-						D, M, d,   _d, _m,
-						0, 0, -1, icon, back); // north
-			renderFace( d, D, D,   _d, _d,
-						D, D, D,   _D, _d,
-						D, 1, D,   _D, _m,
-						d, 1, D,   _d, _m,
-						0, 0, 1, icon, back); // south
+			renderFace( D, D, d,
+						d, D, d,
+						d, M, d,
+						D, M, d,
+						0, 0,-1, icon, sides[side], back); // north (top)
 			
-			renderFace( D, D, D,   _d, _d,
-						D, D, d,   _D, _d,
-						D, M, d,   _D, _m,
-						D, M, D,   _d, _m,
-						1, 0, 0, icon, back); // east
-			renderFace( d, D, d,   _d, _d,
-						d, D, D,   _D, _d,
-						d, M, D,   _D, _m,
-						d, M, d,   _d, _m,
-						-1, 0, 0, icon, back); // west
+			switch(dir) {
+			case NORTH:
+				side = 2; break;
+			case SOUTH:
+				side = 0; break;
+			case EAST:
+				side = 1; break;
+			case WEST:
+				side = 3; break;
+			case UP:
+				side = 0; break;
+			case DOWN:
+				side = 2; break;
+			}
+			
+			renderFace( d, D, D,
+						D, D, D,
+						D, 1, D,
+						d, 1, D,
+						0, 0, 1, icon, sides[side], back); // south (bottom)
+			
+			if(dir.offsetY == 0) {
+				side = 3;
+			}
+			
+			renderFace( D, D, D,
+						D, D, d,
+						D, M, d,
+						D, M, D,
+						1, 0, 0, icon, sides[side], back); // east (left)
+			
+			if(dir.offsetY == 0) {
+				side = 1;
+			}
+			renderFace( d, D, d,
+						d, D, D,
+						d, M, D,
+						d, M, d,
+					   -1, 0, 0, icon, sides[side], back); // west (right)
 		}
+		side = 4;
 		if(!isAdjacentSupport)
-			renderFace( d, o, D,   _d, _D,
-						D, o, D,   _D, _D,
-						D, o, d,   _D, _d,
-						d, o, d,   _d, _d,
-						0, 1, 0, icon, back); // center
+			renderFace( d, o, D,
+						D, o, D,
+						D, o, d,
+						d, o, d,
+						0, 1, 0, icon, sides[side], back); // center
 		
 		t.popMatrix();
 	}

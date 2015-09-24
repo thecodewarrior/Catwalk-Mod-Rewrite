@@ -162,7 +162,6 @@ public class CatwalkUtil {
         {
         	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
         	BlockHit coord = CatwalkUtil.getExtendCoord(world, x, y, z, dir, continueSearching);
-        	CatwalkMod.l.info("ret:" + coord.side + " unk:" + ForgeDirection.UNKNOWN.ordinal() + " pass:" + dir);
         	if(coord.side == ForgeDirection.UNKNOWN.ordinal()) {
             	return false;
             } else {
@@ -277,7 +276,6 @@ public class CatwalkUtil {
         }
         
         if(_side == ForgeDirection.UNKNOWN.ordinal()) {
-        	CatwalkMod.l.info("ERRORED EXTEND");
         	// extension errored out, don't try to place.
         }
         else 
