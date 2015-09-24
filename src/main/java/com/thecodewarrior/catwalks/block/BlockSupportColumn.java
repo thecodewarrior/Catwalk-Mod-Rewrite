@@ -40,6 +40,7 @@ public class BlockSupportColumn extends Block implements ICustomLadder, IInOutRe
 	public BlockSupportColumn() {
 		super(Material.iron);
 		setCreativeTab(CatwalkMod.catwalkTab);
+		setStepSound(CatwalkMod.catwalkSounds);
 		setBlockName("support_column");
 		float d = (float)( (1-getWidth())/2 );
 		setBlockBounds(   d, 0,   d,

@@ -48,6 +48,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	public BlockScaffold() {
 		super(Material.iron);
 		setCreativeTab(CatwalkMod.catwalkTab);
+		setStepSound(CatwalkMod.catwalkSounds);
 		setBlockName("scaffold");
 	}
 	

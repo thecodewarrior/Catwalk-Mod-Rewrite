@@ -35,7 +35,8 @@ public class BlockSturdyRail extends BlockRail implements ISturdyTrackExtendable
 	public IIcon curved;
 		
 	public BlockSturdyRail() {
-	  this.setCreativeTab(CatwalkMod.catwalkTab);
+		this.setCreativeTab(CatwalkMod.catwalkTab);
+		this.setStepSound(CatwalkMod.catwalkSounds);
 		this.setBlockName("sturdy_rail");
 		this.setHardness(0.7F);
 	}

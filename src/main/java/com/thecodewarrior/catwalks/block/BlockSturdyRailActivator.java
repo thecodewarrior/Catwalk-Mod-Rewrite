@@ -30,7 +30,8 @@ public class BlockSturdyRailActivator extends BlockRail implements ISturdyTrackE
 	public IIcon off;
 		
 	public BlockSturdyRailActivator() {
-	  this.setCreativeTab(CatwalkMod.catwalkTab);
+		this.setCreativeTab(CatwalkMod.catwalkTab);
+		this.setStepSound(CatwalkMod.catwalkSounds);
 		this.setBlockName("sturdy_activator_rail");
 		this.setHardness(0.7F);
 	}

@@ -129,7 +129,7 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
 		float px = 1/16F;
     	setBlockBounds(px, 0, px, 1-px, 1, 1-px);
 		setBlockName("caged_ladder");
-		setStepSound(soundTypeLadder);
+		setStepSound(CatwalkMod.ladderSounds);
 		if(direction == ForgeDirection.NORTH && !lights && !bottom && !tape)
 			setCreativeTab(CatwalkMod.catwalkTab);
 		setHarvestLevel("wrench", 0);

@@ -144,28 +144,31 @@ public class CatwalkMod
     	inAndOutRenderType  = RenderingRegistry.getNextAvailableRenderId();
     	supportRenderType   = RenderingRegistry.getNextAvailableRenderId();
     	
-    	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
-    		public String getBreakSound()
-            {
-                return "catwalks:dig." + this.soundName;
-            }
-
-            public String getStepResourcePath()
-            {
-                return "catwalks:step." + this.soundName;
-            }
-    	};
-    	ladderSounds  = new Block.SoundType("ladder",  1.0F, 1.0F) {
-    		public String getBreakSound()
-            {
-                return "catwalks:dig." + this.soundName;
-            }
-
-            public String getStepResourcePath()
-            {
-                return "catwalks:step." + this.soundName;
-            }
-    	};
+//    	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
+//    		public String getBreakSound()
+//            {
+//                return "catwalks:dig." + this.soundName;
+//            }
+//
+//            public String getStepResourcePath()
+//            {
+//                return "catwalks:step." + this.soundName;
+//            }
+//    	};
+//    	ladderSounds  = new Block.SoundType("ladder",  1.0F, 1.0F) {
+//    		public String getBreakSound()
+//            {
+//                return "catwalks:dig." + this.soundName;
+//            }
+//
+//            public String getStepResourcePath()
+//            {
+//                return "catwalks:step." + this.soundName;
+//            }
+//    	};
+    	
+    	catwalkSounds = Block.soundTypeMetal;
+    	ladderSounds  = Block.soundTypeLadder;
     	
     	options.init();
     	options.load();
