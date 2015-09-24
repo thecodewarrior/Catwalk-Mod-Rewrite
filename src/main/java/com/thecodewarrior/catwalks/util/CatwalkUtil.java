@@ -133,7 +133,8 @@ public class CatwalkUtil {
 	 * @param pred pred.test() returns true when it should continue extending
 	 * @return the block space that finished the extension, or y=-1 if it couldn't find a stopping point
 	 */
-	public static BlockHit getExtendCoord(World world, int x, int y, int z, ForgeDirection direction, Predicate<BlockCoord> pred) {    	
+	public static BlockHit getExtendCoord(World world, int x, int y, int z, ForgeDirection direction, Predicate<BlockCoord> pred) { 
+		CatwalkMod.l.info("" + x + ", " + y + ", " + z + " - " + direction);
     	int newX = x;
     	int newY = y;
     	int newZ = z;
@@ -153,18 +154,72 @@ public class CatwalkUtil {
 		return new BlockHit(x, y, z, direction.getOpposite());
 	}
 	
+	public static boolean canPlaceBlock(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int _side, ItemBlock blockToPlace,
+			Predicate<Block> shouldExtendFromBlock, Predicate<BlockCoord> continueSearching, Predicate<BlockCoord> ignoreReplaceable) {
+        Block block = world.getBlock(x, y, z);
+        
+        if (shouldExtendFromBlock.test(block) && player.isSneaking() )
+        {
+        	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
+        	BlockHit coord = CatwalkUtil.getExtendCoord(world, x, y, z, dir, continueSearching);
+        	CatwalkMod.l.info("ret:" + coord.side + " unk:" + ForgeDirection.UNKNOWN.ordinal() + " pass:" + dir);
+        	if(coord.side == ForgeDirection.UNKNOWN.ordinal()) {
+            	return false;
+            } else {
+            	return true;
+            }
+        }
+        
+        if (block == Blocks.snow_layer)
+        {
+            _side = 1;
+        }
+        else if (block != Blocks.vine && block != Blocks.tallgrass && block != Blocks.deadbush && (
+        		!block.isReplaceable(world, x, y, z) ||
+        		block.getClass().isAssignableFrom(blockToPlace.field_150939_a.getClass())))
+        {
+            if (_side == 0)
+            {
+                --y;
+            }
+
+            if (_side == 1)
+            {
+                ++y;
+            }
+
+            if (_side == 2)
+            {
+                --z;
+            }
+
+            if (_side == 3)
+            {
+                ++z;
+            }
+
+            if (_side == 4)
+            {
+                --x;
+            }
+
+            if (_side == 5)
+            {
+                ++x;
+            }
+        }
+
+        return world.canPlaceEntityOnSide(blockToPlace.field_150939_a, x, y, z, false, _side, (Entity)null, stack);
+	}
+	
 	public static boolean extendBlock(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int _side, float hitX, float hitY, float hitZ,
 			ItemBlock blockToPlace, Predicate<Block> shouldExtendFromBlock, Predicate<BlockCoord> continueSearching, Predicate<BlockCoord> ignoreReplaceable) {
 		Block block = world.getBlock(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(_side);
         
-        
-        
         int meta = world.getBlockMetadata(x, y, z);
         
-        boolean isExtending = false;
-        boolean placeSucceeded = false;
-        boolean didHitAnother = false;
+        boolean isExtending = false, placeSucceeded = false, placeTried = false, didHitAnother = false;
 
         int oldX = x;
         int oldY = y;
@@ -173,22 +228,16 @@ public class CatwalkUtil {
         if (shouldExtendFromBlock.test(block) && player.isSneaking() )
         {
     		isExtending = true;
-    		
         	ForgeDirection dir = ForgeDirection.getOrientation(_side).getOpposite();
         	BlockHit coord = CatwalkUtil.getExtendCoord(world, x, y, z, dir, continueSearching);
         	x = coord.x;
         	y = coord.y;
         	z = coord.z;
         	_side = coord.side;
-        	if(_side == dir.ordinal())
-        		isExtending = true;
         	didHitAnother = continueSearching.test( new BlockCoord(x + (2*dir.offsetX), y + (2*dir.offsetY), z + (2*dir.offsetZ)) );
         }
         
-        if(_side == ForgeDirection.UNKNOWN.ordinal()) {
-        	// extension errored out, don't try to place.
-        }
-        else if (block == Blocks.snow_layer && (world.getBlockMetadata(x, y, z) & 7) < 1)
+        if (block == Blocks.snow_layer && (world.getBlockMetadata(x, y, z) & 7) < 1)
         {
             _side = 1;
         }
@@ -226,7 +275,12 @@ public class CatwalkUtil {
                 ++x;
             }
         }
-
+        
+        if(_side == ForgeDirection.UNKNOWN.ordinal()) {
+        	CatwalkMod.l.info("ERRORED EXTEND");
+        	// extension errored out, don't try to place.
+        }
+        else 
         if (stack.stackSize == 0)
         {
             placeSucceeded = false;
@@ -246,22 +300,25 @@ public class CatwalkUtil {
 
             if (blockToPlace.placeBlockAt(stack, player, world, x, y, z, _side, hitX, hitY, hitZ, newMeta))
             {
+            	placeSucceeded = true;
                 world.playSoundEffect((double)((float)oldX + 0.5F), (double)((float)oldY + 0.5F), (double)((float)oldZ + 0.5F), blockToPlace.field_150939_a.stepSound.func_150496_b(), (blockToPlace.field_150939_a.stepSound.getVolume() + 1.0F) / 2.0F, blockToPlace.field_150939_a.stepSound.getPitch() * 0.8F);
                 --stack.stackSize;
             }
 
-            placeSucceeded = true;
+            placeTried = true;
         }
         else
         {
             placeSucceeded = false;
         }
         
-        if(isExtending)
+        if(isExtending) {
         	CatwalkUtil.extendParticles(placeSucceeded, didHitAnother, world, oldX, oldY, oldZ, hitX, hitY, hitZ, side);
-        
-        return placeSucceeded;
+        }
+        return placeSucceeded || placeTried;
 	}
+	
+	
 	
 	public static CatwalkEntityProperties getOrCreateEP(Entity entity) {
 		CatwalkEntityProperties catwalkEP = (CatwalkEntityProperties)entity.getExtendedProperties("catwalkmod.catwalkdata");
