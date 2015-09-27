@@ -243,13 +243,13 @@ public class CommonProxy {
 					continue;
 				}
 				
-				double multiplier = 0.2D; // roughly the same as a Swiftness I potion
+				double amt = CatwalkMod.speedModifier.getAmount() * CatwalkMod.options.speedPotionLevel; // roughly the same as a Swiftness I potion
 				
-				if(m == null || m.getAmount() != multiplier ) { // if modifier isn't applied or the amount has changed
+				if(m == null || m.getAmount() != amt ) { // if modifier isn't applied or the amount has changed
 					attrInstance.removeModifier(CatwalkMod.speedModifier); // remove the modifier
 					attrInstance.applyModifier(
 			        		new AttributeModifier(CatwalkMod.speedModifier.getID(), "catwalkmod.speedup",
-			        				multiplier, 2)); // re-apply it
+			        				amt, 2)); // re-apply it
 				}
 			} // end for
     		

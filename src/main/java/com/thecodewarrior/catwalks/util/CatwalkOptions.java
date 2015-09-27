@@ -1,22 +1,42 @@
 package com.thecodewarrior.catwalks.util;
 
-import com.thecodewarrior.catwalks.ICustomLadder;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPane;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.thecodewarrior.catwalks.ICustomLadder;
 
 public class CatwalkOptions {
 	
 	public boolean fullBlockLadder = false;
+	public float ladderSpeedMultiplier = 1;
+	public float speedPotionLevel = 1;
+	public boolean vanillaLadders = false;
 	
 	public void init() {}
 	
-	public void load() {}
+	public void load(Configuration config) {
+		
+		config.load();
+		
+		fullBlockLadder 		= config.getBoolean("FullBlockLadder", "catwalks", fullBlockLadder,				 "Set to true to be able to climb the outside of caged ladders");
+		ladderSpeedMultiplier 	= config.getFloat(    "ladderSpeed",     "catwalks", ladderSpeedMultiplier, 0, 10, "Ladders will go at 5*N blocks/second");
+		speedPotionLevel 		= config.getFloat(    "catwalkSpeed",    "catwalks", speedPotionLevel,      0, 10, "Catwalk speed boost will be equivalent to a Speed N potion.");
+		vanillaLadders			= config.getBoolean("VanillaLadders",  "catwalks", vanillaLadders,				 "Set to true to turn leaves, bookcases, and iron bars into ladders");
+		
+		config.save();
+		
+	}
+	
+	public void postInit() {
+		if(vanillaLadders)
+			initCustomLadders();
+	}
 	
 	public void initCustomLadders() {
 		CustomLadderRegistry.registerCustomLadder(Blocks.iron_bars, new ICustomLadder() {

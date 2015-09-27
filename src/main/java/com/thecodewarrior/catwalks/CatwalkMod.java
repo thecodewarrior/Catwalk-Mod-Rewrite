@@ -12,6 +12,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
@@ -56,7 +57,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "0.1.21";
+    public static final String MODVER = "2.0.1";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -128,7 +129,16 @@ public class CatwalkMod
     public void preInit(FMLPreInitializationEvent event) {
     	l = logger();
     	CatwalkUtil.init();
-
+    	
+    	Configuration config = new Configuration(event.getSuggestedConfigurationFile());
+    	
+    	options.init();
+    	options.load(config);
+    	
+    }
+    
+    @EventHandler
+    public void load(FMLInitializationEvent event) {
     	catwalkTab = new CreativeTabs("catwalks") {
     		@Override
     		@SideOnly(Side.CLIENT)
@@ -144,39 +154,12 @@ public class CatwalkMod
     	inAndOutRenderType  = RenderingRegistry.getNextAvailableRenderId();
     	supportRenderType   = RenderingRegistry.getNextAvailableRenderId();
     	
-//    	catwalkSounds = new Block.SoundType("catwalk", 1.0F, 1.0F) {
-//    		public String getBreakSound()
-//            {
-//                return "catwalks:dig." + this.soundName;
-//            }
-//
-//            public String getStepResourcePath()
-//            {
-//                return "catwalks:step." + this.soundName;
-//            }
-//    	};
-//    	ladderSounds  = new Block.SoundType("ladder",  1.0F, 1.0F) {
-//    		public String getBreakSound()
-//            {
-//                return "catwalks:dig." + this.soundName;
-//            }
-//
-//            public String getStepResourcePath()
-//            {
-//                return "catwalks:step." + this.soundName;
-//            }
-//    	};
-    	
     	catwalkSounds = Block.soundTypeMetal;
     	ladderSounds  = Block.soundTypeLadder;
-    	
-    	options.init();
-    	options.load();
     	
     	FMLCommonHandler.instance().bus().register(proxy);  
     	MinecraftForge.EVENT_BUS.register(proxy);
     	speedModifier =  new AttributeModifier(
-    			UUID.fromString("eabff2b8-b6a0-436e-b570-f2e6b059fcd2"),
     			"catwalkmod.speedup",
     			0.20000000298023224D,
     			2);
@@ -316,15 +299,10 @@ public class CatwalkMod
     	
     	proxy.init();
     }
-    
-    @EventHandler
-    public void load(FMLInitializationEvent event) {
-    	
-    }
         
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
     	proxy.postInit();
-    	options.initCustomLadders();
+    	options.postInit();
     }
 }

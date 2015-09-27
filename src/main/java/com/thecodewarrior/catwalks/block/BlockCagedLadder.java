@@ -960,11 +960,11 @@ public class BlockCagedLadder extends Block implements ICustomLadder, ICagedLadd
     }
 	
 	public double getLadderVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
-		return entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false) ? 0.15D : 0.25D;
+		return ( entity.isSneaking() || CatwalkUtil.isHoldingWrench(entity, false) ? 0.15D : 0.25D ) * CatwalkMod.options.ladderSpeedMultiplier;
 	}
 	
 	public double getLadderFallVelocity(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
-		return 0.25D;
+		return 0.25D * CatwalkMod.options.ladderSpeedMultiplier;
 	}
 
 	@Override

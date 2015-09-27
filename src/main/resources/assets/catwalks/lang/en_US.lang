@@ -1,6 +1,7 @@
 item.blowtorch.name=Blowtorch
 item.rope_light.name=Rope Light
 item.caution_tape.name=Caution Tape
+item.steel_grate=Steel Grate
 
 tile.catwalk.name=Catwalk
 tile.caged_ladder.name=Caged Ladder
