@@ -33,7 +33,7 @@ dependencies {
     compile 'codechicken:NotEnoughItems:1.7.10-1.0.5.118:dev'
 }
 
-version = "2.0.1"
+version = "2.0.2"
 group= "com.thecodewarrior.catwalk" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "catwalks"
 

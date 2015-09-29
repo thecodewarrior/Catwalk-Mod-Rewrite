@@ -57,7 +57,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "2.0.1";
+    public static final String MODVER = "2.0.2";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;
@@ -135,10 +135,6 @@ public class CatwalkMod
     	options.init();
     	options.load(config);
     	
-    }
-    
-    @EventHandler
-    public void load(FMLInitializationEvent event) {
     	catwalkTab = new CreativeTabs("catwalks") {
     		@Override
     		@SideOnly(Side.CLIENT)
@@ -146,8 +142,6 @@ public class CatwalkMod
     			return Item.getItemFromBlock(CatwalkMod.scaffold);
     		}
     	};
-    	
-    	boolean[] trueFalse = {true, false};
     	
     	catwalkRenderType   = RenderingRegistry.getNextAvailableRenderId();
     	ladderRenderType    = RenderingRegistry.getNextAvailableRenderId();
@@ -165,6 +159,13 @@ public class CatwalkMod
     			2);
     	speedModifier.setSaved(false);
     	
+    	
+    	registerItems();
+    	
+    }
+    
+    public void registerItems() {
+    	boolean[] trueFalse = {true, false};
     	
     	sturdyTrack = new BlockSturdyRail();
     	GameRegistry.registerBlock(sturdyTrack, "sturdy_rail");
@@ -246,6 +247,10 @@ public class CatwalkMod
     	GameRegistry.registerItem(itemRopeLight,   "ropeLight"  );
     	GameRegistry.registerItem(itemCautionTape, "cautionTape");
     	GameRegistry.registerItem(itemSteelGrate,  "steelgrate" );
+    }
+    
+    @EventHandler
+    public void load(FMLInitializationEvent event) {
     	
     	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemBlowtorch), new Object[] {
     		"FXX",

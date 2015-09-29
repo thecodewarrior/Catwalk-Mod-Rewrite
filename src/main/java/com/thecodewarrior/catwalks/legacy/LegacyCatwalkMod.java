@@ -8,6 +8,7 @@ import com.thecodewarrior.catwalks.CatwalkMod;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -44,13 +45,16 @@ public class LegacyCatwalkMod {
     	
     	GameRegistry.registerTileEntity(TileEntityCatwalk.class, "catwalkmod:tileEntityScaffold");
 		GameRegistry.registerTileEntity(TileEntityCagedLadder.class, "catwalkmod:tileEntityCagedLadder");
-		
-		registerLegacyRecipe(Item.getItemFromBlock(LEGACY_catwalk), Item.getItemFromBlock(CatwalkMod.defaultCatwalk));
+    }
+    
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
+    	registerLegacyRecipe(Item.getItemFromBlock(LEGACY_catwalk), Item.getItemFromBlock(CatwalkMod.defaultCatwalk));
 		registerLegacyRecipe(Item.getItemFromBlock(LEGACY_ladder), Item.getItemFromBlock(CatwalkMod.defaultLadder));
 		
 		registerLegacyRecipe(lightRopeLegacy, CatwalkMod.itemRopeLight);
 		registerLegacyRecipe(blowtorchLegacy, CatwalkMod.itemBlowtorch);
-//		registerLegacyRecipe(steelGrateLegacy, ****);
+		registerLegacyRecipe(steelGrateLegacy, CatwalkMod.itemSteelGrate);
     }
     
     public void registerLegacyRecipe(Item oldItem, Item newItem) {
