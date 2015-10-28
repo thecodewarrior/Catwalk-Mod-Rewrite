@@ -290,13 +290,18 @@ public class CatwalkMod
     	});
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 1), new ItemStack(scaffold, 1, 0));
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 0), new ItemStack(scaffold, 1, 1));
-    	
+
     	GameRegistry.addRecipe(new ItemStack(supportColumn, 4), new Object[] {
     		"G",
     		"G",
     		'G', itemSteelGrate
     	});
-    	
+
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyTrack, 1), new Object[] { itemSteelGrate, Blocks.rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyPoweredTrack, 1), new Object[] { itemSteelGrate, Blocks.golden_rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyDetectorTrack, 1), new Object[] { itemSteelGrate, Blocks.detector_rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyActivatorTrack, 1), new Object[] { itemSteelGrate, Blocks.activator_rail } );
+
     	proxy.init();
     }
         
