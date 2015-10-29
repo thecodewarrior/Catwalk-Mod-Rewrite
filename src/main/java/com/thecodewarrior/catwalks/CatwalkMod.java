@@ -262,13 +262,24 @@ public class CatwalkMod
     		'G', "dustGlowstone",
     		'S', Items.string
     	}));
-    	
-    	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
-    		"IXI",
-    		"XIX",
-    		"IXI",
-    		'I', "ingotIron"
-    	}));
+
+        if (options.altGrateRecipe) {
+            GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
+                "IXI",
+                "BBB",
+                "IXI",
+                'I', "ingotIron",
+                'B', Blocks.iron_bars
+            }));
+        }
+        else {
+            GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
+                "IXI",
+                "XIX",
+                "IXI",
+                'I', "ingotIron"
+            }));
+        }
     	
     	GameRegistry.addRecipe(new ItemStack(defaultCatwalk, 3), new Object[] {
     		"GXG",

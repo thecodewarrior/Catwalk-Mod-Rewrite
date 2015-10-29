@@ -17,6 +17,7 @@ public class CatwalkOptions {
 	public float ladderSpeedMultiplier = 1;
 	public float speedPotionLevel = 1;
 	public boolean vanillaLadders = false;
+    public boolean altGrateRecipe = false;
 	
 	public void init() {}
 	
@@ -28,7 +29,8 @@ public class CatwalkOptions {
 		ladderSpeedMultiplier 	= config.getFloat(    "ladderSpeed",     "catwalks", ladderSpeedMultiplier, 0, 10, "Ladders will go at 5*N blocks/second");
 		speedPotionLevel 		= config.getFloat(    "catwalkSpeed",    "catwalks", speedPotionLevel,      0, 10, "Catwalk speed boost will be equivalent to a Speed N potion.");
 		vanillaLadders			= config.getBoolean("VanillaLadders",  "catwalks", vanillaLadders,				 "Set to true to turn leaves, bookcases, and iron bars into ladders");
-		
+		altGrateRecipe			= config.getBoolean("AlternateSteelGrateRecipe",  "catwalks", altGrateRecipe,	 "Use alternate steel grate recipe with iron bars (in case of mod conflicts)");
+
 		config.save();
 		
 	}
