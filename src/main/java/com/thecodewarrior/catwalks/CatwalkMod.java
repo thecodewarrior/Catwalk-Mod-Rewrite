@@ -262,13 +262,24 @@ public class CatwalkMod
     		'G', "dustGlowstone",
     		'S', Items.string
     	}));
-    	
-    	GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
-    		"IXI",
-    		"XIX",
-    		"IXI",
-    		'I', "ingotIron"
-    	}));
+
+        if (options.altGrateRecipe) {
+            GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
+                "IXI",
+                "BBB",
+                "IXI",
+                'I', "ingotIron",
+                'B', Blocks.iron_bars
+            }));
+        }
+        else {
+            GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(itemSteelGrate, 16), new Object[] {
+                "IXI",
+                "XIX",
+                "IXI",
+                'I', "ingotIron"
+            }));
+        }
     	
     	GameRegistry.addRecipe(new ItemStack(defaultCatwalk, 3), new Object[] {
     		"GXG",
@@ -290,13 +301,18 @@ public class CatwalkMod
     	});
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 1), new ItemStack(scaffold, 1, 0));
     	GameRegistry.addShapelessRecipe(new ItemStack(scaffold, 1, 0), new ItemStack(scaffold, 1, 1));
-    	
+
     	GameRegistry.addRecipe(new ItemStack(supportColumn, 4), new Object[] {
     		"G",
     		"G",
     		'G', itemSteelGrate
     	});
-    	
+
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyTrack, 1), new Object[] { itemSteelGrate, Blocks.rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyPoweredTrack, 1), new Object[] { itemSteelGrate, Blocks.golden_rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyDetectorTrack, 1), new Object[] { itemSteelGrate, Blocks.detector_rail } );
+    	GameRegistry.addShapelessRecipe(new ItemStack(sturdyActivatorTrack, 1), new Object[] { itemSteelGrate, Blocks.activator_rail } );
+
     	proxy.init();
     }
         
