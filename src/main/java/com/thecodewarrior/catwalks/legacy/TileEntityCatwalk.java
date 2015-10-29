@@ -25,7 +25,6 @@ public class TileEntityCatwalk extends TileEntity{
 		meta = setBit(meta, 0, isEastOpen() );
 		
     	worldObj.setBlock(xCoord, yCoord, zCoord, b, meta, 3);
-    	CatwalkMod.l.info("Updated Catwalk at: " + xCoord + ", " + yCoord + ", " + zCoord);
     }
 	
 	public int setBit(int val, int pos, boolean value) {

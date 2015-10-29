@@ -39,7 +39,6 @@ public class TileEntityCagedLadder extends TileEntity {
 		meta = setOpenMeta(meta, d, ForgeDirection.WEST,  isWestOpen() );
 		
     	worldObj.setBlock(xCoord, yCoord, zCoord, b, meta, 3);
-    	CatwalkMod.l.info("Updated Caged Ladder at: " + xCoord + ", " + yCoord + ", " + zCoord);
     }
 	
 	public int setOpenMeta(int meta, ForgeDirection facing, ForgeDirection side, boolean value) {

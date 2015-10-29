@@ -134,7 +134,6 @@ public class CatwalkUtil {
 	 * @return the block space that finished the extension, or y=-1 if it couldn't find a stopping point
 	 */
 	public static BlockHit getExtendCoord(World world, int x, int y, int z, ForgeDirection direction, Predicate<BlockCoord> pred) { 
-		CatwalkMod.l.info("" + x + ", " + y + ", " + z + " - " + direction);
     	int newX = x;
     	int newY = y;
     	int newZ = z;
