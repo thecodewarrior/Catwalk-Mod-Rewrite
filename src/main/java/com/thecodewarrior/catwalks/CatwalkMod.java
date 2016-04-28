@@ -57,7 +57,7 @@ public class CatwalkMod
 {
     public static final String MODID = "catwalks";
     public static final String MODNAME = "Catwalks";
-    public static final String MODVER = "2.0.2";
+    public static final String MODVER = "2.0.4";
     
 	public static final String loggerName = "Catwalks";
 	public static Logger l;

@@ -59,7 +59,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 	}
 	
     public boolean isReplaceable(IBlockAccess world, int x, int y, int z) {
-    	return world.getBlockMetadata(x,y,z) == 1;
+    	return world.getBlockMetadata(x,y,z) != 0;
     }
     
 	@Override
@@ -77,7 +77,7 @@ public class BlockScaffold extends Block implements ICustomLadder, IInOutRenderS
 				});
 			} else {
 				int meta = world.getBlockMetadata(x,y,z);
-				meta = meta == 0 ? 2 : meta == 2 ? 0 : meta;
+				meta = meta == 0 ? 1 : 0;
 				world.setBlockMetadataWithNotify(x, y, z, meta, 3);
 				return true;
 			}
